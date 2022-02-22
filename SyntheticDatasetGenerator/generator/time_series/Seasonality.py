@@ -8,8 +8,9 @@ class Seasonality(object):
 	Members
 	-------
 
-	* type: string equal to one of "custom", "sine", "cosine", "triangular". It
-	defines the type os seasonal component.
+	* type: string equal to one of "custom", "sine", "cosine",
+	"positive_triangular", "negative_triangular", "triangular". It defines the
+	type os seasonal component.
 	* amplitude: amplitude of the seasonal component. E.g., if the amplitude is 
 	10 a sine seasonality will vary from -5 to 5.
 	* seasonality_length: length in seconds of the seasonal components
@@ -39,7 +40,7 @@ class Seasonality(object):
 				 sample_freq_seconds : float,
 				 seasonality_func : Callable[[float], None] = None):
 		if type not in Seasonality.ALLOWED_SEASONALITY:
-			raise AttributeError("The seasonality type must be one of ",
+			raise ValueError("The seasonality type must be one of ",
 								 Seasonality.ALLOWED_SEASONALITY)
 		
 		super().__init__()
@@ -58,8 +59,8 @@ class Seasonality(object):
 		Therefore, it is possible to perfectly determine the seasonal component
 		of the time series.
 
-		Arguments
-		---------
+		Parameters
+		----------
 
 		* elapsed_seconds: float representing the number of elapsed seconds from
 		the start of the time series.
@@ -70,7 +71,7 @@ class Seasonality(object):
 		* float: the absolute value of the seasonal component of the time series.
 		"""
 		if elapsed_seconds < 0:
-			raise AttributeError("The elapsed time in seconds must be greater"
+			raise ValueError("The elapsed time in seconds must be greater"
 			" or equal 0")
 
 		function_input = (elapsed_seconds % self.length) / self.length
@@ -85,8 +86,8 @@ class Seasonality(object):
 	def __compute_seasonality(self, period_position : float) -> float:
 		"""Performs the computation of the seasonality.
 		
-		Arguments
-		---------
+		Parameters
+		----------
 
 		* period_position: float representing the position on the period of the
 		function.
@@ -97,7 +98,7 @@ class Seasonality(object):
 		* float: the absolute seasonal value.
 		"""
 		if period_position < 0 or period_position > 1:
-			raise AttributeError("The attribute period_position must be between"
+			raise ValueError("The attribute period_position must be between"
 			" 0 and 1 as it represents percentage")
 		seasonality_value = 0
 		

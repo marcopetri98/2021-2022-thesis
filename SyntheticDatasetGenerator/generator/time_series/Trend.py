@@ -7,11 +7,12 @@ class Trend(object):
 	Members
 	-------
 
-	* type: a string representing the type of trend for the time series.
+	* type: a string representing the type of trend for the time series. It must
+	be on of "custom", "linear", "quadratic", "cubic", "monomial", "exponential".
 	* starting_point: a float value representing the starting point for the time
 	 series in terms of  trend value (it is not the first sample value).
-	* arguments: it is a list of the arguments needed by the trend function 
-	definition.
+	* arguments: it is a list of the arguments needed by the standard trend
+	function definition. None if type == "custom".
 	* custom_func [optional]: it is the custom function used to define the trend
 	 for the time series.
 
@@ -59,10 +60,10 @@ class Trend(object):
 	
 	def __init__(self, type : str,
 				 starting_point : float,
-				 function_args : list[float],
+				 function_args : list[float] = None,
 				 custom_func : Callable[[float], None] = None):
 		if type not in Trend.ALLOWED_TRENDS:
-			raise AttributeError("The trend type must be one of ",
+			raise ValueError("The trend type must be one of ",
 								 Trend.ALLOWED_TRENDS)
 
 		super().__init__()
@@ -78,8 +79,8 @@ class Trend(object):
 		chosen function and by considering the number of seconds passed from the
 		 start of the time series.
 		
-		Arguments
-		---------
+		Parameters
+		----------
 
 		* elapsed_seconds: float representing the number of elapsed seconds from
 		 the start of the time series.
@@ -90,7 +91,7 @@ class Trend(object):
 		* float: the absolute value of the trend component of the time series.
 		"""
 		if elapsed_seconds < 0:
-			raise AttributeError("The elapsed time in seconds must be greater"
+			raise ValueError("The elapsed time in seconds must be greater"
 			" or equal 0")
 
 		trend_value = 0
@@ -105,8 +106,8 @@ class Trend(object):
 	def __compute_trend(self, elapsed_seconds : float) -> float:
 		"""Performs the computation of the trend component.
 
-		Arguments
-		---------
+		Parameters
+		----------
 
 		* elapsed_seconds: float representing the number of elapsed seconds from
 		 the start of the time series.
@@ -116,6 +117,10 @@ class Trend(object):
 
 		* float: the absolute value of the trend component of the time series.
 		"""
+		if elapsed_seconds < 0:
+			raise ValueError("The elapsed time in seconds must be greater"
+			" or equal 0")
+			
 		trend_value = 0
 
 		match self.type:
