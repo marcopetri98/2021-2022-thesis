@@ -1,8 +1,5 @@
-import pandas as pd
-
-from typing import Callable
 from abc import ABC
-from generator.FlowError import FlowError
+from generator.exceptions.FlowError import FlowError
 
 
 class SyntheticDatasetGenerator(ABC):
@@ -21,13 +18,6 @@ class SyntheticDatasetGenerator(ABC):
 		self.dataset = None
 		self.supervised = supervised
 		self.labels = labels.copy()
-	
-	def generate(self, num_points : int,
-				 dimensions : int,
-				 noise : list[str],
-				 custom_noise : list[Callable[[], float]] = None,
-				 verbose : bool = True) -> pd.DataFrame:
-		pass
 	
 	def get_dataset(self):
 		if self.dataset is not None:

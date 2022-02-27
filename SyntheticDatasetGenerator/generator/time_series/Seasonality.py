@@ -48,7 +48,7 @@ class Seasonality(object):
 		self.amplitude = amplitude
 		self.length = seasonality_length
 		self.sample_freq = sample_freq_seconds
-		self.seasonality_func = seasonality_func.copy()
+		self.seasonality_func = seasonality_func
 
 	def compute_seasonal_value(self, elapsed_seconds : float) -> float:
 		"""Computes the value of the trend component of the time series.
