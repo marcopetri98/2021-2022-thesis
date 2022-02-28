@@ -10,7 +10,7 @@ class Trend(object):
 	* type: a string representing the type of trend for the time series. It must
 	be on of "custom", "linear", "quadratic", "cubic", "monomial", "exponential".
 	* starting_point: a float value representing the starting point for the time
-	 series in terms of  trend value (it is not the first sample value).
+	 series in terms of trend value (it is not the first sample value).
 	* arguments: it is a list of the arguments needed by the standard trend
 	function definition. None if type == "custom".
 	* custom_func [optional]: it is the custom function used to define the trend
@@ -58,21 +58,21 @@ class Trend(object):
 					  "monomial",
 					  "exponential"]
 	
-	def __init__(self, type : str,
-				 starting_point : float,
-				 function_args : list[float] = None,
-				 custom_func : Callable[[float], None] = None):
-		if type not in Trend.ALLOWED_TRENDS:
+	def __init__(self, trend_type: str,
+				 starting_point: float,
+				 function_args: list[float] = None,
+				 custom_func: Callable[[float], None] = None):
+		if trend_type not in Trend.ALLOWED_TRENDS:
 			raise ValueError("The trend type must be one of ",
 								 Trend.ALLOWED_TRENDS)
 
 		super().__init__()
-		self.type = type
+		self.type = trend_type
 		self.starting_point = starting_point
 		self.arguments = function_args
 		self.custom_func = custom_func
 
-	def compute_trend_value(self, elapsed_seconds : float) -> float:
+	def compute_trend_value(self, elapsed_seconds: float) -> float:
 		"""Compute the value of the trend component of the time series.
 
 		The method computes the trend component for the time series using the 
@@ -103,7 +103,7 @@ class Trend(object):
 
 		return trend_value
 
-	def __compute_trend(self, elapsed_seconds : float) -> float:
+	def __compute_trend(self, elapsed_seconds: float) -> float:
 		"""Performs the computation of the trend component.
 
 		Parameters

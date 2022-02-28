@@ -14,9 +14,6 @@ class Seasonality(object):
 	* amplitude: amplitude of the seasonal component. E.g., if the amplitude is 
 	10 a sine seasonality will vary from -5 to 5.
 	* seasonality_length: length in seconds of the seasonal components
-	* sample_freq: float representing the number of samples per second in the 
-	time series. E.g., if we have 1 sample each 5 seconds we have 1/5 of 
-	frequency, i.e., frequency = 0.2.
 	* seasonality_func [optional]: if the function representing the seasonality
 	in case the type os the seasonality is custom.
 
@@ -37,7 +34,6 @@ class Seasonality(object):
 	def __init__(self, type : str,
 				 amplitude : float,
 				 seasonality_length : float,
-				 sample_freq_seconds : float,
 				 seasonality_func : Callable[[float], None] = None):
 		if type not in Seasonality.ALLOWED_SEASONALITY:
 			raise ValueError("The seasonality type must be one of ",
@@ -47,7 +43,6 @@ class Seasonality(object):
 		self.type = type
 		self.amplitude = amplitude
 		self.length = seasonality_length
-		self.sample_freq = sample_freq_seconds
 		self.seasonality_func = seasonality_func
 
 	def compute_seasonal_value(self, elapsed_seconds : float) -> float:
@@ -79,7 +74,7 @@ class Seasonality(object):
 		if self.type == "custom":
 			seasonality = self.seasonality_func(function_input)
 		else:
-			seasonality = self.__compute_seasonality(elapsed_seconds)
+			seasonality = self.__compute_seasonality(function_input)
 
 		return seasonality
 			
