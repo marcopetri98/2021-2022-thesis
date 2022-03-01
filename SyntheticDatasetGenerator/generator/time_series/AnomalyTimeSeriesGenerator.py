@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 # project libraries
+from generator.printing.DecoratedPrinter import DecoratedPrinter
 from generator.time_series.Anomaly import Anomaly
 from generator.time_series.AnomalyDistribution import AnomalyDistribution
 from generator.time_series.Seasonality import Seasonality
@@ -24,6 +25,14 @@ class AnomalyTimeSeriesPrints(object):
 	ERROR_TOO_MANY_ANOMALIES = "Anomalies must be in the interval (0, 0.2]"
 	ERROR_TOO_SHORT = "A collective anomaly must have at least 2 points"
 	ERROR_WRONG_PARAMS = "The parameters are wrong for the specified anomaly"
+	
+	GENERATE = ["Anomaly detection dataset generation started",
+				"Anomaly detection dataset generation ended",
+				"Generation of the time series started",
+				"Generate anomalies' position",
+				"Add the anomalies on the dataset",
+				"Creating the ground truth to populate",
+				"Saving the dataframe of the dataset"]
 
 
 class AnomalyTimeSeriesGenerator(TimeSeriesGenerator):
@@ -124,13 +133,17 @@ class AnomalyTimeSeriesGenerator(TimeSeriesGenerator):
 		anomalies and anomaly_dist are required, although they are non-default
 		parameters to be stick with base class signature.
 		"""
+		if verbose:
+			DecoratedPrinter.print_heading(AnomalyTimeSeriesPrints.GENERATE[0])
+			DecoratedPrinter.print_step(AnomalyTimeSeriesPrints.GENERATE[2])
+			
 		super().generate(num_points,
 						 dimensions,
 						 stochastic_process,
 						 process_params,
 						 noise,
 						 custom_noise,
-						 verbose,
+						 False,
 						 sample_freq_seconds,
 						 trend,
 						 seasonality,
@@ -151,6 +164,8 @@ class AnomalyTimeSeriesGenerator(TimeSeriesGenerator):
 		num_points = self.dataset.shape[0]
 		num_anomalies = int(num_points * anomalies_perc)
 
+		if verbose:
+			DecoratedPrinter.print_step(AnomalyTimeSeriesPrints.GENERATE[3])
 		# TODO: implement also multivariate
 		# Generate indexes at which anomalies are found
 		indexes = anomaly_dist.generate_anomaly_positions(num_points,
@@ -160,8 +175,13 @@ class AnomalyTimeSeriesGenerator(TimeSeriesGenerator):
 		anomalies_generated = 0
 
 		if self.supervised:
+			if verbose:
+				DecoratedPrinter.print_step(AnomalyTimeSeriesPrints.GENERATE[5])
 			self.ground_truth = np.ndarray(self.dataset.shape, dtype=object)
 			self.ground_truth.fill("normal")
+
+		if verbose:
+			DecoratedPrinter.print_step(AnomalyTimeSeriesPrints.GENERATE[4])
 
 		for idx in indexes:
 			if anomalies_generated >= num_anomalies:
@@ -180,11 +200,16 @@ class AnomalyTimeSeriesGenerator(TimeSeriesGenerator):
 				if self.supervised:
 					self.ground_truth[idx] = "anomaly"
 
+		if verbose:
+			DecoratedPrinter.print_step(AnomalyTimeSeriesPrints.GENERATE[6])
+		
 		self.__save_anomaly(num_points,
 							sample_freq_seconds,
 							dimensions,
 							columns_names,
 							start_timestamp)
+		if verbose:
+			DecoratedPrinter.print_heading(AnomalyTimeSeriesPrints.GENERATE[1])
 
 		return self
 
