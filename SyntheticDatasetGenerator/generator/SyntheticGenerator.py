@@ -23,6 +23,8 @@ class SyntheticGenerator(ABC):
 	* dataset_frame: the pandas dataframe representing the dataset.
 	* supervised: a boolean value representing if the dataset is supervised or
 	not.
+	* ground_truth: it is the ground truth of the dataset in case the task is
+	supervised.
 	* labels: labels to be used for the dataset.
 	"""
 	def __init__(self, supervised : bool,
@@ -31,6 +33,7 @@ class SyntheticGenerator(ABC):
 		self.dataset = None
 		self.dataset_frame = None
 		self.supervised = supervised
+		self.ground_truth = None
 		self.labels = labels.copy()
 	
 	def get_dataset(self) -> np.ndarray:
@@ -39,10 +42,17 @@ class SyntheticGenerator(ABC):
 		else:
 			raise FlowError("You must first generate the dataset before being "
 							"able to get it.")
-	
+
 	def get_dataframe(self) -> pd.DataFrame:
 		if self.dataset_frame is not None:
-			return  self.dataset_frame.copy()
+			return self.dataset_frame.copy()
 		else:
 			raise FlowError("You must first generate the dataframe before being "
 							"able to get it.")
+
+	def get_ground_truth(self) -> pd.DataFrame:
+		if self.ground_truth is not None:
+			return self.ground_truth.copy()
+		else:
+			raise FlowError("You must first generate the ground truth before "
+							"being able to get it.")

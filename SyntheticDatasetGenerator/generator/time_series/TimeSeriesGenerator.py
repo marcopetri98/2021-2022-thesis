@@ -62,9 +62,9 @@ class TimeSeriesGenerator(SyntheticGenerator):
 	* dataset_timestamps: the data timestamps for time series values.
 	* dataset: the numpy ndarray representing the dataset.
 	* dataset_frame: the pandas dataframe representing the dataset.
-	* supervised: a boolean value representing if the dataset is supervised or
-	not.
-	* labels: labels to be used for the dataset.
+	* supervised: inherited but unused. A boolean value representing if the
+	dataset is supervised or not.
+	* labels: linherited but unused. Labels to be used for the dataset.
 	"""
 	# Class constants
 	ALLOWED_STOCHASTIC_PROCESS = ["AR",
@@ -94,7 +94,8 @@ class TimeSeriesGenerator(SyntheticGenerator):
 				 trend_func: list[Trend] = None,
 				 seasonality_func: list[Seasonality] = None,
 				 columns_names: list[str] = None,
-				 start_timestamp: float = datetime.datetime.now().timestamp()) -> TimeSeriesGenerator:
+				 start_timestamp: float = datetime.datetime.now().timestamp(),
+				 *args, **kwargs) -> TimeSeriesGenerator:
 		"""Generate a dataset with the given parameters.
 
 		Parameters
@@ -193,8 +194,7 @@ class TimeSeriesGenerator(SyntheticGenerator):
 			warnings.warn(TimeSeriesPrints.WARNING_UNSTABLE, UnstableWarning)
 
 		samples_to_gen = num_points if dimensions == 1 else (num_points,
-															 dimensions,
-															 1)
+															 dimensions)
 		dataset: np.ndarray = process.generate_sample(samples_to_gen,
 													   math.sqrt(process_params[-1]),
 													   burnin=int(float(num_points) * 0.1),
