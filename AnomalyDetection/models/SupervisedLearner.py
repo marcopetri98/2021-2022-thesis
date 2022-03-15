@@ -14,7 +14,3 @@ class SupervisedLearner(Learner):
 			*args,
 			**kwargs) -> None:
 		pass
-	
-	def set_params(self, *args,
-				   **kwargs) -> None:
-		pass

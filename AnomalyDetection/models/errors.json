@@ -1,0 +1,14 @@
+{
+	"clusterer": {
+		"fit_before": "You must fit the model before getting the clusters or the centroids."
+	},
+	"dbscan": {
+		"not_none": "Data cannot be None and data must be at least composed of one point.",
+		"index_eq_data": "The number of indexes must be equal to the number of data points.",
+		"only_univariate": "Only univariate time series is currently supported.",
+		"format": "Only univariate time series is currently supported.",
+		"window_need_stride": "Either you don't specify both window and stride or you specify both.",
+		"stride_lt_window": "Stride must be less or equal than window",
+		"compatible_stride": "The value (data.shape[0] - window) % stride must be 0."
+  }
+}
