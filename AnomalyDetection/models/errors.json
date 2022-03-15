@@ -1,4 +1,7 @@
 {
+	"learner": {
+		"generic": "Generic error, there is no specific description"
+	},
 	"clusterer": {
 		"fit_before": "You must fit the model before getting the clusters or the centroids."
 	},

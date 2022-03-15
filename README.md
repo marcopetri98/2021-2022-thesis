@@ -9,3 +9,4 @@ The required python module to be able to run the codes of this repository are:
 3. statsmodels 0.13.0
 4. matplotlib 3.5.1
 5. scikit-learn 1.0.2
+6. seaborn 0.11.2

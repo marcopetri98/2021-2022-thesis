@@ -3,14 +3,12 @@ import sklearn.cluster as sk
 
 from typing import Tuple
 
-from models.AnomalyLearner import AnomalyLearner
+from models.anomaly.AnomalyLearner import AnomalyLearner
 
 
 class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 	"""Concrete class representing the application of DBSCAN approach to time series."""
-
-	ERROR_PARENT = "clusterer"
-	ERROR_KEY = "dbscan"
+	ERROR_KEY = AnomalyLearner.ERROR_KEY.copy() + ["dbscan"]
 	
 	def __init__(self, eps: float = 0.5,
 				 min_points: int = 5,
@@ -31,8 +29,6 @@ class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 		self.n_jobs = n_jobs
 		self.clusters = None
 		self.centroids = None
-		self.anomaly_scores = None
-		self.anomalies = None
 	
 	def fit(self, data: np.ndarray,
 			window: int = None,
@@ -57,15 +53,15 @@ class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 		"""
 		# Check assumptions
 		if data is None or data.shape[0] < 1:
-			raise ValueError(self.errors[self.ERROR_KEY]["not_none"])
+			raise ValueError(self._raise_error("not_none"))
 		elif data.ndim != 2:
-			raise ValueError(self.errors[self.ERROR_KEY]["format"])
+			raise ValueError(self._raise_error("format"))
 		elif data.shape[1] > 1:
-			raise ValueError(self.errors[self.ERROR_KEY]["only_univariate"])
+			raise ValueError(self._raise_error("only_univariate"))
 		elif (window is not None) ^ (stride is not None):
-			raise ValueError(self.errors[self.ERROR_KEY]["window_need_stride"])
+			raise ValueError(self._raise_error("window_need_stride"))
 		elif window is not None and stride > window:
-			raise ValueError(self.errors[self.ERROR_KEY]["stride_lt_window"])
+			raise ValueError(self._raise_error("stride_lt_window"))
 		
 		# Set up values for stride and window
 		if window is None:
@@ -93,63 +89,6 @@ class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 		# Reshape the list onto a simple list
 		anomalies_idx = [x for z in anomalies_idx for y in z for x in y]
 		self.anomalies[np.array(anomalies_idx, dtype=np.intc)] = 1
-	
-	def get_anomaly_scores(self, *args,
-						   **kwargs) -> np.ndarray:
-		"""Gets the anomaly scores.
-		
-		Returns
-		-------
-		anomaly_scores: ndarray
-			The anomaly scores of the points of the dataset.
-		"""
-		if self.anomaly_scores is None:
-			raise ValueError(self.errors[self.ERROR_PARENT]["fit_before"])
-		
-		return self.anomaly_scores.copy()
-	
-	def get_anomalies(self, *args,
-					  **kwargs) -> np.ndarray:
-		"""Gets the anomalies position.
-
-		Returns
-		-------
-		anomaly_scores: ndarray
-			The anomaly scores of the points of the dataset.
-		"""
-		if self.anomalies is None:
-			raise ValueError(self.errors[self.ERROR_PARENT]["fit_before"])
-		
-		return self.anomalies.copy()
-
-	def set_params(self, eps: float = 0.5,
-				   min_points: int = 5,
-				   metric: str = "euclidean",
-				   metric_params: dict = None,
-				   algorithm: str = "auto",
-				   leaf_size: int = 30,
-				   p: float = None,
-				   n_jobs: int = None,
-				   *args,
-				   **kwargs) -> None:
-		"""Sets the parameters of the time series DBSCAN learner.
-
-		Returns
-		-------
-		None
-
-		Notes
-		-----
-		See scikit-learn documentation.
-		"""
-		self.eps = eps
-		self.min_points = min_points
-		self.metric = metric
-		self.metric_params = metric_params
-		self.algorithm = algorithm
-		self.leaf_size = leaf_size
-		self.p = p
-		self.n_jobs = n_jobs
 
 	def _fit_window(self, window_data: np.ndarray,
 					*args,

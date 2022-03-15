@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
+from sklearn import preprocessing, metrics
 
-from models.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
+from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
 import visualizer.Viewer as vw
 
 ALGORITHM = "dbscan"
@@ -13,6 +14,7 @@ anomalies_score = None
 tmp_df = pd.read_csv("dataset/truth_ambient_temperature_system_failure.csv")
 timestamps = tmp_df["timestamp"]
 temperature = tmp_df["value"]
+true_labels = tmp_df["target"]
 
 data_original = np.array(temperature)
 data_original = data_original.reshape(data_original.shape[0], 1)
@@ -20,17 +22,25 @@ data_stationary = np.array(temperature.diff(1))
 data_stationary = data_stationary[1:]
 data_stationary = data_stationary.reshape(data_stationary.shape[0], 1)
 
+data = data_stationary
+
+scaler = preprocessing.StandardScaler()
+scaler.fit(data)
+data_prep = scaler.transform(data)
+
+data = data_original
+
 match ALGORITHM:
 	case "k-means":
 		pass
 	
 	case "dbscan":
-		model = TimeSeriesAnomalyDBSCAN(0.5, 5)
-		model.fit(data_stationary, 200, 200)
+		model = TimeSeriesAnomalyDBSCAN(0.8, 24)
+		model.fit(data, 1440, 1440)
 		anomalies = model.get_anomalies()
 		anomalies_score = model.get_anomaly_scores()
-		anomalies = np.append(np.array([0]), anomalies)
-		anomalies_score = np.append(np.array([0]), anomalies_score)
+		#anomalies = np.append(np.array([0]), anomalies)
+		#anomalies_score = np.append(np.array([0]), anomalies_score)
 	
 	case "hdbscan":
 		pass
@@ -62,6 +72,18 @@ match ALGORITHM:
 	case "cnn autoencoder":
 		pass
 
+confusion_matrix = metrics.confusion_matrix(true_labels, anomalies)
+precision = metrics.precision_score(true_labels, anomalies)
+recall = metrics.recall_score(true_labels, anomalies)
+f1_score = metrics.f1_score(true_labels, anomalies)
+accuracy = metrics.accuracy_score(true_labels, anomalies)
+
+print("ACCURACY SCORE: ", accuracy)
+print("PRECISION SCORE: ", precision)
+print("RECALL SCORE: ", recall)
+print("F1 SCORE: ", f1_score)
+
+vw.plot_confusion_matrix(confusion_matrix)
+vw.plot_time_series_ndarray(data)
 vw.plot_univariate_time_series(tmp_df)
-vw.plot_univariate_time_series_predictions(tmp_df,
-										   anomalies_score)
+vw.plot_univariate_time_series_predictions(tmp_df, anomalies)
