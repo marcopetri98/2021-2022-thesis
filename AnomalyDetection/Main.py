@@ -35,8 +35,8 @@ match ALGORITHM:
 		pass
 	
 	case "dbscan":
-		model = TimeSeriesAnomalyDBSCAN(0.8, 24)
-		model.fit(data, 1440, 1440)
+		model = TimeSeriesAnomalyDBSCAN(0.8, 24, window=1440, stride=1440)
+		model.fit(data)
 		anomalies = model.get_anomalies()
 		anomalies_score = model.get_anomaly_scores()
 		#anomalies = np.append(np.array([0]), anomalies)

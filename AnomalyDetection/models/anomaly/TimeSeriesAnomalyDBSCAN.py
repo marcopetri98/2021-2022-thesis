@@ -1,8 +1,11 @@
+# Python imports
+from typing import Tuple
+
+# External imports
 import numpy as np
 import sklearn.cluster as sk
 
-from typing import Tuple
-
+# Project imports
 from models.anomaly.AnomalyLearner import AnomalyLearner
 
 
@@ -17,8 +20,12 @@ class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 				 algorithm: str = "auto",
 				 leaf_size: int = 30,
 				 p: float = None,
-				 n_jobs: int = None):
+				 n_jobs: int = None,
+				 window: int = None,
+				 stride: int = None):
 		super().__init__()
+		self.check_assumptions({"window": window, "stride": stride})
+		
 		self.eps = eps
 		self.min_points = min_points
 		self.metric = metric
@@ -27,12 +34,26 @@ class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 		self.leaf_size = leaf_size
 		self.p = p
 		self.n_jobs = n_jobs
+		self.window = window
+		self.stride = stride
 		self.clusters = None
 		self.centroids = None
 	
+	def check_assumptions(self, *args,
+						  **kwargs) -> None:
+		"""Checks if the assumption about the specified variable are true."""
+		if ("window" in kwargs.keys()) ^ ("stride" in kwargs.keys()):
+			raise ValueError(self._raise_error("window_need_stride"))
+		else:
+			window = kwargs["window"]
+			stride = kwargs["stride"]
+			if (window is not None) ^ (stride is not None):
+				raise ValueError(self._raise_error("window_need_stride"))
+			elif window is not None and stride > window:
+				raise ValueError(self._raise_error("stride_lt_window"))
+	
+	# TODO: implement stride different from window to implement robustness
 	def fit(self, data: np.ndarray,
-			window: int = None,
-			stride: int = None,
 			*args,
 			**kwargs) -> None:
 		"""Fit the dbscan model to the time series data using scikit-learn.
@@ -58,26 +79,22 @@ class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 			raise ValueError(self._raise_error("format"))
 		elif data.shape[1] > 1:
 			raise ValueError(self._raise_error("only_univariate"))
-		elif (window is not None) ^ (stride is not None):
-			raise ValueError(self._raise_error("window_need_stride"))
-		elif window is not None and stride > window:
-			raise ValueError(self._raise_error("stride_lt_window"))
 		
 		# Set up values for stride and window
-		if window is None:
-			window = data.shape[0]
-			stride = window
+		if self.window is None:
+			self.window = data.shape[0]
+			self.stride = self.window
 		
 		# Preprocess data to add another dimension representing the index
 		self.anomaly_scores = np.zeros(data.shape[0])
 		self.anomalies = np.zeros(data.shape[0])
 		anomalies_idx = []
 		
-		for i in range(0, data.shape[0] - window, stride):
-			must_include_more = data.shape[0] - i - window >= window
+		for i in range(0, data.shape[0] - self.window, self.stride):
+			must_include_more = data.shape[0] - i - self.window >= self.window
 			if must_include_more:
-				window_data = data[i:i + window]
-				self.anomaly_scores[i:i + window], anomalies = self._fit_window(window_data)
+				window_data = data[i:i + self.window]
+				self.anomaly_scores[i:i + self.window], anomalies = self._fit_window(window_data)
 			else:
 				window_data = data[i:]
 				self.anomaly_scores[i:], anomalies = self._fit_window(window_data)

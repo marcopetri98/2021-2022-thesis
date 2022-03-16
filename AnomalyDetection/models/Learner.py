@@ -53,6 +53,11 @@ class Learner(ABC):
 		"""Get the parameters of the model."""
 		return vars(self)
 	
+	def check_assumptions(self, *args,
+						  **kwargs) -> None:
+		"""Checks if the assumption about the specified variable are true."""
+		return
+	
 	def set_params(self, *args,
 				   **kwargs) -> None:
 		"""Sets the parameters of the model.
@@ -61,6 +66,7 @@ class Learner(ABC):
 		-----
 		Parameters have the same names as the ones in the object creation.
 		"""
+		self.check_assumptions(kwargs)
 		for key in kwargs.keys():
 			# Check if the attribute exists
 			getattr(self, key)
