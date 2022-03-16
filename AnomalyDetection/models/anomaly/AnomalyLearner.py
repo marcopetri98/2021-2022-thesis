@@ -5,7 +5,7 @@ from abc import ABC
 import numpy as np
 
 # Project imports
-from models.Learner import mix_keys
+from base.BaseObject import mix_keys
 from models.SupervisedLearner import SupervisedLearner
 from models.UnsupervisedLearner import UnsupervisedLearner
 

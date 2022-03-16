@@ -24,7 +24,7 @@ class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 				 window: int = None,
 				 stride: int = None):
 		super().__init__()
-		self.check_assumptions({"window": window, "stride": stride})
+		self._check_assumptions(window=window, stride=stride)
 		
 		self.eps = eps
 		self.min_points = min_points
@@ -39,8 +39,8 @@ class TimeSeriesAnomalyDBSCAN(AnomalyLearner):
 		self.clusters = None
 		self.centroids = None
 	
-	def check_assumptions(self, *args,
-						  **kwargs) -> None:
+	def _check_assumptions(self, *args,
+						   **kwargs) -> None:
 		"""Checks if the assumption about the specified variable are true."""
 		if ("window" in kwargs.keys()) ^ ("stride" in kwargs.keys()):
 			raise ValueError(self._raise_error("window_need_stride"))
