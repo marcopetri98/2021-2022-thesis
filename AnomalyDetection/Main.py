@@ -3,9 +3,10 @@ import pandas as pd
 from sklearn import preprocessing, metrics
 
 from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
+from models.anomaly.TimeSeriesLOF import TimeSeriesLOF
 import visualizer.Viewer as vw
 
-ALGORITHM = "dbscan"
+ALGORITHM = "local outlier factor"
 
 model = None
 params = None
@@ -43,10 +44,6 @@ match ALGORITHM:
 										use_score=True,
 										score_method="centroid")
 		model.fit(data)
-		anomalies = model.get_anomalies()
-		anomalies_score = model.get_anomaly_scores()
-		#anomalies = np.append(np.array([0]), anomalies)
-		#anomalies_score = np.append(np.array([0]), anomalies_score)
 	
 	case "hdbscan":
 		pass
@@ -58,7 +55,9 @@ match ALGORITHM:
 		pass
 	
 	case "local outlier factor":
-		pass
+		model = TimeSeriesLOF(window=1440,
+							  stride=168)
+		model.fit(data)
 	
 	case "lstm":
 		pass
@@ -77,6 +76,12 @@ match ALGORITHM:
 	
 	case "cnn autoencoder":
 		pass
+
+
+anomalies = model.get_anomalies()
+anomalies_score = model.get_anomaly_scores()
+#anomalies = np.append(np.array([0]), anomalies)
+#anomalies_score = np.append(np.array([0]), anomalies_score)
 
 confusion_matrix = metrics.confusion_matrix(true_labels, anomalies)
 precision = metrics.precision_score(true_labels, anomalies)
