@@ -15,6 +15,7 @@
 		"format": "Only univariate time series is currently supported.",
 		"window_need_stride": "Either you don't specify both window and stride or you specify both.",
 		"stride_lt_window": "Stride must be less or equal than window",
-		"compatible_stride": "The value (data.shape[0] - window) % stride must be 0."
+		"compatible_stride": "The value (data.shape[0] - window) % stride must be 0.",
+		"valid_anomaly_metrics": "You must insert one of the supported metrics."
   }
 }

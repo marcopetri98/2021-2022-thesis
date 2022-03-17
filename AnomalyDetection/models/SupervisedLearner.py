@@ -16,7 +16,7 @@ class SupervisedLearner(Learner):
 		super().__init__()
 	
 	@abc.abstractmethod
-	def fit(self, data: np.ndarray,
+	def fit(self, train: np.ndarray,
 			labels: np.ndarray = None,
 			*args,
 			**kwargs) -> None:

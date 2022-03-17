@@ -16,7 +16,7 @@ class Learner(BaseObject):
 		super().__init__()
 		
 	@abc.abstractmethod
-	def fit(self, data: np.ndarray,
+	def fit(self, train: np.ndarray,
 			*args,
 			**kwargs) -> None:
 		pass

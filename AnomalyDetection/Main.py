@@ -22,7 +22,7 @@ data_stationary = np.array(temperature.diff(1))
 data_stationary = data_stationary[1:]
 data_stationary = data_stationary.reshape(data_stationary.shape[0], 1)
 
-data = data_stationary
+data = data_original
 
 scaler = preprocessing.StandardScaler()
 scaler.fit(data)
@@ -35,7 +35,13 @@ match ALGORITHM:
 		pass
 	
 	case "dbscan":
-		model = TimeSeriesAnomalyDBSCAN(0.8, 24, window=1440, stride=1440)
+		model = TimeSeriesAnomalyDBSCAN(0.5,
+										50,
+										window=1440,
+										stride=168,
+										anomaly_threshold=0.6,
+										use_score=True,
+										score_method="centroid")
 		model.fit(data)
 		anomalies = model.get_anomalies()
 		anomalies_score = model.get_anomaly_scores()
@@ -83,7 +89,10 @@ print("PRECISION SCORE: ", precision)
 print("RECALL SCORE: ", recall)
 print("F1 SCORE: ", f1_score)
 
+vw.plot_roc_curve(true_labels, anomalies_score)
+vw.plot_precision_recall_curve(true_labels, anomalies_score)
 vw.plot_confusion_matrix(confusion_matrix)
 vw.plot_time_series_ndarray(data)
 vw.plot_univariate_time_series(tmp_df)
 vw.plot_univariate_time_series_predictions(tmp_df, anomalies)
+vw.plot_univariate_time_series_predictions(tmp_df, anomalies_score)
