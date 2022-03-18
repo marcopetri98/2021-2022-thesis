@@ -17,5 +17,5 @@ class Predictor(BaseObject):
 	@abc.abstractmethod
 	def predict(self, test: np.ndarray,
 			*args,
-			**kwargs) -> None:
+			**kwargs) -> np.ndarray:
 		pass

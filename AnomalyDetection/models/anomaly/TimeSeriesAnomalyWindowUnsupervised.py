@@ -67,19 +67,6 @@ class TimeSeriesAnomalyWindowUnsupervised(AnomalyLearner):
 			labels: np.ndarray = None,
 			*args,
 			**kwargs) -> None:
-		"""Fit the LOF model to the time series data using scikit-learn.
-
-		Parameters
-		----------
-		train : ndarray of shape (n_samples, n_features)
-			The time series data without containing the index, timestmap or not.
-			
-
-		Returns
-		-------
-		None
-			Fitted model with the estimated anomalies.
-		"""
 		spatial_time_series, num_evaluations = project_time_series(self.window,
 																   self.stride,
 																   train)
