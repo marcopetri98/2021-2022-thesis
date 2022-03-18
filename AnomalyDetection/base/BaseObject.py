@@ -7,29 +7,6 @@ import json
 
 # Project imports
 
-def mix_keys(class1, class2) -> list[str]:
-	"""Mix the error keys of two classes maintaining order"""
-	keys = []
-	class1_elems = len(class1.ERROR_KEY)
-	class2_elems = len(class2.ERROR_KEY)
-	if class1_elems > class2_elems:
-		for i in range(class1_elems):
-			keys.append(class1.ERROR_KEY[i])
-			if i < class2_elems and class1.ERROR_KEY[i] != class2.ERROR_KEY[i]:
-				keys.append(class2.ERROR_KEY[i])
-	elif class1_elems < class2_elems:
-		for i in range(class2_elems):
-			if i < class1_elems:
-				keys.append(class1.ERROR_KEY[i])
-			if class1.ERROR_KEY[i] != class2.ERROR_KEY[i]:
-				keys.append(class2.ERROR_KEY[i])
-	else:
-		for i in range(class1_elems):
-			keys.append(class1.ERROR_KEY[i])
-			if class1.ERROR_KEY[i] != class2.ERROR_KEY[i]:
-				keys.append(class2.ERROR_KEY[i])
-	return keys
-
 
 class BaseObject(ABC):
 	"""Base object for the project objects."""
@@ -41,24 +18,6 @@ class BaseObject(ABC):
 		errors_file = open(file_path)
 		self.errors = json.load(errors_file)
 		errors_file.close()
-	
-	def get_params(self) -> dict:
-		"""Get the parameters of the model."""
-		return vars(self)
-	
-	def set_params(self, *args,
-				   **kwargs) -> None:
-		"""Sets the parameters of the model.
-
-		Notes
-		-----
-		Parameters have the same names as the ones in the object creation.
-		"""
-		self._check_assumptions(kwargs)
-		for key in kwargs.keys():
-			# Check if the attribute exists
-			getattr(self, key)
-			setattr(self, key, kwargs[key])
 	
 	def _check_assumptions(self, *args,
 						   **kwargs) -> None:

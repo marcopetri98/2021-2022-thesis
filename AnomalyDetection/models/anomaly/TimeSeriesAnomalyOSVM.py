@@ -6,11 +6,10 @@ import numpy as np
 import sklearn.svm as sk
 
 # Project imports
-from models.Predictor import Predictor
-from models.anomaly.AnomalyLearner import AnomalyLearner, project_time_series
+from models.anomaly.AnomalyLearner import AnomalyLearner
 
 
-class TimeSeriesAnomalyOSVM(AnomalyLearner, Predictor):
+class TimeSeriesAnomalyOSVM(AnomalyLearner):
 	"""Concrete class representing the application of LOF approach to time series."""
 	
 	def __init__(self, kernel: str = "rbf",
@@ -66,8 +65,8 @@ class TimeSeriesAnomalyOSVM(AnomalyLearner, Predictor):
 		self.osvm.fit(spatial_time_series)
 	
 	def predict(self, test: np.ndarray,
-			*args,
-			**kwargs) -> np.ndarray:
+				*args,
+				**kwargs) -> np.ndarray:
 		spatial_time_series, num_evaluations = project_time_series(self.window,
 																   self.stride,
 																   test)

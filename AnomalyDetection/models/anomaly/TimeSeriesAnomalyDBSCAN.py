@@ -3,13 +3,13 @@ from typing import Tuple
 
 # External imports
 import numpy as np
-import sklearn.cluster as sk
+from sklearn.cluster import DBSCAN
+from sklearn.base import BaseEstimator, OutlierMixin
 
 # Project imports
-from models.anomaly.TimeSeriesAnomalyWindowUnsupervised import TimeSeriesAnomalyWindowUnsupervised
 
 
-class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowUnsupervised):
+class TimeSeriesAnomalyDBSCAN(BaseEstimator, OutlierMixin):
 	"""Concrete class representing the application of DBSCAN approach to time series.
 	
 	Attributes
@@ -107,14 +107,14 @@ class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowUnsupervised):
 		anomaly_scores : ndarray of shape window_data.shape[0]
 			The anomaly scores for the points of the window dataset.
 		"""
-		dbscan = sk.DBSCAN(self.eps,
-						   min_samples=self.min_points,
-						   metric=self.metric,
-						   metric_params=self.metric_params,
-						   algorithm=self.algorithm,
-						   leaf_size=self.leaf_size,
-						   p=self.p,
-						   n_jobs=self.n_jobs)
+		dbscan = DBSCAN(self.eps,
+						min_samples=self.min_points,
+						metric=self.metric,
+						metric_params=self.metric_params,
+						algorithm=self.algorithm,
+						leaf_size=self.leaf_size,
+						p=self.p,
+						n_jobs=self.n_jobs)
 		dbscan.fit(spatial_data)
 		cluster_labels = dbscan.labels_
 		clusters = set(cluster_labels).difference({-1})
