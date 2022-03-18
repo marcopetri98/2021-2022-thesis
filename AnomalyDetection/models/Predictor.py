@@ -5,17 +5,17 @@ import abc
 import numpy as np
 
 # Project imports
-from models.Learner import Learner
+from base.BaseObject import BaseObject
 
 
-class SupervisedLearner(Learner):
-	"""Abstract class used to define a supervised learner"""
+class Predictor(BaseObject):
+	"""Abstract class used to define a learner"""
+	
 	def __init__(self):
 		super().__init__()
 	
 	@abc.abstractmethod
-	def fit(self, train: np.ndarray,
-			labels: np.ndarray = None,
+	def predict(self, test: np.ndarray,
 			*args,
 			**kwargs) -> None:
 		pass

@@ -10,8 +10,6 @@ from base.BaseObject import BaseObject
 
 class Learner(BaseObject):
 	"""Abstract class used to define a learner"""
-	ERROR_KEY = BaseObject.ERROR_KEY.copy() + ["learner"]
-	
 	def __init__(self):
 		super().__init__()
 		

@@ -3,15 +3,13 @@ import pandas as pd
 from sklearn import preprocessing, metrics
 
 from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
-from models.anomaly.TimeSeriesLOF import TimeSeriesLOF
+from models.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 import visualizer.Viewer as vw
+from models.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 
-ALGORITHM = "local outlier factor"
+ALGORITHM = "one class svm"
 
-model = None
 params = None
-anomalies = None
-anomalies_score = None
 tmp_df = pd.read_csv("dataset/truth_ambient_temperature_system_failure.csv")
 timestamps = tmp_df["timestamp"]
 temperature = tmp_df["value"]
@@ -29,20 +27,20 @@ scaler = preprocessing.StandardScaler()
 scaler.fit(data)
 data_prep = scaler.transform(data)
 
-data = data_original
+data = data_prep
 
 match ALGORITHM:
 	case "k-means":
 		pass
 	
 	case "dbscan":
-		model = TimeSeriesAnomalyDBSCAN(0.5,
-										50,
-										window=1440,
-										stride=168,
-										anomaly_threshold=0.6,
-										use_score=True,
-										score_method="centroid")
+		model = TimeSeriesAnomalyDBSCAN(5,
+										20,
+										window=168,
+										stride=1,
+										score_method="centroid",
+										classification="point_threshold",
+										anomaly_threshold=0.6)
 		model.fit(data)
 	
 	case "hdbscan":
@@ -52,11 +50,17 @@ match ALGORITHM:
 		pass
 	
 	case "one class svm":
-		pass
+		model = TimeSeriesAnomalyOSVM(window=24,
+									  stride=1,
+									  classification="auto",
+									  anomaly_threshold=1)
+		model.fit(data)
 	
 	case "local outlier factor":
-		model = TimeSeriesLOF(window=1440,
-							  stride=168)
+		model = TimeSeriesAnomalyLOF(window=17,
+									 stride=5,
+									 classification="auto",
+									 anomaly_threshold=0.0)
 		model.fit(data)
 	
 	case "lstm":

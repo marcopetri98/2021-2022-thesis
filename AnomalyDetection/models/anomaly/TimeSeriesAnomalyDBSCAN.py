@@ -6,10 +6,10 @@ import numpy as np
 import sklearn.cluster as sk
 
 # Project imports
-from models.anomaly.AnomalyWindowUnsupervised import AnomalyWindowUnsupervised
+from models.anomaly.TimeSeriesAnomalyWindowUnsupervised import TimeSeriesAnomalyWindowUnsupervised
 
 
-class TimeSeriesAnomalyDBSCAN(AnomalyWindowUnsupervised):
+class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowUnsupervised):
 	"""Concrete class representing the application of DBSCAN approach to time series.
 	
 	Attributes
@@ -19,7 +19,6 @@ class TimeSeriesAnomalyDBSCAN(AnomalyWindowUnsupervised):
 	stride : int
 		The offset at which the window is moved when computing the anomalies.
 	"""
-	ERROR_KEY = AnomalyWindowUnsupervised.ERROR_KEY.copy() + ["dbscan"]
 	VALID_SCORE_METHODS = ["z-score", "centroid"]
 	
 	def __init__(self, eps: float = 0.5,
@@ -32,16 +31,16 @@ class TimeSeriesAnomalyDBSCAN(AnomalyWindowUnsupervised):
 				 n_jobs: int = None,
 				 window: int = None,
 				 stride: int = None,
-				 anomaly_threshold: float = 1.0,
-				 use_score: bool = False,
-				 score_method: str = "centroid"):
+				 anomaly_threshold: float = 0.5,
+				 score_method: str = "centroid",
+				 classification: str = "auto"):
 		super().__init__(window=window,
 						 stride=stride,
-						 anomaly_threshold=anomaly_threshold)
+						 anomaly_threshold=anomaly_threshold,
+						 classification=classification)
 		self._check_assumptions(window=window,
 								stride=stride,
-								score_method=score_method,
-								anomaly_threshold=anomaly_threshold)
+								score_method=score_method)
 		
 		self.eps = eps
 		self.min_points = min_points
@@ -56,60 +55,53 @@ class TimeSeriesAnomalyDBSCAN(AnomalyWindowUnsupervised):
 		self.clusters = None
 		self.centroids = None
 		self.score_method = score_method
-		self.use_score = use_score
 	
 	def _check_assumptions(self, *args,
 						   **kwargs) -> None:
-		super()._check_assumptions(args, kwargs)
 		"""Checks if the assumption about the specified variable are true."""
-		score_method = kwargs["score_method"]
-		if score_method not in self.VALID_SCORE_METHODS:
-			raise ValueError(self._raise_error("valid_anomaly_metrics"))
-	
-	def fit(self, train: np.ndarray,
-			*args,
-			**kwargs) -> None:
-		"""Fit the dbscan model to the time series data using scikit-learn.
-		
-		Parameters
-		----------
-		train : ndarray of shape (n_samples, n_features)
-			The time series data without containing the index, timestmap or not.
-		
-		Returns
-		-------
-		None
-		"""
-		super().fit(train)
+		super()._check_assumptions(args, kwargs)
+		if "score_method" in kwargs.keys():
+			score_method = kwargs["score_method"]
+			if score_method not in self.VALID_SCORE_METHODS:
+				raise ValueError(self._raise_error("valid_anomaly_metrics"))
+
+	def _compute_anomaly_scores(self, num_evaluations: np.ndarray,
+								*args,
+								**kwargs) -> None:
+		if np.max(self._windowed_scores) == np.inf:
+			# All points are labelled as anomalies
+			self.anomaly_scores = np.ones(num_evaluations.shape[0])
+		else:
+			# There is at least one cluster
+			super()._compute_anomaly_scores(num_evaluations)
+			self.anomaly_scores = self.anomaly_scores / np.max(self.anomaly_scores)
 
 	def _compute_anomalies(self, num_evaluations: np.ndarray,
 						   *args,
 						   **kwargs) -> None:
 		"""Compute which are the samples categorized as anomaly."""
-		self.anomaly_scores = self.anomaly_scores / np.max(self.anomaly_scores)
-		
-		if not self.use_score:
-			self.anomalies = self.anomalies / num_evaluations
-			
-			true_anomalies = np.argwhere(self.anomalies > self.anomaly_threshold)
-			self.anomalies = np.zeros(self.anomalies.shape)
-			self.anomalies[true_anomalies] = 1
+		if np.max(self._windowed_scores) == np.inf:
+			# All points are labelled as anomalies
+			self.anomalies = np.ones(num_evaluations.shape[0])
 		else:
-			anomalies = np.argwhere(self.anomaly_scores > self.anomaly_threshold)
-			self.anomalies = np.zeros(self.anomalies.shape)
-			self.anomalies[anomalies] = 1
+			super()._compute_anomalies(num_evaluations)
 
-	def _fit_window(self, window_data: np.ndarray,
-					labels: np.ndarray = None,
-					*args,
-					**kwargs) -> np.ndarray:
+	def _fit_windowed_data(self, spatial_data: np.ndarray,
+						   labels: np.ndarray = None,
+						   num_points: int = 0,
+						   *args,
+						   **kwargs) -> None:
 		"""Fit the dbscan to the window and return the computed anomalies.
-		
+
 		Parameters
 		----------
-		window_data : ndarray
+		spatial_data : ndarray
 			A window of data on which to perform anomalies search.
-		
+		labels: ndarray
+			Labels for the points of the dataset.
+		num_points: int
+			Number of points in the original dataset.
+
 		Returns
 		-------
 		anomaly_scores : ndarray of shape window_data.shape[0]
@@ -123,24 +115,25 @@ class TimeSeriesAnomalyDBSCAN(AnomalyWindowUnsupervised):
 						   leaf_size=self.leaf_size,
 						   p=self.p,
 						   n_jobs=self.n_jobs)
-		dbscan.fit(window_data)
+		dbscan.fit(spatial_data)
 		cluster_labels = dbscan.labels_
 		clusters = set(cluster_labels).difference({-1})
 		
 		centroids = []
 		for cluster in clusters:
 			cluster_points = np.argwhere(cluster_labels == cluster)
-			centroids.append(np.mean(window_data[cluster_points]))
+			centroids.append(np.mean(spatial_data[cluster_points]))
 		
-		# TODO: implement multivariate
+		centroids = np.array(centroids)
 		anomalies = np.argwhere(cluster_labels == -1)
 		anomalies = anomalies.reshape(anomalies.shape[0])
-		self.anomalies[kwargs["idx"]:kwargs["idx"] + anomalies.shape[0]] += 1
 		
-		scores = self._compute_anomaly_scores(window_data, np.array(centroids))
-		return scores
+		self._windowed_anomalies = np.zeros(spatial_data.shape[0])
+		self._windowed_anomalies[anomalies] = 1
+		self._windowed_scores = self._compute_window_scores(spatial_data,
+															centroids)
 
-	def _compute_anomaly_scores(self, window_data: np.ndarray,
+	def _compute_window_scores(self, spatial_data: np.ndarray,
 								centroids: np.array,
 								*args,
 								**kwargs) -> np.ndarray:
@@ -148,7 +141,7 @@ class TimeSeriesAnomalyDBSCAN(AnomalyWindowUnsupervised):
 		
 		Parameters
 		----------
-		window_data : ndarray
+		spatial_data : ndarray
 			A window of data on which to perform anomalies search.
 
 		Returns
@@ -157,23 +150,23 @@ class TimeSeriesAnomalyDBSCAN(AnomalyWindowUnsupervised):
 			An array with the anomaly scores for each point in the time series,
 			computed as the z-score.
 		"""
-		anomaly_scores = np.zeros(window_data.shape[0])
+		anomaly_scores = np.zeros(spatial_data.shape[0])
 		
 		if self.score_method == "z-score":
-			mean = np.average(window_data, axis=0)
-			std = np.std(window_data, axis=0, ddof=1)
+			mean = np.average(spatial_data, axis=0)
+			std = np.std(spatial_data, axis=0, ddof=1)
 			
 			# Compute the anomaly scores using z-score
-			for i in range(window_data.shape[0]):
-				anomaly_scores[i] = (window_data[i] - mean) / std
-				anomaly_scores[i] = np.linalg.norm(anomaly_scores[i])
+			for i in range(spatial_data.shape[0]):
+				deviated_point = (spatial_data[i] - mean) / std
+				anomaly_scores[i] = np.linalg.norm(deviated_point)
 		else:
 			# Compute the anomaly scores using distance from the closest centroid
-			for i in range(window_data.shape[0]):
+			for i in range(spatial_data.shape[0]):
 				min_distance = np.inf
 				
 				for j in range(centroids.shape[0]):
-					distance = np.linalg.norm(window_data[i] - centroids[j])
+					distance = np.linalg.norm(spatial_data[i] - centroids[j])
 					if distance < min_distance:
 						min_distance = distance
 				

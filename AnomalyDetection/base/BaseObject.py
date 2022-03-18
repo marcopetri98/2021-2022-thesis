@@ -33,7 +33,6 @@ def mix_keys(class1, class2) -> list[str]:
 
 class BaseObject(ABC):
 	"""Base object for the project objects."""
-	ERROR_KEY = ["base"]
 	
 	def __init__(self):
 		super().__init__()
@@ -74,11 +73,9 @@ class BaseObject(ABC):
 		error_name : str
 			The key for the error type of that object.
 		"""
-		for i in range(len(self.ERROR_KEY)):
-			try:
-				curr = - (i + 1)
-				return self.errors[self.ERROR_KEY[curr]][error_name]
-			except KeyError:
-				pass
+		try:
+			return self.errors[error_name]
+		except KeyError:
+			pass
 		
-		return self.errors["base"]["generic"]
+		return self.errors["generic"]
