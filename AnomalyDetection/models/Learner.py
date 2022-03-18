@@ -15,6 +15,7 @@ class Learner(BaseObject):
 		
 	@abc.abstractmethod
 	def fit(self, train: np.ndarray,
+			labels: np.ndarray,
 			*args,
 			**kwargs) -> None:
 		pass

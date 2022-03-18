@@ -7,11 +7,10 @@ import numpy as np
 
 # Project imports
 from base.BaseObject import mix_keys
-from models.SupervisedLearner import SupervisedLearner
-from models.UnsupervisedLearner import UnsupervisedLearner
+from models.Learner import Learner
 
 
-class AnomalyLearner(UnsupervisedLearner, SupervisedLearner, ABC):
+class AnomalyLearner(Learner, ABC):
 	"""Abstract class used to define an anomaly learner"""
 	
 	def __init__(self):
