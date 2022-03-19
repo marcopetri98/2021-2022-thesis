@@ -4,134 +4,213 @@ from typing import Tuple
 # External imports
 import numpy as np
 from sklearn.cluster import DBSCAN
-from sklearn.base import BaseEstimator, OutlierMixin
+from sklearn.base import OutlierMixin
 
 # Project imports
+from sklearn.utils import check_array
+
+from models.transformers.TimeSeriesProjector import TimeSeriesProjector
 
 
-class TimeSeriesAnomalyDBSCAN(BaseEstimator, OutlierMixin):
+class TimeSeriesAnomalyDBSCAN(DBSCAN, OutlierMixin):
 	"""Concrete class representing the application of DBSCAN approach to time series.
 	
-	Attributes
-	----------
+	It is a wrapper of the scikit-learn DBSCAN approach. It uses the
+	TimeSeriesProjector to project the time series onto a vector space. Then,
+	it uses DBSCAN to find all the anomalies and compute the score of an anomaly
+	as described in the fit_predict method. Please, note that the vanilla
+	DBSCAN implementation does not produce anomaly scores.
+
+    Parameters
+    ----------
 	window : int
 		The length of the window to consider performing anomaly detection.
+		
 	stride : int
 		The offset at which the window is moved when computing the anomalies.
+		
+    eps : float, default=0.5
+        The maximum distance between two samples for one to be considered
+        as in the neighborhood of the other. This is not a maximum bound
+        on the distances of points within a cluster. This is the most
+        important DBSCAN parameter to choose appropriately for your data set
+        and distance function.
+
+    min_samples : int, default=5
+        The number of samples (or total weight) in a neighborhood for a point
+        to be considered as a core point. This includes the point itself.
+
+    metric : str, or callable, default='euclidean'
+        The metric to use when calculating distance between instances in a
+        feature array. If metric is a string or callable, it must be one of
+        the options allowed by :func:`sklearn.metrics.pairwise_distances` for
+        its metric parameter.
+        If metric is "precomputed", X is assumed to be a distance matrix and
+        must be square. X may be a :term:`Glossary <sparse graph>`, in which
+        case only "nonzero" elements may be considered neighbors for DBSCAN.
+
+        .. versionadded:: 0.17
+           metric *precomputed* to accept precomputed sparse matrix.
+
+    metric_params : dict, default=None
+        Additional keyword arguments for the metric function.
+
+        .. versionadded:: 0.19
+
+    algorithm : {'auto', 'ball_tree', 'kd_tree', 'brute'}, default='auto'
+        The algorithm to be used by the NearestNeighbors module
+        to compute pointwise distances and find nearest neighbors.
+        See NearestNeighbors module documentation for details.
+
+    leaf_size : int, default=30
+        Leaf size passed to BallTree or cKDTree. This can affect the speed
+        of the construction and query, as well as the memory required
+        to store the tree. The optimal value depends
+        on the nature of the problem.
+
+    p : float, default=None
+        The power of the Minkowski metric to be used to calculate distance
+        between points. If None, then ``p=2`` (equivalent to the Euclidean
+        distance).
+
+    n_jobs : int, default=None
+        The number of parallel jobs to run.
+        ``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.
+        ``-1`` means using all processors. See :term:`Glossary <n_jobs>`
+        for more details.
+        
+    See Also
+    --------
+    https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html
 	"""
-	VALID_SCORE_METHODS = ["z-score", "centroid"]
+	SCORE_METHODS = ["z-score", "centroid"]
+	CLASSIFICATIONS = ["voting", "points_score"]
 	
-	def __init__(self, eps: float = 0.5,
-				 min_points: int = 5,
+	def __init__(self, window: int = 200,
+				 stride: int = 1,
+				 score_method: str = "centroid",
+				 classification: str = "voting",
+				 anomaly_threshold: float = 0.0,
+				 eps: float = 0.5,
+				 min_samples: int = 5,
 				 metric: str = "euclidean",
 				 metric_params: dict = None,
 				 algorithm: str = "auto",
 				 leaf_size: int = 30,
 				 p: float = None,
-				 n_jobs: int = None,
-				 window: int = None,
-				 stride: int = None,
-				 anomaly_threshold: float = 0.5,
-				 score_method: str = "centroid",
-				 classification: str = "auto"):
-		super().__init__(window=window,
-						 stride=stride,
-						 anomaly_threshold=anomaly_threshold,
-						 classification=classification)
-		self._check_assumptions(window=window,
-								stride=stride,
-								score_method=score_method)
-		
-		self.eps = eps
-		self.min_points = min_points
-		self.metric = metric
-		self.metric_params = metric_params
-		self.algorithm = algorithm
-		self.leaf_size = leaf_size
-		self.p = p
-		self.n_jobs = n_jobs
+				 n_jobs: int = None):
+		super().__init__(eps,
+						 min_samples=min_samples,
+						 metric=metric,
+						 metric_params=metric_params,
+						 algorithm=algorithm,
+						 leaf_size=leaf_size,
+						 p=p,
+						 n_jobs=n_jobs)
 		self.window = window
 		self.stride = stride
-		self.clusters = None
-		self.centroids = None
 		self.score_method = score_method
+		self.classification = classification
+		self.anomaly_threshold = anomaly_threshold
 	
-	def _check_assumptions(self, *args,
-						   **kwargs) -> None:
-		"""Checks if the assumption about the specified variable are true."""
-		super()._check_assumptions(args, kwargs)
-		if "score_method" in kwargs.keys():
-			score_method = kwargs["score_method"]
-			if score_method not in self.VALID_SCORE_METHODS:
-				raise ValueError(self._raise_error("valid_anomaly_metrics"))
-
-	def _compute_anomaly_scores(self, num_evaluations: np.ndarray,
-								*args,
-								**kwargs) -> None:
-		if np.max(self._windowed_scores) == np.inf:
-			# All points are labelled as anomalies
-			self.anomaly_scores = np.ones(num_evaluations.shape[0])
-		else:
-			# There is at least one cluster
-			super()._compute_anomaly_scores(num_evaluations)
-			self.anomaly_scores = self.anomaly_scores / np.max(self.anomaly_scores)
-
-	def _compute_anomalies(self, num_evaluations: np.ndarray,
-						   *args,
-						   **kwargs) -> None:
-		"""Compute which are the samples categorized as anomaly."""
-		if np.max(self._windowed_scores) == np.inf:
-			# All points are labelled as anomalies
-			self.anomalies = np.ones(num_evaluations.shape[0])
-		else:
-			super()._compute_anomalies(num_evaluations)
-
-	def _fit_windowed_data(self, spatial_data: np.ndarray,
-						   labels: np.ndarray = None,
-						   num_points: int = 0,
-						   *args,
-						   **kwargs) -> None:
-		"""Fit the dbscan to the window and return the computed anomalies.
-
+	def fit(self, X, y=None, sample_weight=None) -> None:
+		"""Compute the anomalies on the time series.
+		
 		Parameters
 		----------
-		spatial_data : ndarray
-			A window of data on which to perform anomalies search.
-		labels: ndarray
-			Labels for the points of the dataset.
-		num_points: int
-			Number of points in the original dataset.
+		X : array-like of shape (n_samples, n_features)
+			The training time series on which we have to train the data.
+		y : Ignored
+			Not used, present by API consistency by convention.
+		sample_weight : Ignored
+			Not used, present by API consistency by convention.
 
 		Returns
 		-------
-		anomaly_scores : ndarray of shape window_data.shape[0]
-			The anomaly scores for the points of the window dataset.
+		None
+			Fits the model to the data.
 		"""
-		dbscan = DBSCAN(self.eps,
-						min_samples=self.min_points,
-						metric=self.metric,
-						metric_params=self.metric_params,
-						algorithm=self.algorithm,
-						leaf_size=self.leaf_size,
-						p=self.p,
-						n_jobs=self.n_jobs)
-		dbscan.fit(spatial_data)
-		cluster_labels = dbscan.labels_
-		clusters = set(cluster_labels).difference({-1})
+		if self.score_method not in self.SCORE_METHODS:
+			raise ValueError("The score method must be one of",
+							 self.SCORE_METHODS)
+		elif self.classification not in self.CLASSIFICATIONS:
+			raise ValueError("The classification must be one of",
+							 self.CLASSIFICATIONS)
+		check_array(X)
+		X = np.array(X)
 		
+		# Project time series onto vector space
+		projector = TimeSeriesProjector(self.window, self.stride)
+		X_new = projector.fit_transform(X)
+		
+		# Run vanilla dbscan on the vector space of the time series
+		super().fit(X_new)
+		clusters = set(self.labels_).difference({-1})
+		
+		# Compute centroids to be able to compute the anomaly score
 		centroids = []
 		for cluster in clusters:
-			cluster_points = np.argwhere(cluster_labels == cluster)
-			centroids.append(np.mean(spatial_data[cluster_points]))
-		
+			cluster_points = np.argwhere(self.labels_ == cluster)
+			centroids.append(np.mean(X_new[cluster_points]))
 		centroids = np.array(centroids)
-		anomalies = np.argwhere(cluster_labels == -1)
+		anomalies = np.argwhere(self.labels_ == -1)
 		anomalies = anomalies.reshape(anomalies.shape[0])
 		
-		self._windowed_anomalies = np.zeros(spatial_data.shape[0])
-		self._windowed_anomalies[anomalies] = 1
-		self._windowed_scores = self._compute_window_scores(spatial_data,
-															centroids)
+		window_anomalies = np.zeros(X_new.shape[0])
+		window_anomalies[anomalies] = 1
+		window_scores = self._compute_window_scores(X_new, centroids)
+		
+		# Compute the anomaly labels and scores on the initial dataset
+		if np.max(window_scores) == np.inf:
+			# There is no centroid, all points are anomalies
+			self.labels_ = np.ones(X.shape[0])
+			self.scores_ = np.ones(X.shape[0])
+		else:
+			# There is at least one centroid, anomaly scores are computed
+			self.labels_ = np.zeros(X.shape[0])
+			self.scores_ = np.zeros(X.shape[0])
+			
+			# Compute score of each point
+			for i in range(window_scores.shape[0]):
+				idx = i * self.stride
+				self.scores_[idx:idx + self.window] += window_scores[i]
+			self.scores_ = self.scores_ / projector.num_windows_
+			
+			if self.classification == "voting":
+				# Anomalies are computed by voting of window anomalies
+				for i in range(window_scores.shape[0]):
+					if window_scores[i] == 1:
+						idx = i * self.stride
+						self.labels_[idx:idx + self.window] += 1
+				self.labels_ = self.labels_ / projector.num_windows_
+				
+				true_anomalies = np.argwhere(self.labels_ > self.anomaly_threshold)
+				self.labels_ = np.zeros(self.labels_.shape)
+				self.labels_[true_anomalies] = 1
+			else:
+				self.labels_[np.argwhere(self.scores_ > self.anomaly_threshold)] = 1
+			
+			self.scores_ = self.scores_ / np.max(self.scores_)
+	
+	def fit_predict(self, X, y=None, sample_weight=None) -> np.ndarray:
+		"""Compute the anomalies on the time series.
+
+		Parameters
+		----------
+		X : array-like of shape (n_samples, n_features)
+			The training time series on which we have to train the data.
+		y : Ignored
+			Not used, present by API consistency by convention.
+		sample_weight : Ignored
+			Not used, present by API consistency by convention.
+
+		Returns
+		-------
+		labels
+			The labels for the points on the dataset.
+		"""
+		self.fit(X, y)
+		return self.labels_
 
 	def _compute_window_scores(self, spatial_data: np.ndarray,
 								centroids: np.array,

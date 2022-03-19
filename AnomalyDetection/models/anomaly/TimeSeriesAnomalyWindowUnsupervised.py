@@ -7,8 +7,7 @@ from typing import Tuple
 import numpy as np
 
 # Project imports
-from models.anomaly.AnomalyLearner import AnomalyLearner, \
-	project_time_series
+from models.anomaly.AnomalyLearner import AnomalyLearner
 
 
 class TimeSeriesAnomalyWindowUnsupervised(AnomalyLearner):

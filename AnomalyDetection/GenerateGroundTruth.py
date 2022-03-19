@@ -9,8 +9,8 @@ import numpy as np
 # Project imports
 
 DATASET_PATH = "dataset/"
-PURE_DATA = "ambient_temperature_system_failure.csv"
-PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
+PURE_DATA = "nyc_taxi.csv"
+PURE_DATA_KEY = "realKnownCause/nyc_taxi.csv"
 GROUND_TRUTHS_PATH = "dataset/combined_windows.json"
 
 # Determine path of the dataset

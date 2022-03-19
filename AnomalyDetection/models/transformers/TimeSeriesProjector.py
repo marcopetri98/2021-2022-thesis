@@ -13,21 +13,21 @@ class TimeSeriesProjector(BaseEstimator, TransformerMixin):
 	
 	Parameters
 	----------
-	window: int, default=200
+	window : int, default=200
 		The dimension of the window used to project the time series onto a
 		vector space.
-	stride: int, default=1
+	stride : int, default=1
 		The dimension of the step to make in the time series to produce to next
 		point of the vector space.
 		
 	Attributes
 	----------
-	num_windows_: ndarray of shape (n_samples,)
+	num_windows_ : ndarray of shape (n_samples,)
 		The number of times a point has been used to produce a vector of the
 		transformed space.
-	n_features_in_: int
+	n_features_in_ : int
 		Number of features seen during fit.
-	x_new_: ndarray of shape (n_samples, window)
+	x_new_ : ndarray of shape (n_samples, window)
 		The transformed data.
 	"""
 	

@@ -6,8 +6,9 @@ from statsmodels.tsa.stattools import adfuller, kpss, acf, pacf
 from statsmodels.tsa.seasonal import STL
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
+DATASET = "dataset/nyc_taxi.csv"
 MATPLOT_PRINT = False
-USE_STL = False
+USE_STL = True
 LAG = 1
 NLAGS = 20
 
@@ -40,24 +41,24 @@ def plot_acf_and_pacf(acf_values: np.ndarray,
 	plt.show()
 
 # Exploratory data analysis
-tmp_df = pd.read_csv("dataset/ambient_temperature_system_failure.csv")
+tmp_df = pd.read_csv(DATASET)
 timestamps = tmp_df["timestamp"]
-temperature = tmp_df["value"]
+values = tmp_df["value"]
 
 if MATPLOT_PRINT:
 	plt.figure(figsize=(16, 5))
-	plt.plot(timestamps, temperature, linewidth=0.5)
+	plt.plot(timestamps, values, linewidth=0.5)
 	plt.show()
 
-test, p_value, _, _, _, _ = adfuller(temperature)
+test, p_value, _, _, _, _ = adfuller(values)
 print("Statistical test of ADF is: ", test)
 print("Computed p-value of ADF is: ", p_value)
 
-test, p_value, _, _ = kpss(temperature)
+test, p_value, _, _ = kpss(values)
 print("Statistical test of KPSS is: ", test)
 print("Computed p-value of KPSS is: ", p_value)
 
-diff_tmp = np.array(temperature.diff(1))
+diff_tmp = np.array(values.diff(1))
 diff_tmp = diff_tmp[1:]
 diff_acf, diff_acf_conf = acf(diff_tmp, nlags=NLAGS, alpha=0.05)
 diff_pacf, diff_pacf_conf = pacf(diff_tmp, nlags=NLAGS, alpha=0.05)
@@ -82,7 +83,7 @@ if MATPLOT_PRINT:
 
 if USE_STL:
 	# Perform de-trending and de-seasonality
-	stl = STL(temperature, period=len(temperature), robust=True)
+	stl = STL(values, period=len(values), robust=True)
 	res = stl.fit()
 	
 	if MATPLOT_PRINT:
