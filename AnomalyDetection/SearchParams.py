@@ -27,13 +27,13 @@ FIRST_ROW = ["window",
 			 "min_samples",
 			 "performance"]
 DBSCAN_SPACE = [
-	Integer(2, 1000, name="window"),
+	Integer(2, 300, name="window"),
 	#Integer(1, 20, name="stride"),
 	#Categorical(["z-score", "centroid"], name="score_method"),
 	#Categorical(["voting", "points_score"], name="classification"),
 	#Real(0.0, 1.0, name="anomaly_threshold"),
-	Real(0.01, 20, name="eps"),
-	Integer(2, 100, name="min_samples")
+	Real(0.1, 20, name="eps"),
+	Integer(2, 50, name="min_samples")
 ]
 
 def dbscan_creator(**params):
@@ -69,9 +69,9 @@ ALGORITHM_SPACE = DBSCAN_SPACE
 ESTIMATOR_CREATOR = dbscan_creator
 MODEL_FOLDER = "dbscan"
 CHECK_FILE = "taxi_window_eps_minsamples"
-HAS_TO_LOAD_CHECKPOINT = False
+HAS_TO_LOAD_CHECKPOINT = True
 HAS_TO_TRAIN = True
-CALLS = 80
+CALLS = 300
 INITIAL_STARTS = 10
 
 def preprocess(X) -> np.ndarray:
