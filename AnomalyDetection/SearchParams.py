@@ -10,6 +10,7 @@ from skopt.callbacks import CheckpointSaver
 from skopt.space import Integer, Categorical, Real
 
 from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
+from models.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 
 #############################################
 #											#
@@ -18,7 +19,9 @@ from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
 #											#
 #											#
 #############################################
-FIRST_ROW = ["window",
+from models.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
+
+DBSCAN_ROW = ["window",
 			 #"stride",
 			 #"score_method",
 			 #"classification",
@@ -26,8 +29,9 @@ FIRST_ROW = ["window",
 			 "eps",
 			 "min_samples",
 			 "performance"]
+
 DBSCAN_SPACE = [
-	Integer(2, 300, name="window"),
+	Integer(2, 1500, name="window"),
 	#Integer(1, 20, name="stride"),
 	#Categorical(["z-score", "centroid"], name="score_method"),
 	#Categorical(["voting", "points_score"], name="classification"),
@@ -52,6 +56,60 @@ def dbscan_creator(**params):
 								   eps=eps,
 								   min_samples=min_samples)
 
+LOF_ROW = ["window",
+		   #"stride",
+		   #"classification",
+		   #"anomaly_threshold",
+		   "n_neighbors",
+		   "performance"]
+
+LOF_SPACE = [
+	Integer(2, 300, name="window"),
+	# Integer(1, 20, name="stride"),
+	# Categorical(["voting", "points_score"], name="classification"),
+	# Real(0.0, 1.0, name="anomaly_threshold"),
+	Integer(2, 100, name="n_neighbors")
+]
+
+def lof_creator(**params):
+	window = params["window"] if "window" in params.keys() else 200
+	stride = params["stride"] if "stride" in params.keys() else 1
+	classification = params["classification"] if "classification" in params.keys() else "voting"
+	anomaly_threshold = params["anomaly_threshold"] if "anomaly_threshold" in params.keys() else 0.0
+	n_neighbors = params["n_neighbors"] if "n_neighbors" in params.keys() else 0.5
+	return TimeSeriesAnomalyLOF(window=window,
+								stride=stride,
+								classification=classification,
+								anomaly_threshold=anomaly_threshold,
+								n_neighbors=n_neighbors)
+
+OSVM_ROW = ["window",
+			#"stride",
+			#"anomaly_threshold",
+			"tol",
+			"nu",
+			"performance"]
+
+OSVM_SPACE = [
+	Integer(2, 300, name="window"),
+	# Integer(1, 20, name="stride"),
+	# Real(0.0, 1.0, name="anomaly_threshold"),
+	Real(1e-7, 0.1, prior="log-uniform", name="tol"),
+	Real(0.01, 1, name="nu")
+]
+
+def osvm_creator(**params):
+	window = params["window"] if "window" in params.keys() else 200
+	stride = params["stride"] if "stride" in params.keys() else 1
+	anomaly_threshold = params["anomaly_threshold"] if "anomaly_threshold" in params.keys() else 0.0
+	tol = params["tol"] if "tol" in params.keys() else 1e-3
+	nu = params["nu"] if "nu" in params.keys() else 0.5
+	return TimeSeriesAnomalyOSVM(window=window,
+								stride=stride,
+								anomaly_threshold=anomaly_threshold,
+								tol=tol,
+								nu=nu)
+
 #############################################
 #											#
 #											#
@@ -59,19 +117,19 @@ def dbscan_creator(**params):
 #											#
 #											#
 #############################################
-DATASET = "nyc_taxi.csv"
+DATASET = "ambient_temperature_system_failure.csv"
 DATASET_FOLDER = "dataset/"
 TRAINING_PREFIX = "training_"
-TESTING_PREFIX = "test_"
-TRUTH_PREFIX = "truth"
 
-ALGORITHM_SPACE = DBSCAN_SPACE
-ESTIMATOR_CREATOR = dbscan_creator
-MODEL_FOLDER = "dbscan"
-CHECK_FILE = "taxi_window_eps_minsamples"
-HAS_TO_LOAD_CHECKPOINT = True
+TRAINED_AND_TESTED = True
+FIRST_ROW = OSVM_ROW
+ALGORITHM_SPACE = OSVM_SPACE
+ESTIMATOR_CREATOR = osvm_creator
+MODEL_FOLDER = "osvm"
+CHECK_FILE = "temperature_window_tol_nu"
+HAS_TO_LOAD_CHECKPOINT = False
 HAS_TO_TRAIN = True
-CALLS = 300
+CALLS = 10
 INITIAL_STARTS = 10
 
 def preprocess(X) -> np.ndarray:
@@ -112,7 +170,11 @@ def objective(**params):
 	
 	for train, test in cross_val_gen.split(data, data_labels):
 		try:
-			y_pred = estimator.fit_predict(data[test])
+			if TRAINED_AND_TESTED:
+				estimator.fit(data[train], data_labels[train])
+				y_pred = estimator.predict(data[test])
+			else:
+				y_pred = estimator.fit_predict(data[test])
 			k_fold_score += metrics.f1_score(data_labels[test], y_pred, zero_division=0)
 		except ValueError:
 			pass

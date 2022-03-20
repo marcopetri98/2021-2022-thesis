@@ -22,7 +22,7 @@ class TimeSeriesProjector(BaseEstimator, TransformerMixin):
 		
 	Attributes
 	----------
-	num_windows_ : ndarray of shape (n_samples,)
+	num_windows_ : ndarray of shape (n_samples)
 		The number of times a point has been used to produce a vector of the
 		transformed space.
 	n_features_in_ : int

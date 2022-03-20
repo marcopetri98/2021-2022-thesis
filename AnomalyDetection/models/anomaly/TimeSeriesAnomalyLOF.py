@@ -144,8 +144,8 @@ class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
 	
 	def __init__(self, window: int = 200,
 				 stride: int = 1,
-				 anomaly_threshold: float = 0.5,
-				 classification: str = "auto",
+				 classification: str = "voting",
+				 anomaly_threshold: float = 0.0,
 				 n_neighbors: int = 20,
 				 algorithm: str = 'auto',
 				 leaf_size: int = 30,
@@ -214,6 +214,11 @@ class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
 			self.scores_[idx:idx + self.window] += window_scores[i]
 		self.scores_ = self.scores_ / projector.num_windows_
 		
+		# Min-max normalization
+		self.scores_ = self.scores_.reshape((self.scores_.shape[0], 1))
+		self.scores_ = MinMaxScaler().fit_transform(self.scores_)
+		self.scores_ = self.scores_.reshape(self.scores_.shape[0])
+		
 		if self.classification == "voting":
 			# Anomalies are computed by voting of window anomalies
 			for i in range(window_scores.shape[0]):
@@ -227,11 +232,6 @@ class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
 			self.labels_[true_anomalies] = 1
 		else:
 			self.labels_[np.argwhere(self.scores_ > self.anomaly_threshold)] = 1
-		
-		# Min-max normalization
-		self.scores_ = self.scores_.reshape((self.scores_.shape[0], 1))
-		self.scores_ = MinMaxScaler().fit_transform(self.scores_)
-		self.scores_ = self.scores_.reshape(self.scores_.shape[0])
 	
 	def fit_predict(self, X, y=None, sample_weight=None) -> np.ndarray:
 		"""Compute the anomalies on the time series.
