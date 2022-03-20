@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import pandas as pd
 import skopt
@@ -9,16 +11,67 @@ from skopt.space import Integer, Categorical, Real
 
 from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
 
+#############################################
+#											#
+#											#
+#				INSTANTIATORS				#
+#											#
+#											#
+#############################################
+FIRST_ROW = ["window",
+			 #"stride",
+			 #"score_method",
+			 #"classification",
+			 #"anomaly_threshold",
+			 "eps",
+			 "min_samples",
+			 "performance"]
+DBSCAN_SPACE = [
+	Integer(2, 1000, name="window"),
+	#Integer(1, 20, name="stride"),
+	#Categorical(["z-score", "centroid"], name="score_method"),
+	#Categorical(["voting", "points_score"], name="classification"),
+	#Real(0.0, 1.0, name="anomaly_threshold"),
+	Real(0.01, 20, name="eps"),
+	Integer(2, 100, name="min_samples")
+]
+
+def dbscan_creator(**params):
+	window = params["window"] if "window" in params.keys() else 200
+	stride = params["stride"] if "stride" in params.keys() else 1
+	score_method = params["score_method"] if "score_method" in params.keys() else "centroid"
+	classification = params["classification"] if "classification" in params.keys() else "voting"
+	anomaly_threshold = params["anomaly_threshold"] if "anomaly_threshold" in params.keys() else 0.0
+	eps = params["eps"] if "eps" in params.keys() else 0.5
+	min_samples = params["min_samples"] if "min_samples" in params.keys() else 5
+	return TimeSeriesAnomalyDBSCAN(window=window,
+								   stride=stride,
+								   score_method=score_method,
+								   classification=classification,
+								   anomaly_threshold=anomaly_threshold,
+								   eps=eps,
+								   min_samples=min_samples)
+
+#############################################
+#											#
+#											#
+#		CONSTANTS AND PREPROCESSING			#
+#											#
+#											#
+#############################################
 DATASET = "nyc_taxi.csv"
 DATASET_FOLDER = "dataset/"
 TRAINING_PREFIX = "training_"
 TESTING_PREFIX = "test_"
 TRUTH_PREFIX = "truth"
 
+ALGORITHM_SPACE = DBSCAN_SPACE
+ESTIMATOR_CREATOR = dbscan_creator
 MODEL_FOLDER = "dbscan"
-CHECK_FILE = "19_03_2022"
+CHECK_FILE = "taxi_window_eps_minsamples"
 HAS_TO_LOAD_CHECKPOINT = False
-CALLS = 100
+HAS_TO_TRAIN = True
+CALLS = 80
 INITIAL_STARTS = 10
 
 def preprocess(X) -> np.ndarray:
@@ -34,34 +87,21 @@ data_labels = training_labels
 dataframe = training.copy()
 dataframe["value"] = data
 
-SEARCH_SPACE = [
-	Integer(2, 1000, name="window"),
-	#Integer(1, 20, name="stride"),
-	Categorical(["z-score", "centroid"], name="score_method"),
-	Categorical(["voting", "points_score"], name="classification"),
-	Real(0.0, 1.0, name="anomaly_threshold"),
-	Real(0.01, 20, name="eps"),
-	Integer(2, 100, name="min_samples")
-]
+#############################################
+#											#
+#											#
+#			ACTUAL OPTIMIZATION				#
+#											#
+#											#
+#############################################
+SEARCH_SPACE = ALGORITHM_SPACE
 
 global counter
 counter = 1
 
 @skopt.utils.use_named_args(SEARCH_SPACE)
 def objective(**params):
-	window = params["window"]
-	score_method = params["score_method"]
-	classification = params["classification"]
-	anomaly_threshold = params["anomaly_threshold"]
-	eps = params["eps"]
-	min_samples = params["min_samples"]
-	estimator = TimeSeriesAnomalyDBSCAN(window=window,
-										stride=1,
-										score_method=score_method,
-										classification=classification,
-										anomaly_threshold=anomaly_threshold,
-										eps=eps,
-										min_samples=min_samples)
+	estimator = ESTIMATOR_CREATOR(**params)
 	global counter
 	print("Runnin ", counter, " k-fold")
 	print("\tRun params: ", params)
@@ -103,11 +143,42 @@ def _runSkoptOptimization():
 	
 	return results
 
-res = _runSkoptOptimization()
-tries = [["window", "score_method", "classification", "anomaly_threshold", "eps", "min_samples", 1000]]
-for i in range(len(res.x_iters)):
-	elem = res.x_iters[i].copy()
-	elem.append(res.func_vals[i])
-	tries.append(elem)
-tries = np.array(tries, dtype=object)
-np.save("searches/" + MODEL_FOLDER + "/" + CHECK_FILE, tries)
+#############################################
+#											#
+#											#
+#					MAIN					#
+#											#
+#											#
+#############################################
+
+if HAS_TO_TRAIN:
+	start_time = time.time()
+	
+	res = _runSkoptOptimization()
+	tries = [FIRST_ROW]
+	for i in range(len(res.x_iters)):
+		elem = res.x_iters[i].copy()
+		elem.append(res.func_vals[i])
+		tries.append(elem)
+	tries = np.array(tries, dtype=object)
+	np.save("searches/" + MODEL_FOLDER + "/" + CHECK_FILE, tries)
+	
+	print("\n\n\nTHE TRAINING PROCESS LASTED: ", time.time() - start_time)
+else:
+	tries = np.load("searches/" + MODEL_FOLDER + "/" + CHECK_FILE + ".npy",
+					allow_pickle=True)
+	indices = (np.argsort(tries[1:, -1]) + 1).tolist()
+	indices.insert(0,0)
+	tries = tries[np.array(indices)]
+	
+	print("Total number of tries: ", tries.shape[0] - 1)
+	first = True
+	for config in tries:
+		if first:
+			first = False
+		else:
+			text = ""
+			for i in range(len(config)):
+				text += str(tries[0, i])
+				text += ": " + str(config[i]) + " "
+			print(text)
