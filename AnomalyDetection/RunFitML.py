@@ -3,23 +3,23 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
+from models.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
+from models.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 
 DUMMIES = ["all_1", "all_0", "random"]
-ALGORITHM = "dbscan"
+ALGORITHM = "iforest"
 
-DATASET = "nyc_taxi.csv"
+DATASET = "ambient_temperature_system_failure.csv"
 DATASET_FOLDER = "dataset/"
 TRAINING_PREFIX = "training_"
 TESTING_PREFIX = "test_"
 TRUTH_PREFIX = "truth"
 ALL_METRICS = True
-
-WINDOW = 30
-STRIDE = 1
+CHECK_OVERFITTING = False
 
 def preprocess(X) -> np.ndarray:
 	return StandardScaler().fit_transform(X)
+
 
 all = pd.read_csv(DATASET_FOLDER + "truth_" + DATASET)
 all_timestamps = all["timestamp"]
@@ -36,26 +36,41 @@ test_timestamps = test["timestamp"]
 test_data = test["value"]
 test_labels = test["target"]
 
-data = preprocess(np.array(test_data).reshape(test_data.shape[0], 1))
-data_labels = test_labels
+# Data used to train
+data = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
+data_labels = training_labels
+
+# Data used to test
+data_test = preprocess(np.array(test_data).reshape(test_data.shape[0], 1))
+data_test_labels = test_labels
+
+# Data used to evaluate
 dataframe = test.copy()
-dataframe["value"] = data
+dataframe["value"] = data_test
+
+if CHECK_OVERFITTING:
+	data_test = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
+	data_test_labels = training_labels
+	dataframe = training.copy()
+	dataframe["value"] = data_test
 
 match ALGORITHM:
-	case "dbscan":
-		model = TimeSeriesAnomalyDBSCAN(window=30,
-										eps=0.5,
-										min_samples=15,
-										metric="euclidean")
+	case "osvm":
+		model = TimeSeriesAnomalyOSVM(window=22,
+									  nu=0.97)
+		model.fit(data, data_labels)
+		
+	case "iforest":
+		model = TimeSeriesAnomalyIForest(window=240,
+										 n_estimators=100,
+										 max_samples=30,
+										 random_state=22)
 		model.fit(data)
-	
-	case "lof":
-		pass
 
-true_labels = data_labels
+true_labels = data_test_labels
 if ALGORITHM not in DUMMIES:
-	labels = model.labels_
-	scores = model.scores_
+	labels = model.predict(data_test)
+	scores = model.anomaly_score(data_test)
 else:
 	# With all_1 all are categorized as anomalies, with all_0 all the
 	# points are categorized as being normal. With random all the points are
@@ -68,7 +83,7 @@ else:
 		labels = np.zeros(num_pts)
 		scores = np.zeros(num_pts)
 	else:
-		labels = np.random.randint(0,2,num_pts)
+		labels = np.random.randint(0, 2, num_pts)
 		scores = labels == 1
 
 if ALL_METRICS:

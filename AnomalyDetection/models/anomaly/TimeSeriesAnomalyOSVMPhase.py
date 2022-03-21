@@ -2,36 +2,31 @@
 
 # External imports
 import numpy as np
-from sklearn.base import OutlierMixin
+from sklearn.base import OutlierMixin, clone
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import OneClassSVM
 from sklearn.utils import check_array, check_X_y
 
 # Project imports
+from sklearn.utils.validation import check_is_fitted
+
 from models.transformers.TimeSeriesProjector import TimeSeriesProjector
 
 
-class TimeSeriesAnomalyOSVM(OneClassSVM, OutlierMixin):
+class TimeSeriesAnomalyOSVMPhase(OneClassSVM, OutlierMixin):
 	"""OSVM adaptation to time series using scikit-learn.
 
     Parameters
     ----------
 	window : int
 		The length of the window to consider performing anomaly detection.
-		
+
 	stride : int
 		The offset at which the window is moved when computing the anomalies.
-	
-	classification: {"voting", "points_score"}, default="voting"
-		It defines the way in which a point is declared as anomaly. With voting,
-		a point is an anomaly if at least anomaly_threshold percentage of
-		windows containing the point agree in saying it is an anomaly. With
-		points_score, the points are considered anomalies if they're score is
-		above anomaly_threshold.
-	
+
 	anomaly_threshold: float, default=0.0
 		The threshold used to compute if a point is an anomaly or not.
-	
+
     kernel : {'linear', 'poly', 'rbf', 'sigmoid', 'precomputed'} or callable,  \
         default='rbf'
          Specifies the kernel type to be used in the algorithm.
@@ -79,13 +74,13 @@ class TimeSeriesAnomalyOSVM(OneClassSVM, OutlierMixin):
 
     max_iter : int, default=-1
         Hard limit on iterations within solver, or -1 for no limit.
-        
+
     See Also
     --------
     https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html
     """
 	
-	def __init__(self, window: int = 200,
+	def __init__(self, windows: list[int] = None,
 				 stride: int = 1,
 				 anomaly_threshold: float = 0,
 				 kernel: str = "rbf",
@@ -109,7 +104,10 @@ class TimeSeriesAnomalyOSVM(OneClassSVM, OutlierMixin):
 						 verbose=verbose,
 						 max_iter=max_iter)
 		
-		self.window = window
+		if windows is None:
+			windows = [200]
+		
+		self.windows = windows
 		self.stride = stride
 		self.anomaly_threshold = anomaly_threshold
 	
@@ -136,7 +134,7 @@ class TimeSeriesAnomalyOSVM(OneClassSVM, OutlierMixin):
 		"""
 		check_array(X)
 		if y is not None:
-			check_X_y(X,y)
+			check_X_y(X, y)
 			y = np.array(y)
 		
 		X = np.array(X)
@@ -150,15 +148,29 @@ class TimeSeriesAnomalyOSVM(OneClassSVM, OutlierMixin):
 			normal_data = X[normal_data]
 		else:
 			normal_data = X
-		projector = TimeSeriesProjector(self.window, self.stride)
-		X_new = projector.fit_transform(normal_data)
 		
-		# Run vanilla OSVM on the vector space of the time series
-		super().fit(X_new)
+		self.predictors_ = []
+		for embedding in self.windows:
+			projector = TimeSeriesProjector(embedding, self.stride)
+			X_new = projector.fit_transform(normal_data)
+			
+			# Run vanilla OSVM on the vector space of the time series
+			osvm = OneClassSVM(kernel=self.kernel,
+							   degree=self.degree,
+							   gamma=self.gamma,
+							   coef0=self.coef0,
+							   tol=self.tol,
+							   nu=self.nu,
+							   shrinking=self.shrinking,
+							   cache_size=self.cache_size,
+							   verbose=self.verbose,
+							   max_iter=self.max_iter)
+			osvm.fit(X_new)
+			self.predictors_.append(osvm)
 	
 	def predict(self, X) -> np.ndarray:
 		"""Predicts whether a sample is normal (0) or anomalous (1).
-		
+
 		Parameters
 		----------
 		X : array-like of shape (n_samples, n_features)
@@ -169,36 +181,41 @@ class TimeSeriesAnomalyOSVM(OneClassSVM, OutlierMixin):
 		label : ndarray of shape (n_samples)
 			The label associated to each point.
 		"""
+		check_is_fitted(self, ["predictors_"])
 		check_array(X)
 		X = np.array(X)
 		
-		# Project data onto the phase space
-		projector = TimeSeriesProjector(self.window, self.stride)
-		X_new = projector.fit_transform(X)
-		
-		# Predict labels for the phase space points (-1 is outlier and 1 inlier)
-		# Therefore, I multiply by -1
-		window_pred: np.ndarray = super().predict(X_new) * -1
-
-		# TODO: partially identical to DBSCAN code, find a way to avoid code duplication
-		predictions = np.zeros(X.shape[0])
-
-		# Anomalies are computed by voting of window anomalies
-		for i in range(window_pred.shape[0]):
-			if window_pred[i] == 1:
-				idx = i * self.stride
-				predictions[idx:idx + self.window] += 1
-		predictions = predictions / projector.num_windows_
+		predictions = []
+		for i in range(len(self.windows)):
+			# Project data onto the phase space
+			projector = TimeSeriesProjector(self.windows[i], self.stride)
+			X_new = projector.fit_transform(X)
 			
-		true_anomalies = np.argwhere(predictions > self.anomaly_threshold)
-		predictions = np.zeros(predictions.shape)
-		predictions[true_anomalies] = 1
+			# Predict labels for the phase space points
+			window_pred: np.ndarray = self.predictors_[i].predict(X_new)
+			
+			predictions.append(np.zeros(X.shape[0]))
+			
+			# Anomalies are computed by voting of window anomalies
+			for j in range(window_pred.shape[0]):
+				if window_pred[j] == 1:
+					idx = j * self.stride
+					predictions[i][idx:idx + self.windows[i]] = 1
 		
-		return predictions
+		anomaly_votes = np.zeros(X.shape[0])
+		for i in range(len(self.windows)):
+			averaged_votes = predictions[i] / len(self.windows)
+			anomaly_votes += averaged_votes
+		
+		true_anomalies = np.argwhere(anomaly_votes > self.anomaly_threshold)
+		anomaly_votes = np.zeros(anomaly_votes.shape)
+		anomaly_votes[true_anomalies] = 1
+		
+		return anomaly_votes
 	
-	def anomaly_score(self, X):
+	def decision_function(self, X):
 		"""Return the anomaly scores for the given data.
-		
+
 		Parameters
 		----------
 		X : array-like of shape (n_samples, n_features)
@@ -210,34 +227,41 @@ class TimeSeriesAnomalyOSVM(OneClassSVM, OutlierMixin):
 			The anomaly score associated to each point whose values are inside
 			[0, 1]. The higher the value, the more probable it is an anomaly.
 		"""
+		check_is_fitted(self, ["predictors_"])
 		check_array(X)
 		X = np.array(X)
 		
-		# Project data onto the phase space
-		projector = TimeSeriesProjector(self.window, self.stride)
-		X_new = projector.fit_transform(X)
-
-		# Predict labels for the phase space points
-		window_scores: np.ndarray = super().decision_function(X_new) * -1
-		window_scores = window_scores.reshape((window_scores.shape[0], 1))
-		window_scores = MinMaxScaler().fit_transform(window_scores)
-		window_scores = window_scores.reshape(window_scores.shape[0])
-
-		# TODO: partially identical to DBSCAN code, find a way to avoid code duplication
-		point_scores = np.zeros(X.shape[0])
+		scores = []
+		for i in range(len(self.windows)):
+			# Project data onto the phase space
+			projector = TimeSeriesProjector(self.windows[i], self.stride)
+			X_new = projector.fit_transform(X)
+			
+			# Predict labels for the phase space points
+			window_scores: np.ndarray = self.predictors_[i].decision_function(
+				X_new) * (-1)
+			window_scores = window_scores.reshape((window_scores.shape[0], 1))
+			window_scores = MinMaxScaler().fit_transform(window_scores)
+			window_scores = window_scores.reshape(window_scores.shape[0])
+			
+			scores.append(np.zeros(X.shape[0]))
+			# Anomalies are computed by voting of window anomalies
+			for j in range(window_scores.shape[0]):
+				idx = j * self.stride
+				scores[i][idx:idx + self.windows[i]] += window_scores[i]
+			scores[i] = scores[i] / projector.num_windows_
 		
-		# Compute score of each point
-		for i in range(window_scores.shape[0]):
-			idx = i * self.stride
-			point_scores[idx:idx + self.window] += window_scores[i]
-		point_scores = point_scores / projector.num_windows_
+		anomaly_scores = np.zeros(X.shape[0])
+		for i in range(len(self.windows)):
+			averaged_votes = scores[i] / len(self.windows)
+			anomaly_scores += averaged_votes
 		
 		# Min-max normalization
-		point_scores = point_scores.reshape((point_scores.shape[0], 1))
-		point_scores = MinMaxScaler().fit_transform(point_scores)
-		point_scores = point_scores.reshape(point_scores.shape[0])
+		anomaly_scores = anomaly_scores.reshape((anomaly_scores.shape[0], 1))
+		anomaly_scores = MinMaxScaler().fit_transform(anomaly_scores)
+		anomaly_scores = anomaly_scores.reshape(anomaly_scores.shape[0])
 		
-		return point_scores
+		return anomaly_scores
 	
 	def fit_predict(self, X, y=None, sample_weight=None) -> np.ndarray:
 		"""Compute the anomalies on the time series.

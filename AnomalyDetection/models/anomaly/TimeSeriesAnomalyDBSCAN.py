@@ -209,7 +209,7 @@ class TimeSeriesAnomalyDBSCAN(DBSCAN, OutlierMixin):
 			
 			if self.classification == "voting":
 				# Anomalies are computed by voting of window anomalies
-				for i in range(window_scores.shape[0]):
+				for i in range(window_anomalies.shape[0]):
 					if window_anomalies[i] == 1:
 						idx = i * self.stride
 						self.labels_[idx:idx + self.window] += 1

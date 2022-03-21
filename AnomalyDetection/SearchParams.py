@@ -68,7 +68,7 @@ LOF_SPACE = [
 	# Integer(1, 20, name="stride"),
 	# Categorical(["voting", "points_score"], name="classification"),
 	# Real(0.0, 1.0, name="anomaly_threshold"),
-	Integer(2, 100, name="n_neighbors")
+	Integer(2, 200, name="n_neighbors")
 ]
 
 def lof_creator(**params):
@@ -86,7 +86,7 @@ def lof_creator(**params):
 OSVM_ROW = ["window",
 			#"stride",
 			#"anomaly_threshold",
-			"tol",
+			#"tol",
 			"nu",
 			"performance"]
 
@@ -94,7 +94,7 @@ OSVM_SPACE = [
 	Integer(2, 300, name="window"),
 	# Integer(1, 20, name="stride"),
 	# Real(0.0, 1.0, name="anomaly_threshold"),
-	Real(1e-7, 0.1, prior="log-uniform", name="tol"),
+	# Real(1e-7, 0.1, prior="log-uniform", name="tol"),
 	Real(0.01, 1, name="nu")
 ]
 
@@ -121,15 +121,15 @@ DATASET = "ambient_temperature_system_failure.csv"
 DATASET_FOLDER = "dataset/"
 TRAINING_PREFIX = "training_"
 
-TRAINED_AND_TESTED = True
+TRAINED_AND_TESTED = False
 FIRST_ROW = OSVM_ROW
 ALGORITHM_SPACE = OSVM_SPACE
 ESTIMATOR_CREATOR = osvm_creator
 MODEL_FOLDER = "osvm"
-CHECK_FILE = "temperature_window_tol_nu"
-HAS_TO_LOAD_CHECKPOINT = False
+CHECK_FILE = "temperature_window_nu"
+HAS_TO_LOAD_CHECKPOINT = True
 HAS_TO_TRAIN = True
-CALLS = 10
+CALLS = 250
 INITIAL_STARTS = 10
 
 def preprocess(X) -> np.ndarray:

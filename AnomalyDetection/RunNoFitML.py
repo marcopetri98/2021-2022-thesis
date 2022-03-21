@@ -3,10 +3,11 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from models.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
+from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
+from models.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 
 DUMMIES = ["all_1", "all_0", "random"]
-ALGORITHM = "osvm"
+ALGORITHM = "lof"
 
 DATASET = "ambient_temperature_system_failure.csv"
 DATASET_FOLDER = "dataset/"
@@ -15,10 +16,8 @@ TESTING_PREFIX = "test_"
 TRUTH_PREFIX = "truth"
 ALL_METRICS = True
 
-
 def preprocess(X) -> np.ndarray:
 	return StandardScaler().fit_transform(X)
-
 
 all = pd.read_csv(DATASET_FOLDER + "truth_" + DATASET)
 all_timestamps = all["timestamp"]
@@ -35,28 +34,27 @@ test_timestamps = test["timestamp"]
 test_data = test["value"]
 test_labels = test["target"]
 
-# Data used to train
-data = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
-data_labels = training_labels
-
-# Data used to test
-data_test = preprocess(np.array(test_data).reshape(test_data.shape[0], 1))
-data_test_labels = test_labels
-
-# Data used to evaluate
+data = preprocess(np.array(test_data).reshape(test_data.shape[0], 1))
+data_labels = test_labels
 dataframe = test.copy()
-dataframe["value"] = test_data
+dataframe["value"] = data
 
 match ALGORITHM:
-	case "osvm":
-		model = TimeSeriesAnomalyOSVM(window=30,
-									  nu=0.9)
-		model.fit(data, data_labels)
+	case "dbscan":
+		model = TimeSeriesAnomalyDBSCAN(window=183,
+										eps=7.359,
+										min_samples=49)
+		model.fit(data)
+	
+	case "lof":
+		model = TimeSeriesAnomalyLOF(window=170,
+									 n_neighbors=199)
+		model.fit(data)
 
-true_labels = data_test_labels
+true_labels = data_labels
 if ALGORITHM not in DUMMIES:
-	labels = model.predict(data_test)
-	scores = model.score_samples(data_test)
+	labels = model.labels_
+	scores = model.scores_
 else:
 	# With all_1 all are categorized as anomalies, with all_0 all the
 	# points are categorized as being normal. With random all the points are
@@ -69,7 +67,7 @@ else:
 		labels = np.zeros(num_pts)
 		scores = np.zeros(num_pts)
 	else:
-		labels = np.random.randint(0, 2, num_pts)
+		labels = np.random.randint(0,2,num_pts)
 		scores = labels == 1
 
 if ALL_METRICS:
