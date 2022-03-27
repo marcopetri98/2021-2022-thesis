@@ -93,7 +93,7 @@ class TimeSeriesProjector(BaseEstimator, TransformerMixin):
 			current_data: np.ndarray = data[i:i + self.window]
 			current_data = current_data.reshape(current_data.shape[0])
 			self.x_new_.append(current_data.tolist())
-		
+			
 		self.x_new_ = np.array(self.x_new_)
 		
 		return self.x_new_

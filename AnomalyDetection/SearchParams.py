@@ -128,7 +128,7 @@ ESTIMATOR_CREATOR = osvm_creator
 MODEL_FOLDER = "osvm"
 CHECK_FILE = "temperature_window_nu"
 HAS_TO_LOAD_CHECKPOINT = True
-HAS_TO_TRAIN = True
+HAS_TO_TRAIN = False
 CALLS = 250
 INITIAL_STARTS = 10
 
@@ -182,11 +182,12 @@ def objective(**params):
 	
 	return 1 - k_fold_score
 
-def _runSkoptOptimization():
-	checkpoint_saver = CheckpointSaver("searches/" + MODEL_FOLDER + "/" + CHECK_FILE + ".pkl", compress=9)
+def _runSkoptOptimization(search_folder: str,
+						  filename: str):
+	checkpoint_saver = CheckpointSaver("searches/" + search_folder + "/" + filename + ".pkl", compress=9)
 	
 	if HAS_TO_LOAD_CHECKPOINT:
-		previous_checkpoint = skopt.load("searches/" + MODEL_FOLDER + "/" + CHECK_FILE + ".pkl")
+		previous_checkpoint = skopt.load("searches/" + search_folder + "/" + filename + ".pkl")
 		x0 = previous_checkpoint.x_iters
 		y0 = previous_checkpoint.func_vals
 		results = skopt.gp_minimize(objective,

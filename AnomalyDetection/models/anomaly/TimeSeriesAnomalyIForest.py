@@ -145,7 +145,7 @@ class TimeSeriesAnomalyIForest(IsolationForest, OutlierMixin):
 		projector = TimeSeriesProjector(self.window, self.stride)
 		X_new = projector.fit_transform(X)
 		
-		# Run vanilla LOF on the vector space of the time series
+		# Run vanilla
 		super().fit(X_new)
 		
 	def predict(self, X):

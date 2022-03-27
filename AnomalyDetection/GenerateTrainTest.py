@@ -7,15 +7,22 @@ import pandas as pd
 
 PERC_TRAIN = 0.8
 DATASET_PATH = "dataset/"
-TRAINING_PREFIX = "training_"
-TESTING_PREFIX = "test_"
-PURE_DATA = "nyc_taxi.csv"
-LABELLED_DATA = "truth_nyc_taxi.csv"
+TRAINING_PATH = DATASET_PATH + "training/"
+TESTING_PATH = DATASET_PATH + "testing/"
+ANNOTATED_PATH = DATASET_PATH + "annotated/"
+PURE_DATA = "ambient_temperature_system_failure.csv"
+DETAILED_DATA = "detailed_" + PURE_DATA
+NO_WINDOW = True
 
 # Determine path of the dataset
-labelled_data_path = DATASET_PATH + LABELLED_DATA
-training_data_path = DATASET_PATH + TRAINING_PREFIX + PURE_DATA
-testing_data_path = DATASET_PATH + TESTING_PREFIX + PURE_DATA
+if NO_WINDOW:
+	labelled_data_path = ANNOTATED_PATH + PURE_DATA
+	training_data_path = TRAINING_PATH + PURE_DATA
+	testing_data_path = TESTING_PATH + PURE_DATA
+else:
+	labelled_data_path = ANNOTATED_PATH + DETAILED_DATA
+	training_data_path = TRAINING_PATH + DETAILED_DATA
+	testing_data_path = TESTING_PATH + DETAILED_DATA
 
 # Split in training and test
 labelled_dataset = pd.read_csv(labelled_data_path)

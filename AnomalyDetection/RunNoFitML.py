@@ -7,29 +7,30 @@ from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
 from models.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 
 DUMMIES = ["all_1", "all_0", "random"]
-ALGORITHM = "lof"
+ALGORITHM = "dbscan"
 
 DATASET = "ambient_temperature_system_failure.csv"
-DATASET_FOLDER = "dataset/"
-TRAINING_PREFIX = "training_"
-TESTING_PREFIX = "test_"
-TRUTH_PREFIX = "truth"
+DATASET_PATH = "dataset/"
+TRAINING_PATH = DATASET_PATH + "training/"
+TESTING_PATH = DATASET_PATH + "testing/"
+ANNOTATED_PATH = DATASET_PATH + "annotated/"
 ALL_METRICS = True
+CHECK_OVERFITTING = False
 
 def preprocess(X) -> np.ndarray:
 	return StandardScaler().fit_transform(X)
 
-all = pd.read_csv(DATASET_FOLDER + "truth_" + DATASET)
+all = pd.read_csv(ANNOTATED_PATH + DATASET)
 all_timestamps = all["timestamp"]
 all_data = all["value"]
 all_labels = all["target"]
 
-training = pd.read_csv(DATASET_FOLDER + TRAINING_PREFIX + DATASET)
+training = pd.read_csv(TRAINING_PATH + DATASET)
 training_timestamps = training["timestamp"]
 training_data = training["value"]
 training_labels = training["target"]
 
-test = pd.read_csv(DATASET_FOLDER + TESTING_PREFIX + DATASET)
+test = pd.read_csv(TESTING_PATH + DATASET)
 test_timestamps = test["timestamp"]
 test_data = test["value"]
 test_labels = test["target"]
@@ -39,11 +40,17 @@ data_labels = test_labels
 dataframe = test.copy()
 dataframe["value"] = data
 
+if CHECK_OVERFITTING:
+	data = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
+	data_labels = training_labels
+	dataframe = training.copy()
+	dataframe["value"] = data
+
 match ALGORITHM:
 	case "dbscan":
-		model = TimeSeriesAnomalyDBSCAN(window=183,
-										eps=7.359,
-										min_samples=49)
+		model = TimeSeriesAnomalyDBSCAN(window=3,
+										eps=0.1,
+										min_samples=5)
 		model.fit(data)
 	
 	case "lof":

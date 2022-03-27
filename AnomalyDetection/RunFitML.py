@@ -46,7 +46,7 @@ data_test_labels = test_labels
 
 # Data used to evaluate
 dataframe = test.copy()
-dataframe["value"] = data_test
+dataframe["value"] = test_data
 
 if CHECK_OVERFITTING:
 	data_test = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
@@ -56,14 +56,15 @@ if CHECK_OVERFITTING:
 
 match ALGORITHM:
 	case "osvm":
-		model = TimeSeriesAnomalyOSVM(window=22,
-									  nu=0.97)
+		model = TimeSeriesAnomalyOSVM(window=159,
+									  nu=0.48)
 		model.fit(data, data_labels)
 		
 	case "iforest":
-		model = TimeSeriesAnomalyIForest(window=240,
-										 n_estimators=100,
-										 max_samples=30,
+		model = TimeSeriesAnomalyIForest(window=5,
+										 #n_estimators=100,
+										 contamination=0.004,
+										 #max_samples=30,
 										 random_state=22)
 		model.fit(data)
 
