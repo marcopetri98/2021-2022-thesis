@@ -27,7 +27,7 @@ def plot_roc_curve(true_labels: np.ndarray,
 	plt.title("ROC Curve")
 	plt.xlabel("Fallout [FP / (FP + TN)]")
 	plt.ylabel("Recall [TP / (FN + TP)]")
-	fig.show()
+	plt.show()
 
 def plot_precision_recall_curve(true_labels: np.ndarray,
 								true_scores: np.ndarray,
@@ -47,7 +47,7 @@ def plot_precision_recall_curve(true_labels: np.ndarray,
 	plt.title("Precision-Recall Curve")
 	plt.xlabel("Recall [TP / (FN + TP)]")
 	plt.ylabel("Precision [TP / (FP + TP)]")
-	fig.show()
+	plt.show()
 
 def plot_confusion_matrix(confusion_matrix: np.ndarray,
 						  fig_size: Tuple = (6, 6)) -> None:
@@ -57,7 +57,7 @@ def plot_confusion_matrix(confusion_matrix: np.ndarray,
 	plt.title("Confusion matrix")
 	plt.xlabel("Predicted values")
 	plt.ylabel("True values")
-	fig.show()
+	plt.show()
 
 def plot_time_series_ndarray(array: np.ndarray,
 							 num_ticks: int = 5,
@@ -76,7 +76,7 @@ def plot_time_series_ndarray(array: np.ndarray,
 			 linewidth=0.5)
 	plt.xticks(indexes, ticks)
 	plt.title("Time series data")
-	fig.show()
+	plt.show()
 
 def plot_univariate_time_series(dataframe: pd.DataFrame,
 								index_column: str = "timestamp",
@@ -103,7 +103,7 @@ def plot_univariate_time_series(dataframe: pd.DataFrame,
 								  value_column,
 								  target_column,
 								  axs)
-	fig.show()
+	plt.show()
 
 def plot_univariate_time_series_predictions(dataframe: pd.DataFrame,
 											predictions: np.ndarray,
@@ -140,7 +140,7 @@ def plot_univariate_time_series_predictions(dataframe: pd.DataFrame,
 				linewidth=0.5)
 	axs[2].set_xticks(indexes, ticks)
 	axs[2].set_title("Time series predictions")
-	fig.show()
+	plt.show()
 
 def __compute_idx_ticks(dataframe: pd.DataFrame,
 						num_ticks: int,

@@ -17,13 +17,17 @@ ANNOTATED_PATH = DATASET_PATH + "annotated/"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
 
+
 def preprocess(X) -> np.ndarray:
 	return StandardScaler().fit_transform(X)
 
-all = pd.read_csv(ANNOTATED_PATH + DATASET)
-all_timestamps = all["timestamp"]
-all_data = all["value"]
-all_labels = all["target"]
+
+model = None
+
+all_df = pd.read_csv(ANNOTATED_PATH + DATASET)
+all_timestamps = all_df["timestamp"]
+all_data = all_df["value"]
+all_labels = all_df["target"]
 
 training = pd.read_csv(TRAINING_PATH + DATASET)
 training_timestamps = training["timestamp"]
@@ -41,7 +45,8 @@ dataframe = test.copy()
 dataframe["value"] = data
 
 if CHECK_OVERFITTING:
-	data = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
+	data = preprocess(
+		np.array(training_data).reshape(training_data.shape[0], 1))
 	data_labels = training_labels
 	dataframe = training.copy()
 	dataframe["value"] = data
@@ -52,7 +57,7 @@ match ALGORITHM:
 										eps=0.1,
 										min_samples=5)
 		model.fit(data)
-	
+
 	case "lof":
 		model = TimeSeriesAnomalyLOF(window=170,
 									 n_neighbors=199)
@@ -74,7 +79,7 @@ else:
 		labels = np.zeros(num_pts)
 		scores = np.zeros(num_pts)
 	else:
-		labels = np.random.randint(0,2,num_pts)
+		labels = np.random.randint(0, 2, num_pts)
 		scores = labels == 1
 
 if ALL_METRICS:
