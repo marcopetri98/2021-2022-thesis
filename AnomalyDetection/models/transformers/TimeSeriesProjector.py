@@ -37,23 +37,6 @@ class TimeSeriesProjector(BaseEstimator, TransformerMixin):
 		self.window = window
 		self.stride = stride
 	
-	def fit(self, X, y=None) -> np.ndarray:
-		"""Compute the new space.
-		
-		Parameters
-		----------
-		X : array-like of shape (n_samples, n_features)
-			The input data to be transformed.
-		y : Ignored
-			Not used, present by API consistency by convention.
-
-		Returns
-		-------
-		X_new : ndarray of shape (n_samples, window)
-			The transformed data.
-		"""
-		return self.fit_transform(X, y)
-	
 	def fit_transform(self, X, y=None, **fit_params) -> np.ndarray:
 		"""Compute the new space.
 

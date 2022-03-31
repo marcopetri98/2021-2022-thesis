@@ -3,16 +3,20 @@ from typing import Union, Callable
 
 # External imports
 import numpy as np
-from sklearn.base import OutlierMixin
+from sklearn.base import OutlierMixin, BaseEstimator
 from sklearn.neighbors import LocalOutlierFactor
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import check_array
 
 # Project imports
+from sklearn.utils.validation import check_is_fitted
+
+from models.anomaly.IAnomaly import IAnomaly
+from models.transformers.TimeSeriesAnomalyLabeller import TimeSeriesAnomalyLabeller
+from models.transformers.TimeSeriesAnomalyScorer import TimeSeriesAnomalyScorer
 from models.transformers.TimeSeriesProjector import TimeSeriesProjector
 
 
-class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
+class TimeSeriesAnomalyLOF(BaseEstimator, OutlierMixin, IAnomaly):
 	"""LOF adapter for time series.
 
 	It is a wrapper of the scikit-learn LOF approach. It uses the
@@ -28,6 +32,12 @@ class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
 	stride : int
 		The offset at which the window is moved when computing the anomalies.
 	
+	scaling: {"none", "minmax"}, default="minmax"
+		The scaling method to scale the anomaly scores.
+
+	scoring: {"average"}, default="average"
+		The scoring method used compute the anomaly scores.
+
 	classification: {"voting", "points_score"}, default="voting"
 		It defines the way in which a point is declared as anomaly. With voting,
 		a point is an anomaly if at least anomaly_threshold percentage of
@@ -35,97 +45,12 @@ class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
 		points_score, the points are considered anomalies if they're score is
 		above anomaly_threshold.
 	
-	anomaly_threshold: float, default=0.0
-		The threshold used to compute if a point is an anomaly or not.
-	
-	n_neighbors : int, default=20
-		Number of neighbors to use by default for :meth:`kneighbors` queries.
-		If n_neighbors is larger than the number of samples provided,
-		all samples will be used.
+	anomaly_threshold: float, default=None
+		The threshold used to compute if a point is an anomaly or not. It will
+		be passed to TimeSeriesAnomalyLabeller, see it for more details.
 
-	algorithm : {'auto', 'ball_tree', 'kd_tree', 'brute'}, default='auto'
-		Algorithm used to compute the nearest neighbors:
-
-		- 'ball_tree' will use :class:`BallTree`
-		- 'kd_tree' will use :class:`KDTree`
-		- 'brute' will use a brute-force search.
-		- 'auto' will attempt to decide the most appropriate algorithm
-		  based on the values passed to :meth:`fit` method.
-
-		Note: fitting on sparse input will override the setting of
-		this parameter, using brute force.
-
-	leaf_size : int, default=30
-		Leaf is size passed to :class:`BallTree` or :class:`KDTree`. This can
-		affect the speed of the construction and query, as well as the memory
-		required to store the tree. The optimal value depends on the
-		nature of the problem.
-
-	metric : str or callable, default='minkowski'
-		The metric is used for distance computation. Any metric from scikit-learn
-		or scipy.spatial.distance can be used.
-
-		If metric is "precomputed", X is assumed to be a distance matrix and
-		must be square. X may be a sparse matrix, in which case only "nonzero"
-		elements may be considered neighbors.
-
-		If metric is a callable function, it is called on each
-		pair of instances (rows) and the resulting value recorded. The callable
-		should take two arrays as input and return one value indicating the
-		distance between them. This works for Scipy's metrics, but is less
-		efficient than passing the metric name as a string.
-
-		Valid values for metric are:
-
-		- from scikit-learn: ['cityblock', 'cosine', 'euclidean', 'l1', 'l2',
-		  'manhattan']
-
-		- from scipy.spatial.distance: ['braycurtis', 'canberra', 'chebyshev',
-		  'correlation', 'dice', 'hamming', 'jaccard', 'kulsinski',
-		  'mahalanobis', 'minkowski', 'rogerstanimoto', 'russellrao',
-		  'seuclidean', 'sokalmichener', 'sokalsneath', 'sqeuclidean',
-		  'yule']
-
-		See the documentation for scipy.spatial.distance for details on these
-		metrics:
-		https://docs.scipy.org/doc/scipy/reference/spatial.distance.html.
-
-	p : int, default=2
-		Parameter for the Minkowski metric from
-		:func:`sklearn.metrics.pairwise.pairwise_distances`. When p = 1, this
-		is equivalent to using manhattan_distance (l1), and euclidean_distance
-		(l2) for p = 2. For arbitrary p, minkowski_distance (l_p) is used.
-
-	metric_params : dict, default=None
-		Additional keyword arguments for the metric function.
-
-	contamination : 'auto' or float, default='auto'
-		The amount of contamination of the data set, i.e. the proportion
-		of outliers in the data set. When fitting this is used to define the
-		threshold on the scores of the samples.
-
-		- if 'auto', the threshold is determined as in the
-		  original paper,
-		- if a float, the contamination should be in the range (0, 0.5].
-
-		.. versionchanged:: 0.22
-		   The default value of ``contamination`` changed from 0.1
-		   to ``'auto'``.
-
-	novelty : bool, default=False
-		By default, LocalOutlierFactor is only meant to be used for outlier
-		detection (novelty=False). Set novelty to True if you want to use
-		LocalOutlierFactor for novelty detection. In this case be aware that
-		you should only use predict, decision_function and score_samples
-		on new unseen data and not on the training set.
-
-		.. versionadded:: 0.20
-
-	n_jobs : int, default=None
-		The number of parallel jobs to run for neighbors search.
-		``None`` means 1 unless in a :obj:`joblib.parallel_backend` context.
-		``-1`` means using all processors. See :term:`Glossary <n_jobs>`
-		for more details.
+	anomaly_contamination: float, default=0.01
+		The percentage of anomaly points in the dataset.
 	
 	Attributes
 	----------
@@ -138,14 +63,18 @@ class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
 	
 	See Also
 	--------
+	For all the other parameters, see the scikit-learn implementation.
 	https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.LocalOutlierFactor.html
 	"""
-	CLASSIFICATIONS = ["voting", "points_score"]
+	CLASSIFICATIONS = TimeSeriesAnomalyLabeller.ACCEPTED_LABELLING_METHODS
 	
 	def __init__(self, window: int = 200,
 				 stride: int = 1,
 				 classification: str = "voting",
-				 anomaly_threshold: float = 0.0,
+				 scaling: str = "minmax",
+				 scoring: str = "average",
+				 anomaly_threshold: float = None,
+				 anomaly_contamination: float = 0.01,
 				 n_neighbors: int = 20,
 				 algorithm: str = 'auto',
 				 leaf_size: int = 30,
@@ -155,84 +84,137 @@ class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
 				 contamination: Union[str, float] = 'auto',
 				 novelty: bool = False,
 				 n_jobs: int = None):
-		super().__init__(n_neighbors,
-						 algorithm=algorithm,
-						 leaf_size=leaf_size,
-						 metric=metric,
-						 p=p,
-						 metric_params=metric_params,
-						 contamination=contamination,
-						 novelty=novelty,
-						 n_jobs=n_jobs)
+		super().__init__()
+
+		self.n_neighbors = n_neighbors
+		self.algorithm = algorithm
+		self.leaf_size = leaf_size
+		self.metric = metric
+		self.p = p
+		self.metric_params = metric_params
+		self.contamination = contamination
+		self.novelty = novelty
+		self.n_jobs = n_jobs
+
+		self.lof: LocalOutlierFactor = None
 		self.window = window
 		self.stride = stride
 		self.anomaly_threshold = anomaly_threshold
 		self.classification = classification
-	
-	def fit(self, X, y=None, sample_weight=None) -> None:
-		"""Compute the anomalies on the time series.
-		
+		self.scaling = scaling
+		self.scoring = scoring
+		self.anomaly_contamination = anomaly_contamination
+
+		self._check_parameters()
+
+	def set_params(self, **params):
+		super().set_params(**params)
+		self._check_parameters()
+
+	def anomaly_score(self, X):
+		"""Returns the anomaly score of the points.
+
+		X : array-like of shape (n_samples, n_features)
+			Data for which we want to predict whether the points are normal or
+			abnormal.
+
+		Returns
+		-------
+		scores : ndarray of shape (n_samples,)
+			The scores for the points between 0 and 1. The higher, the more
+			abnormal. If threshold is not None, points above threshold are
+			labelled as anomalies. Otherwise, see how points are labelled.
+		"""
+		check_array(X)
+		X = np.array(X)
+
+		if self.lof.novelty:
+			# If the method is used as novelty detection, scores are computed
+			# Project time series onto vector space
+			projector = TimeSeriesProjector(self.window, self.stride)
+			X_new = projector.fit_transform(X)
+
+			# Predict the if the given points are abnormal
+			window_scores = self.lof.decision_function(X_new)
+			window_scores = window_scores * -1
+
+			# Compute scores and labels for points
+			point_scores = self._compute_scores(window_scores,
+												projector.num_windows_)
+		else:
+			# If the method is used as unsupervised, labels are already there
+			check_is_fitted(self, ["scores_", "labels_"])
+			point_scores = self.scores_
+
+		return point_scores
+
+	def fit(self, X, y=None):
+		"""Fits the model with the given training data points.
+
 		Parameters
 		----------
 		X : array-like of shape (n_samples, n_features)
-			The training time series on which we have to train the data.
+			The training time series on which we have to train the data. Note
+			that these data must be composed of only normal data and not of
+			abnormal data.
 		y : Ignored
-			Not used, present by API consistency by convention.
-		sample_weight : Ignored
 			Not used, present by API consistency by convention.
 
 		Returns
 		-------
 		None
-			Fits the model to the data.
+			Fitted instance of itself.
 		"""
-		if self.classification not in self.CLASSIFICATIONS:
-			raise ValueError("The classification must be one of",
-							 self.CLASSIFICATIONS)
-		check_array(X)
 		X = np.array(X)
-		
+
 		# Project time series onto vector space
 		projector = TimeSeriesProjector(self.window, self.stride)
 		X_new = projector.fit_transform(X)
-		
+
 		# Run vanilla LOF on the vector space of the time series
-		super().fit(X_new)
-		
-		anomalies = np.argwhere(self.negative_outlier_factor_ < self.offset_)
+		self._lof()
+		self.lof.fit(X_new)
+
+	def predict(self, X=None):
+		"""Computes the prediction for the given data.
+
+		Parameters
+		----------
+		X : array-like of shape (n_samples, n_features)
+			Data for which we want to predict whether the points are normal or
+			abnormal.
+
+		Returns
+		-------
+		labels : ndarray of shape (n_samples,)
+			The labels for the points on the dataset.
+		"""
+		if not self.novelty:
+			raise ValueError("fit_predict is available only when novelty is"
+							 " False")
+		check_array(X)
+		X = np.array(X)
+
+		# Project time series onto vector space
+		projector = TimeSeriesProjector(self.window, self.stride)
+		X_new = projector.fit_transform(X)
+
+		# Predict the if the given points are abnormal
+		window_scores = self.lof.decision_function(X_new)
+		anomalies = np.argwhere(window_scores < 0)
 		window_anomalies = np.zeros(X_new.shape[0])
 		window_anomalies[anomalies] = 1
-		window_scores = - self.negative_outlier_factor_
-		
-		# TODO: Identical to DBSCAN code, find a way to avoid code duplication
-		self.labels_ = np.zeros(X.shape[0])
-		self.scores_ = np.zeros(X.shape[0])
-		
-		# Compute score of each point
-		for i in range(window_scores.shape[0]):
-			idx = i * self.stride
-			self.scores_[idx:idx + self.window] += window_scores[i]
-		self.scores_ = self.scores_ / projector.num_windows_
-		
-		# Min-max normalization
-		self.scores_ = self.scores_.reshape((self.scores_.shape[0], 1))
-		self.scores_ = MinMaxScaler().fit_transform(self.scores_)
-		self.scores_ = self.scores_.reshape(self.scores_.shape[0])
-		
-		if self.classification == "voting":
-			# Anomalies are computed by voting of window anomalies
-			for i in range(window_scores.shape[0]):
-				if window_anomalies[i] == 1:
-					idx = i * self.stride
-					self.labels_[idx:idx + self.window] += 1
-			self.labels_ = self.labels_ / projector.num_windows_
-			
-			true_anomalies = np.argwhere(self.labels_ > self.anomaly_threshold)
-			self.labels_ = np.zeros(self.labels_.shape)
-			self.labels_[true_anomalies] = 1
-		else:
-			self.labels_[np.argwhere(self.scores_ > self.anomaly_threshold)] = 1
-	
+		window_scores = window_scores * -1
+
+		# Compute scores and labels for points
+		point_scores = self._compute_scores(window_scores,
+											projector.num_windows_)
+		point_labels = self._compute_labels(window_anomalies,
+											   projector.num_windows_,
+											   point_scores)
+
+		return point_labels
+
 	def fit_predict(self, X, y=None, sample_weight=None) -> np.ndarray:
 		"""Compute the anomalies on the time series.
 
@@ -247,8 +229,115 @@ class TimeSeriesAnomalyLOF(LocalOutlierFactor, OutlierMixin):
 
 		Returns
 		-------
-		labels
+		labels : ndarray of shape (n_samples,)
 			The labels for the points on the dataset.
 		"""
-		self.fit(X, y)
+		if self.novelty:
+			raise ValueError("fit_predict is available only when novelty is"
+							 " False")
+		check_array(X)
+		X = np.array(X)
+
+		# Project time series onto vector space
+		projector = TimeSeriesProjector(self.window, self.stride)
+		X_new = projector.fit_transform(X)
+
+		# Run vanilla LOF on the vector space of the time series
+		self._lof()
+		self.lof.fit_predict(X_new)
+
+		anomalies = np.argwhere(self.lof.negative_outlier_factor_ < self.lof.offset_)
+		window_anomalies = np.zeros(X_new.shape[0])
+		window_anomalies[anomalies] = 1
+		window_scores = - self.lof.negative_outlier_factor_
+
+		# Compute scores and labels for points
+		self.scores_ = self._compute_scores(window_scores,
+											projector.num_windows_)
+		self.labels_ = self._compute_labels(window_anomalies,
+											   projector.num_windows_,
+											   self.scores_)
 		return self.labels_
+
+	def _compute_scores(self, window_scores: np.ndarray,
+						num_windows_per_point: np.ndarray) -> np.ndarray:
+		"""Compute the score for each point.
+
+		Parameters
+		----------
+		window_scores : ndarray of shape (n_windows,)
+			The score of each window.
+
+		num_windows_per_point : ndarray of shape (n_samples,)
+			Numer of windows containing the point.
+
+		Returns
+		-------
+		scores : ndarray of shape (n_samples,)
+			The scores of each point.
+		"""
+		scorer = TimeSeriesAnomalyScorer(self.window,
+										 self.stride,
+										 self.scaling,
+										 self.scoring)
+		return scorer.fit_transform(window_scores,
+									num_windows_per_point)
+
+	def _compute_labels(self, window_anomalies: np.ndarray,
+						num_windows_per_point: np.ndarray,
+						scores: np.ndarray) -> np.ndarray:
+		"""Compute the label for each point.
+
+		Parameters
+		----------
+		window_anomalies : ndarray of shape (n_windows,)
+			The label of each window.
+
+		num_windows_per_point : ndarray of shape (n_samples,)
+			Numer of windows containing the point.
+
+		scores : ndarray of shape (n_samples,)
+			The scores of each point.
+
+		Returns
+		-------
+		labels : ndarray of shape (n_samples,)
+			Labels for the points.
+		"""
+		labeller = TimeSeriesAnomalyLabeller(self.window,
+											 self.stride,
+											 self.anomaly_threshold,
+											 self.anomaly_contamination,
+											 self.classification)
+		labels, _ = labeller.fit_transform(window_anomalies,
+										   num_windows_per_point,
+										   scores=scores)
+		return labels
+
+	def _check_parameters(self) -> None:
+		"""Checks that the objects parameters are correct.
+
+		Returns
+		-------
+		None
+		"""
+		if self.classification not in self.CLASSIFICATIONS:
+			raise ValueError("The classification must be one of",
+								 self.CLASSIFICATIONS)
+
+	def _lof(self) -> None:
+		"""Instantiates the LocalOutlierFactor model as specified.
+
+		Returns
+		-------
+		None
+		"""
+		self.lof = LocalOutlierFactor(self.n_neighbors,
+									  algorithm=self.algorithm,
+									  leaf_size=self.leaf_size,
+									  metric=self.metric,
+									  p=self.p,
+									  metric_params=self.metric_params,
+									  contamination=self.contamination,
+									  novelty=self.novelty,
+									  n_jobs=self.n_jobs)
