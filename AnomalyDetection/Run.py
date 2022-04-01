@@ -17,7 +17,7 @@ from models.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 #								#
 #								#
 #################################
-ALGORITHM = "dbscan"
+ALGORITHM = "iforest"
 
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
@@ -28,9 +28,9 @@ TESTING_PATH = DATASET_PATH + "testing/"
 ANNOTATED_PATH = DATASET_PATH + "annotated/"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
-ALL_DATA = True
-UNSUPERVISED = True
-SELF_SUPERVISED = False
+ALL_DATA = False
+UNSUPERVISED = False
+SELF_SUPERVISED = True
 
 
 def preprocess(X) -> np.ndarray:
@@ -128,16 +128,18 @@ elif SELF_SUPERVISED and ALGORITHM == "lof":
 								 novelty=True)
 	model.fit(train)
 elif SELF_SUPERVISED and ALGORITHM == "osvm":
-	model = TimeSeriesAnomalyOSVM(window=159,
-								  nu=0.48)
-	model.fit(data, data_labels)
+	model = TimeSeriesAnomalyOSVM(window=100,
+								  nu=0.4,
+								  classification="points_score",
+								  anomaly_contamination=0.0015)
+	model.fit(train)
 elif SELF_SUPERVISED and ALGORITHM == "iforest":
 	model = TimeSeriesAnomalyIForest(window=5,
 									 # n_estimators=100,
 									 contamination=0.004,
 									 # max_samples=30,
 									 random_state=22)
-	model.fit(data)
+	model.fit(train)
 
 #################################
 #								#
