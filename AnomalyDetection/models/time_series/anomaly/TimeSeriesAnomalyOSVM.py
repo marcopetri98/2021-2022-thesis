@@ -3,15 +3,14 @@
 # External imports
 import numpy as np
 from sklearn.base import OutlierMixin, BaseEstimator
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import OneClassSVM
 from sklearn.utils import check_array, check_X_y
 
 # Project imports
-from models.transformers.TimeSeriesAnomalyLabeller import \
+from models.time_series.transformers.TimeSeriesAnomalyLabeller import \
 	TimeSeriesAnomalyLabeller
-from models.transformers.TimeSeriesAnomalyScorer import TimeSeriesAnomalyScorer
-from models.transformers.TimeSeriesProjector import TimeSeriesProjector
+from models.time_series.transformers.TimeSeriesAnomalyScorer import TimeSeriesAnomalyScorer
+from models.time_series.transformers.TimeSeriesProjector import TimeSeriesProjector
 
 
 class TimeSeriesAnomalyOSVM(BaseEstimator, OutlierMixin):

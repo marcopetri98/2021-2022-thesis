@@ -10,7 +10,7 @@ import tensorflow as tf
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from models.anomaly.deep_learning.TimeSeriesAnomalyWindowDL import TimeSeriesAnomalyWindowDL
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyWindowDL import TimeSeriesAnomalyWindowDL
 
 
 class TimeSeriesAnomalyAutoregressive(TimeSeriesAnomalyWindowDL):

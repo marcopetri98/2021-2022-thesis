@@ -3,10 +3,10 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from models.anomaly.deep_learning.TimeSeriesAnomalyGRU import \
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyGRU import \
 	TimeSeriesAnomalyGRU
-from models.anomaly.deep_learning.TimeSeriesAnomalyLSTM import TimeSeriesAnomalyLSTM
-from models.anomaly.deep_learning.TimeSeriesAnomalyLSTMAutoencoder import \
+from models.time_series.anomaly.deep_learning import TimeSeriesAnomalyLSTM
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyLSTMAutoencoder import \
 	TimeSeriesAnomalyLSTMAutoencoder
 
 DUMMIES = ["all_1", "all_0", "random"]

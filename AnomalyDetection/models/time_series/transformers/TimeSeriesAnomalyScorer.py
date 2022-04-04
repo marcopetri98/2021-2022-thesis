@@ -16,11 +16,14 @@ class TimeSeriesAnomalyScorer(BaseEstimator, TransformerMixin):
 	----------
 	window : int
 		The length of the windows over which the scoring must be performed.
+		
 	stride : int
 		The stride used to project the time series on the window vector space.
 		It is needed to correctly compute the point scores.
+	
 	scaling_method : str
 		The method used to scale anomaly scores.
+	
 	scoring_method : str
 		The method used to compute the anomaly scores of the points.
 	"""
@@ -47,15 +50,17 @@ class TimeSeriesAnomalyScorer(BaseEstimator, TransformerMixin):
 		self.window = window
 		self.stride = stride
 
-	def fit_transform(self, X, y=None, **fit_params) -> np.ndarray:
+	def fit_transform(self, window_scores,
+					  windows_per_point=None,
+					  **fit_params) -> np.ndarray:
 		"""Computes the scoring of the points for the time series.
 
 		Parameters
 		----------
-		X : array-like of shape (n_windows,)
+		window_scores : array-like of shape (n_windows,)
 			The scores of the windows for the time series to be used to compute
 			the scores of the points.
-		y : array-like of shape (n_points,)
+		windows_per_point : array-like of shape (n_points,)
 			The number of windows containing the point at that specific index.
 		fit_params : Ignored
 			Not used, present for API consistency by convention.
@@ -65,20 +70,20 @@ class TimeSeriesAnomalyScorer(BaseEstimator, TransformerMixin):
 		point_scores : ndarray
 			The scores of the points.
 		"""
-		check_x_y_smaller_1d(X, y)
+		check_x_y_smaller_1d(window_scores, windows_per_point)
 
-		X = np.array(X)
-		y = np.array(y)
+		window_scores = np.array(window_scores)
+		windows_per_point = np.array(windows_per_point)
 
 		# Compute score of each point
-		scores = np.zeros(y.shape[0])
-		for i in range(X.shape[0]):
+		scores = np.zeros(windows_per_point.shape[0])
+		for i in range(window_scores.shape[0]):
 			idx = i * self.stride
-			scores[idx:idx + self.window] += X[i]
+			scores[idx:idx + self.window] += window_scores[i]
 
 		match self.scoring_method:
 			case "average":
-				scores = scores / y
+				scores = scores / windows_per_point
 
 		match self.scaling_method:
 			case "minmax":

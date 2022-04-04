@@ -37,12 +37,14 @@ class TimeSeriesProjector(BaseEstimator, TransformerMixin):
 		self.window = window
 		self.stride = stride
 	
-	def fit_transform(self, X, y=None, **fit_params) -> np.ndarray:
+	def fit_transform(self, time_series,
+					  y=None,
+					  **fit_params) -> np.ndarray:
 		"""Compute the new space.
 
 		Parameters
 		----------
-		X : array-like of shape (n_samples, n_features)
+		time_series : array-like of shape (n_samples, n_features)
 			The input data to be transformed.
 		y : Ignored
 			Not used, present by API consistency by convention.
@@ -53,8 +55,8 @@ class TimeSeriesProjector(BaseEstimator, TransformerMixin):
 			The transformed data.
 		"""
 		# Input validation
-		check_array(X)
-		data = np.array(X)
+		check_array(time_series)
+		data = np.array(time_series)
 		
 		if self.window > data.shape[0]:
 			raise ValueError("Window cannot be larger than data size.")

@@ -10,10 +10,10 @@ from sklearn.utils import check_array
 # Project imports
 from sklearn.utils.validation import check_is_fitted
 
-from models.anomaly.IAnomaly import IAnomaly
-from models.transformers.TimeSeriesAnomalyLabeller import TimeSeriesAnomalyLabeller
-from models.transformers.TimeSeriesAnomalyScorer import TimeSeriesAnomalyScorer
-from models.transformers.TimeSeriesProjector import TimeSeriesProjector
+from models.time_series.anomaly.IAnomaly import IAnomaly
+from models.time_series.transformers.TimeSeriesAnomalyLabeller import TimeSeriesAnomalyLabeller
+from models.time_series.transformers.TimeSeriesAnomalyScorer import TimeSeriesAnomalyScorer
+from models.time_series.transformers.TimeSeriesProjector import TimeSeriesProjector
 
 
 class TimeSeriesAnomalyLOF(BaseEstimator, OutlierMixin, IAnomaly):

@@ -5,10 +5,10 @@ from sklearn.preprocessing import StandardScaler
 from Metrics import compute_metrics, make_metric_plots
 from get_windows_indices import get_windows_indices
 import visualizer.Viewer as vw
-from models.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
-from models.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
-from models.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
-from models.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
+from models.time_series.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
+from models.time_series.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
+from models.time_series.anomaly import TimeSeriesAnomalyLOF
+from models.time_series.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 
 #################################
 #								#
@@ -17,7 +17,7 @@ from models.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 #								#
 #								#
 #################################
-ALGORITHM = "iforest"
+ALGORITHM = "dbscan"
 
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
@@ -28,9 +28,9 @@ TESTING_PATH = DATASET_PATH + "testing/"
 ANNOTATED_PATH = DATASET_PATH + "annotated/"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
-ALL_DATA = False
-UNSUPERVISED = False
-SELF_SUPERVISED = True
+ALL_DATA = True
+UNSUPERVISED = True
+SELF_SUPERVISED = False
 
 
 def preprocess(X) -> np.ndarray:
@@ -112,7 +112,7 @@ if UNSUPERVISED and ALGORITHM == "dbscan":
 									eps=2.75,
 									min_samples=31,
 									#anomaly_threshold=0.9888,
-									anomaly_contamination=0.0003,
+									anomaly_portion=0.0003,
 									classification="points_score")
 elif UNSUPERVISED and ALGORITHM == "lof":
 	# Better window=3, neighbors=40
@@ -128,7 +128,7 @@ elif SELF_SUPERVISED and ALGORITHM == "lof":
 								 novelty=True)
 	model.fit(train)
 elif SELF_SUPERVISED and ALGORITHM == "osvm":
-	model = TimeSeriesAnomalyOSVM(window=100,
+	model = TimeSeriesAnomalyOSVM(window=10,
 								  nu=0.4,
 								  classification="points_score",
 								  anomaly_contamination=0.0015)
@@ -149,10 +149,7 @@ elif SELF_SUPERVISED and ALGORITHM == "iforest":
 #								#
 #################################
 true_labels = data_test_labels
-if SELF_SUPERVISED:
-	labels = model.predict(data_test)
-else:
-	labels = model.fit_predict(data_test)
+labels = model.classify(data_test)
 scores = model.anomaly_score(data_test)
 
 if ALL_METRICS:

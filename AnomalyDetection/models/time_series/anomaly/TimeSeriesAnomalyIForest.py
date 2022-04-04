@@ -6,14 +6,13 @@ import numpy as np
 from numpy.random import RandomState
 from sklearn.base import OutlierMixin, BaseEstimator
 from sklearn.ensemble import IsolationForest
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import check_array
 
 # Project imports
-from models.transformers.TimeSeriesAnomalyLabeller import \
+from models.time_series.transformers.TimeSeriesAnomalyLabeller import \
 	TimeSeriesAnomalyLabeller
-from models.transformers.TimeSeriesAnomalyScorer import TimeSeriesAnomalyScorer
-from models.transformers.TimeSeriesProjector import TimeSeriesProjector
+from models.time_series.transformers.TimeSeriesAnomalyScorer import TimeSeriesAnomalyScorer
+from models.time_series.transformers.TimeSeriesProjector import TimeSeriesProjector
 
 
 class TimeSeriesAnomalyIForest(BaseEstimator, OutlierMixin):

@@ -2,7 +2,7 @@
 
 # External imports
 import numpy as np
-from sklearn.base import OutlierMixin, clone
+from sklearn.base import OutlierMixin
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import OneClassSVM
 from sklearn.utils import check_array, check_X_y
@@ -10,7 +10,7 @@ from sklearn.utils import check_array, check_X_y
 # Project imports
 from sklearn.utils.validation import check_is_fitted
 
-from models.transformers.TimeSeriesProjector import TimeSeriesProjector
+from models.time_series.transformers.TimeSeriesProjector import TimeSeriesProjector
 
 
 class TimeSeriesAnomalyOSVMPhase(OneClassSVM, OutlierMixin):

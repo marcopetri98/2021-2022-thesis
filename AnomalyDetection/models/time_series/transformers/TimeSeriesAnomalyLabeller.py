@@ -4,12 +4,13 @@ from typing import Tuple
 # External imports
 import numpy as np
 from scipy.stats import truncnorm
+from sklearn.base import BaseEstimator, TransformerMixin
 
 # Project imports
 from input_validation.array_checks import check_x_y_smaller_1d
 
 
-class TimeSeriesAnomalyLabeller(object):
+class TimeSeriesAnomalyLabeller(BaseEstimator, TransformerMixin):
 	"""Transductive model computing labels from window labels.
 
 	Parameters
@@ -64,16 +65,20 @@ class TimeSeriesAnomalyLabeller(object):
 		self.threshold = threshold
 		self.contamination = contamination
 
-	def fit_transform(self, X, y=None, **fit_params) -> Tuple[np.ndarray, float]:
+	def fit_transform(self, window_labels,
+					  windows_per_point=None,
+					  **fit_params) -> Tuple[np.ndarray, float]:
 		"""Computes the scoring of the points for the time series.
 
 		Parameters
 		----------
-		X : array-like of shape (n_windows,)
+		window_labels : array-like of shape (n_windows,)
 			The labels of the windows for the time series to be used to compute
 			the labels of the points.
-		y : array-like of shape (n_points,)
+			
+		windows_per_point : array-like of shape (n_points,)
 			The number of windows containing the point at that specific index.
+			
 		**fit_params
 			Additional fit parameters. More details in Notes.
 
@@ -92,21 +97,21 @@ class TimeSeriesAnomalyLabeller(object):
 		* scores : ndarray of shape (n_points,)
 			The scores of the points in range [0,1].
 		"""
-		check_x_y_smaller_1d(X, y)
+		check_x_y_smaller_1d(window_labels, windows_per_point)
 
-		X = np.array(X)
-		y = np.array(y)
+		window_labels = np.array(window_labels)
+		windows_per_point = np.array(windows_per_point)
 
 		threshold = self.threshold
-		labels = np.zeros(y.shape[0])
+		labels = np.zeros(windows_per_point.shape[0])
 		match self.labelling_method:
 			case "voting":
 				# Anomalies are computed by voting of window anomalies
-				for i in range(X.shape[0]):
-					if X[i] == 1:
+				for i in range(window_labels.shape[0]):
+					if window_labels[i] == 1:
 						idx = i * self.stride
 						labels[idx:idx + self.window] += 1
-				labels = labels / y
+				labels = labels / windows_per_point
 
 				if threshold is None:
 					threshold = 0.5

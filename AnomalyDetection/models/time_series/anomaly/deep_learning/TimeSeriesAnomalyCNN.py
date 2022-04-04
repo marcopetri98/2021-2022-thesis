@@ -5,30 +5,30 @@ from typing import Tuple
 import tensorflow as tf
 
 # Project imports
-from models.anomaly.deep_learning.TimeSeriesAnomalyAutoencoder import TimeSeriesAnomalyAutoencoder
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyAutoregressive import TimeSeriesAnomalyAutoregressive
 
 
-class TimeSeriesAnomalyLSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
-	"""LSTM model to identify anomalies in time series."""
+class TimeSeriesAnomalyCNN(TimeSeriesAnomalyAutoregressive):
+	"""TimeSeriesAnomalyCNN."""
 	
 	def __init__(self, window: int = 200,
+				 stride: int = 1,
 				 forecast: int = 1,
 				 batch_size: int = 32,
 				 max_epochs: int = 50,
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
 				 folder_save_path: str = "nn_models/",
-				 filename: str = "lstm",
-				 extend_not_multiple: bool = True):
+				 filename: str = "lstm"):
 		super().__init__(window,
+						 stride,
 						 forecast,
 						 batch_size,
 						 max_epochs,
 						 predict_validation,
 						 batch_divide_training,
 						 folder_save_path,
-						 filename,
-						 extend_not_multiple)
+						 filename)
 	
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
 		"""Creates the LSTM model to perform the predictions.
@@ -51,44 +51,40 @@ class TimeSeriesAnomalyLSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
 		Returns
 		-------
 		model : tf.keras.Model
-			The model for the prediction.
+			The model for the learning.
 		"""
 		
 		input_layer = tf.keras.layers.Input(input_shape,
 											name="input")
 		
-		encoder = tf.keras.layers.LSTM(32,
-									   return_sequences=True,
-									   activation="relu",
-									   name="encoder_lstm_1")(input_layer)
+		cnn_model = tf.keras.layers.Conv1D(8, 2,
+										   activation="relu",
+										   name="conv1d_1")(input_layer)
+		cnn_model = tf.keras.layers.MaxPool1D(2,
+											  name="maxpool1d_1")(cnn_model)
+		cnn_model = tf.keras.layers.Conv1D(16, 2,
+										   activation="relu",
+										   name="conv1d_2")(cnn_model)
+		cnn_model = tf.keras.layers.MaxPool1D(2,
+											  name="maxpool1d_2")(cnn_model)
+		cnn_model = tf.keras.layers.Conv1D(32, 2,
+										   activation="relu",
+										   name="conv1d_3")(cnn_model)
+		cnn_model = tf.keras.layers.MaxPool1D(2,
+											  name="maxpool1d_3")(cnn_model)
+		cnn_model = tf.keras.layers.Dense(50,
+										  activation="relu",
+										  name="final_dense")(cnn_model)
 		
-		encoder = tf.keras.layers.LSTM(16,
-									   activation="relu",
-									   name="encoder_lstm_2")(encoder)
+		output_layer = tf.keras.layers.Dense(self.forecast * input_shape[1],
+											 name="output")(cnn_model)
 		
-		middle = tf.keras.layers.RepeatVector(self.window)(encoder)
-		
-		decoder = tf.keras.layers.LSTM(16,
-									   return_sequences=True,
-									   activation="relu",
-									   name="decoder_lstm_1")(middle)
-		
-		decoder = tf.keras.layers.LSTM(32,
-									   activation="relu",
-									   name="decoder_lstm_2")(decoder)
-		
-		output = tf.keras.layers.TimeDistributed()
-		
-		output_layer = tf.keras.layers.Dense(self.window * input_shape[1],
-											 name="output",
-											 activation="linear")(decoder)
-		
-		output_layer = tf.keras.layers.Reshape((self.window, input_shape[1]),
+		output_layer = tf.keras.layers.Reshape((self.forecast, input_shape[1]),
 											   name="reshape")(output_layer)
 		
 		model = tf.keras.Model(inputs=input_layer,
 							   outputs=output_layer,
-							   name="lstm_autoencoder")
+							   name="lstm_model")
 		
 		model.compile(loss="mse",
 					  optimizer=tf.keras.optimizers.Adam(),

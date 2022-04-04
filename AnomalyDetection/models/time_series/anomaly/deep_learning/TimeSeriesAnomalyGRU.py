@@ -5,7 +5,7 @@ from typing import Tuple
 import tensorflow as tf
 
 # Project imports
-from models.anomaly.deep_learning.TimeSeriesAnomalyAutoregressive import TimeSeriesAnomalyAutoregressive
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyAutoregressive import TimeSeriesAnomalyAutoregressive
 
 
 class TimeSeriesAnomalyGRU(TimeSeriesAnomalyAutoregressive):
