@@ -1,48 +1,14 @@
-# Python imports
-
-# External imports
 import numpy as np
-from sklearn.base import OutlierMixin, BaseEstimator
 from sklearn.svm import OneClassSVM
 from sklearn.utils import check_array, check_X_y
 
-# Project imports
-from models.time_series.transformers.TimeSeriesAnomalyLabeller import \
-	TimeSeriesAnomalyLabeller
-from models.time_series.transformers.TimeSeriesAnomalyScorer import TimeSeriesAnomalyScorer
-from models.time_series.transformers.TimeSeriesProjector import TimeSeriesProjector
+from input_validation.attribute_checks import check_training_attributes
+from models.IParametric import IParametric
+from models.time_series.anomaly.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
 
 
-class TimeSeriesAnomalyOSVM(BaseEstimator, OutlierMixin):
+class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
 	"""OSVM adaptation to time series using scikit-learn.
-
-    Parameters
-    ----------
-	window : int
-		The length of the window to consider performing anomaly detection.
-		
-	stride : int
-		The offset at which the window is moved when computing the anomalies.
-
-	scaling: {"none", "minmax"}, default="minmax"
-		The scaling method to scale the anomaly scores.
-
-	scoring: {"average"}, default="average"
-		The scoring method used compute the anomaly scores.
-	
-	classification: {"voting", "points_score"}, default="voting"
-		It defines the way in which a point is declared as anomaly. With voting,
-		a point is an anomaly if at least anomaly_threshold percentage of
-		windows containing the point agree in saying it is an anomaly. With
-		points_score, the points are considered anomalies if they're score is
-		above anomaly_threshold.
-	
-	anomaly_threshold: float, default=None
-		The threshold used to compute if a point is an anomaly or not. It will
-		be passed to TimeSeriesAnomalyLabeller, see it for more details.
-
-	anomaly_contamination: float, default=0.01
-		The percentage of anomaly points in the dataset.
         
     See Also
     --------
@@ -50,13 +16,13 @@ class TimeSeriesAnomalyOSVM(BaseEstimator, OutlierMixin):
     https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html
     """
 	
-	def __init__(self, window: int = 200,
+	def __init__(self, window: int = 5,
 				 stride: int = 1,
 				 scaling: str = "minmax",
 				 scoring: str = "average",
 				 classification: str = "voting",
-				 anomaly_threshold: float = None,
-				 anomaly_contamination: float = 0.01,
+				 threshold: float = None,
+				 anomaly_portion: float = 0.01,
 				 kernel: str = "rbf",
 				 degree: int = 3,
 				 gamma: str = "scale",
@@ -67,7 +33,13 @@ class TimeSeriesAnomalyOSVM(BaseEstimator, OutlierMixin):
 				 cache_size: float = 200,
 				 verbose: bool = False,
 				 max_iter: int = -1):
-		super().__init__()
+		super().__init__(window=window,
+						 stride=stride,
+						 scaling=scaling,
+						 scoring=scoring,
+						 classification=classification,
+						 threshold=threshold,
+						 anomaly_portion=anomaly_portion)
 
 		self.kernel = kernel
 		self.degree = degree
@@ -80,36 +52,7 @@ class TimeSeriesAnomalyOSVM(BaseEstimator, OutlierMixin):
 		self.verbose = verbose
 		self.max_iter = max_iter
 
-		self.osvm: OneClassSVM = None
-		self.window = window
-		self.stride = stride
-		self.classification = classification
-		self.anomaly_threshold = anomaly_threshold
-		self.scaling = scaling
-		self.scoring = scoring
-		self.anomaly_contamination = anomaly_contamination
-	
-	def fit(self, X, y=None, sample_weight=None, **params) -> None:
-		"""Compute the anomalies on the time series.
-
-		Parameters
-		----------
-		X : array-like of shape (n_samples, n_features)
-			The training time series on which we have to train the data.
-		y : array-like of shape (n_samples, n_features), default=None
-			If given, the training will be performed only on samples from the
-			class with label 0 and each value must be either 0 or 1. If None,
-			all the points in X are used as training.
-		sample_weight : Ignored
-			Not used, since values will be projected.
-		**params : dict
-			Discarded since deprecated.
-
-		Returns
-		-------
-		None
-			Fits the model to the data.
-		"""
+	def fit(self, X, y=None) -> None:
 		check_array(X)
 		if y is not None:
 			check_X_y(X, y)
@@ -126,126 +69,35 @@ class TimeSeriesAnomalyOSVM(BaseEstimator, OutlierMixin):
 			normal_data = X[normal_data]
 		else:
 			normal_data = X
+			
+		x_new, windows_per_point = self.project_time_series(normal_data)
+		self.build_wrapped()
+		self._wrapped_model.fit(x_new)
 
-		projector = TimeSeriesProjector(self.window, self.stride)
-		X_new = projector.fit_transform(normal_data)
-		
-		# Run vanilla OSVM on the vector space of the time series
-		self._osvm()
-		self.osvm.fit(X_new)
+	def anomaly_score(self, X) -> np.ndarray:
+		check_training_attributes(self, {"_wrapped_model": None})
+		return super().anomaly_score(X)
 	
-	def predict(self, X) -> np.ndarray:
-		"""Predicts whether a sample is normal (0) or anomalous (1).
-		
-		Parameters
-		----------
-		X : array-like of shape (n_samples, n_features)
-			Data to be classified from the algorithm.
+	def classify(self, X) -> np.ndarray:
+		check_training_attributes(self, {"_wrapped_model": None})
+		return super().classify(X)
 
-		Returns
-		-------
-		label : ndarray of shape (n_samples)
-			The label associated to each point.
-		"""
-		check_array(X)
-		X = np.array(X)
-		
-		# Project data onto the phase space
-		projector = TimeSeriesProjector(self.window, self.stride)
-		X_new = projector.fit_transform(X)
-		
-		# Predict labels for the phase space points (-1 is outlier and 1 inlier)
-		# Therefore, I multiply by -1
-		window_pred: np.ndarray = self.osvm.predict(X_new) * -1
-		window_scores: np.ndarray = self.osvm.decision_function(X_new) * -1
-
-		scorer = TimeSeriesAnomalyScorer(self.window,
-										 self.stride,
-										 self.scaling,
-										 self.scoring)
-		labeller = TimeSeriesAnomalyLabeller(self.window,
-											 self.stride,
-											 self.anomaly_threshold,
-											 self.anomaly_contamination,
-											 self.classification)
-		scores = scorer.fit_transform(window_scores,
-									  projector.num_windows_)
-		labels, _ = labeller.fit_transform(window_pred,
-										   projector.num_windows_,
-										   scores=scores)
-		
-		return labels
+	def compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
+		window_anomalies = self._wrapped_model.predict(vector_data) * -1
+		return window_anomalies
 	
-	def anomaly_score(self, X):
-		"""Returns the anomaly score of the points.
-		
-		Parameters
-		----------
-		X : array-like of shape (n_samples, n_features)
-			Data to be classified from the algorithm.
+	def compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
+		window_scores = self._wrapped_model.decision_function(vector_data) * -1
+		return window_scores
 
-		Returns
-		-------
-		scores : ndarray of shape (n_samples,)
-			The scores for the points between 0 and 1. The higher, the more
-			abnormal. If threshold is not None, points above threshold are
-			labelled as anomalies. Otherwise, see how points are labelled.
-		"""
-		check_array(X)
-		X = np.array(X)
-
-		# Project data onto the phase space
-		projector = TimeSeriesProjector(self.window, self.stride)
-		X_new = projector.fit_transform(X)
-
-		# Predict scores for the vector space points
-		window_scores: np.ndarray = self.osvm.decision_function(X_new) * -1
-
-		scorer = TimeSeriesAnomalyScorer(self.window,
-										 self.stride,
-										 self.scaling,
-										 self.scoring)
-		scores = scorer.fit_transform(window_scores,
-									  projector.num_windows_)
-
-		return scores
-	
-	def fit_predict(self, X, y=None, sample_weight=None) -> np.ndarray:
-		"""Compute the anomalies on the time series.
-
-		Parameters
-		----------
-		X : array-like of shape (n_samples, n_features)
-			The training time series on which we have to train the data.
-		y : array-like of shape (n_samples, n_features), default=None
-			If given, the training will be performed only on samples from the
-			class with label 0 and each value must be either 0 or 1. If None,
-			all the points in X are used as training.
-		sample_weight : Ignored
-			Not used, since values will be projected.
-
-		Returns
-		-------
-		label : ndarray of shape (n_samples)
-			The label associated to each point.
-		"""
-		self.fit(X, y, sample_weight)
-		return self.predict(X)
-
-	def _osvm(self):
-		"""Initializes the wrapped OneClassSVM
-
-		Returns
-		-------
-		None
-		"""
-		self.osvm = OneClassSVM(kernel=self.kernel,
-								degree=self.degree,
-								gamma=self.gamma,
-								coef0=self.coef0,
-								tol=self.tol,
-								nu=self.nu,
-								shrinking=self.shrinking,
-								cache_size=self.cache_size,
-								verbose=self.verbose,
-								max_iter=self.max_iter)
+	def build_wrapped(self):
+		self._wrapped_model = OneClassSVM(kernel=self.kernel,
+										  degree=self.degree,
+										  gamma=self.gamma,
+										  coef0=self.coef0,
+										  tol=self.tol,
+										  nu=self.nu,
+										  shrinking=self.shrinking,
+										  cache_size=self.cache_size,
+										  verbose=self.verbose,
+										  max_iter=self.max_iter)

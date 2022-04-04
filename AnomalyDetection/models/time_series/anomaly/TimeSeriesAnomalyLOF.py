@@ -4,10 +4,11 @@ import numpy as np
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.utils import check_array
 
+from input_validation.attribute_checks import check_training_attributes
 from models.IParametric import IParametric
 from models.time_series.anomaly.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
 
-
+# FIXME: is LOF really parametric?
 class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
 	"""LOF adapter for time series.
 
@@ -63,6 +64,14 @@ class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.build_wrapped()
 		self._wrapped_model.fit(x_new)
 
+	def anomaly_score(self, X) -> np.ndarray:
+		check_training_attributes(self, {"_wrapped_model": None})
+		return super().anomaly_score(X)
+	
+	def classify(self, X) -> np.ndarray:
+		check_training_attributes(self, {"_wrapped_model": None})
+		return super().classify(X)
+	
 	def compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		# If the model is used as novelty it directly predicts
 		if self.novelty:
@@ -89,12 +98,6 @@ class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
 		return window_scores
 
 	def build_wrapped(self) -> None:
-		"""Instantiates the LocalOutlierFactor model as specified.
-
-		Returns
-		-------
-		None
-		"""
 		self._wrapped_model = LocalOutlierFactor(self.n_neighbors,
 												 algorithm=self.algorithm,
 												 leaf_size=self.leaf_size,

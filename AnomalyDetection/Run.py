@@ -9,6 +9,7 @@ from models.time_series.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomaly
 from models.time_series.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
 from models.time_series.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 from models.time_series.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
+from models.time_series.anomaly.TimeSeriesAnomalyOSVMPhase import TimeSeriesAnomalyOSVMPhase
 
 #################################
 #								#
@@ -131,7 +132,13 @@ elif SELF_SUPERVISED and ALGORITHM == "osvm":
 	model = TimeSeriesAnomalyOSVM(window=10,
 								  nu=0.4,
 								  classification="points_score",
-								  anomaly_contamination=0.0015)
+								  anomaly_portion=0.0015)
+	model.fit(train)
+elif SELF_SUPERVISED and ALGORITHM == "phase osvm":
+	model = TimeSeriesAnomalyOSVMPhase(windows=[5, 10, 20],
+									   nu=0.4,
+									   classification="points_score",
+									   anomaly_portion=0.0015)
 	model.fit(train)
 elif SELF_SUPERVISED and ALGORITHM == "iforest":
 	model = TimeSeriesAnomalyIForest(window=5,
