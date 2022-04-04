@@ -62,39 +62,15 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 		self.classification = classification
 		self.threshold = threshold
 		self.anomaly_portion = anomaly_portion
+		
+		self.__check_parameters()
 	
 	def set_params(self, **params) -> None:
-		"""Modify the parameters of the object.
-
-		Parameters
-		----------
-		params : dict
-			The dictionary of the parameters to modify.
-
-		Returns
-		-------
-		None
-		"""
 		super().set_params()
 		self.__check_parameters()
 	
 	def project_time_series(self, time_series: np.ndarray) -> Tuple[np.ndarray,
 																	np.ndarray]:
-		"""Compute the new space.
-
-		Parameters
-		----------
-		time_series : array-like of shape (n_samples, n_features)
-			The input data to be transformed.
-
-		Returns
-		-------
-		X_new : ndarray of shape (n_windows, window)
-			The transformed data.
-
-		num_windows : ndarray of shape (n_samples,)
-			The number of windows containing the point at index i.
-		"""
 		# Input validation
 		check_array(time_series)
 		data = np.array(time_series)
@@ -125,21 +101,6 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 	
 	def compute_point_scores(self, window_scores,
 							 windows_per_point) -> np.ndarray:
-		"""Computes the scoring of the points for the time series.
-
-		Parameters
-		----------
-		window_scores : array-like of shape (n_windows,)
-			The scores of the windows for the time series to be used to compute
-			the scores of the points.
-		windows_per_point : array-like of shape (n_points,)
-			The number of windows containing the point at that specific index.
-
-		Returns
-		-------
-		point_scores : ndarray
-			The scores of the points.
-		"""
 		check_x_y_smaller_1d(window_scores, windows_per_point)
 
 		window_scores = np.array(window_scores)
@@ -167,27 +128,6 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 	def compute_point_labels(self, window_labels,
 							 windows_per_point,
 							 point_scores=None) -> Tuple[np.ndarray, float]:
-		"""Computes the scoring of the points for the time series.
-
-		Parameters
-		----------
-		window_labels : array-like of shape (n_windows,)
-			The labels of the windows for the time series to be used to compute
-			the labels of the points.
-
-		windows_per_point : array-like of shape (n_points,)
-			The number of windows containing the point at that specific index.
-
-		point_scores : array-like of shape (n_points,), default=None
-			The scores of the points in range [0,1].
-
-		Returns
-		-------
-		point_labels : ndarray of shape (n_points,)
-			The labels of the points.
-		threshold : float
-			The threshold above which points are considered as anomalies.
-		"""
 		check_x_y_smaller_1d(window_labels, windows_per_point)
 
 		window_labels = np.array(window_labels)

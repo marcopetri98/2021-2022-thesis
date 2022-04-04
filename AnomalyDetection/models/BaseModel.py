@@ -8,6 +8,17 @@ class BaseModel(object):
 		super().__init__()
 
 	def set_params(self, **params) -> None:
+		"""Modify the parameters of the object.
+
+		Parameters
+		----------
+		params : dict
+			The dictionary of the parameters to modify.
+
+		Returns
+		-------
+		None
+		"""
 		for key, value in params.items():
 			if key not in self.__dict__.keys():
 				raise ValueError("Parameter '%s' does not exist in class '%s'. "
@@ -18,6 +29,19 @@ class BaseModel(object):
 				self.__dict__[key] = value
 				
 	def get_params(self, deep=True) -> dict:
+		"""Gets all the parameters of the model defined in init.
+		
+		Parameters
+		----------
+		deep : bool, default=True
+			States whether the method must return also the parameters of nested
+			estimators.
+
+		Returns
+		-------
+		param_dict : dict
+			Dictionary with parameters' names as keys and values as values.
+		"""
 		init = getattr(self, "__init__")
 		if init is object.__init__:
 			return {}

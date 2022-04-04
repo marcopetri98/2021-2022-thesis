@@ -7,7 +7,7 @@ from get_windows_indices import get_windows_indices
 import visualizer.Viewer as vw
 from models.time_series.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
 from models.time_series.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
-from models.time_series.anomaly import TimeSeriesAnomalyLOF
+from models.time_series.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 from models.time_series.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 
 #################################
@@ -17,7 +17,7 @@ from models.time_series.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOS
 #								#
 #								#
 #################################
-ALGORITHM = "dbscan"
+ALGORITHM = "lof"
 
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
@@ -29,8 +29,8 @@ ANNOTATED_PATH = DATASET_PATH + "annotated/"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
 ALL_DATA = True
-UNSUPERVISED = True
-SELF_SUPERVISED = False
+UNSUPERVISED = False
+SELF_SUPERVISED = True
 
 
 def preprocess(X) -> np.ndarray:
@@ -118,7 +118,7 @@ elif UNSUPERVISED and ALGORITHM == "lof":
 	# Better window=3, neighbors=40
 	model = TimeSeriesAnomalyLOF(window=3,
 								 classification="points_score",
-								 anomaly_contamination=0.01,
+								 anomaly_portion=0.01,
 								 n_neighbors=100)
 elif SELF_SUPERVISED and ALGORITHM == "lof":
 	# Better window=3, neighbors=40

@@ -39,22 +39,6 @@ class TimeSeriesAnomalyWindowWrapper(TimeSeriesAnomalyWindow, ITimeSeriesAnomaly
 		return self.anomaly_score(X)
 	
 	def anomaly_score(self, X) -> np.ndarray:
-		"""Computes the anomaly score of the given points.
-		
-		Scores in the range [0,1] an the higher is the score the more abnormal
-		the point is. **Please, note that** if the model is parametric (inherits
-		from IParametric) you must first perform fit on training data.
-		
-		Parameters
-		----------
-		X : array-like of shape (n_samples, n_features)
-			The points for which we must compute the anomaly score.
-
-		Returns
-		-------
-		anomaly_scores : ndarray of shape (n_samples,)
-			The scores of the points.
-		"""
 		# Input validation
 		check_array(X)
 		X = np.array(X)
@@ -69,23 +53,6 @@ class TimeSeriesAnomalyWindowWrapper(TimeSeriesAnomalyWindow, ITimeSeriesAnomaly
 		return anomaly_scores
 	
 	def classify(self, X) -> np.ndarray:
-		"""Computes the labels for the given points.
-		
-		If a point has 1 as label it is classified as anomaly while if it has
-		0 as label it is classified as normal. **Please, note that** if the
-		model is parametric (inherits from IParametric) you must first perform
-		fit on training data.
-		
-		Parameters
-		----------
-		X : array-like of shape (n_samples, n_features)
-			The points for which we must compute the anomaly score.
-
-		Returns
-		-------
-		anomaly_labels : ndarray of shape (n_samples,)
-			The scores of the points.
-		"""
 		# Input validation
 		check_array(X)
 		X = np.array(X)

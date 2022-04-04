@@ -8,4 +8,10 @@ class ITimeSeriesAnomalyWrapper(ABC):
 	
 	@abc.abstractmethod
 	def build_wrapped(self) -> None:
+		"""Instantiates the wrapped model.
+
+		Returns
+		-------
+		None
+		"""
 		pass

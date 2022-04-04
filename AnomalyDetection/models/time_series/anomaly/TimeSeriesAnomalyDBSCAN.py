@@ -28,7 +28,7 @@ class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowWrapper):
 	"""
 	WINDOW_SCORING_METHODS = ["z-score", "centroid"]
 	
-	def __init__(self, window: int = 200,
+	def __init__(self, window: int = 5,
 				 stride: int = 1,
 				 scaling: str = "minmax",
 				 scoring: str = "average",
@@ -70,18 +70,6 @@ class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowWrapper):
 		self.__check_parameters()
 
 	def compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
-		"""Compute the labels of the passed windows.
-		
-		Parameters
-		----------
-		vector_data : ndarray of shape (n_samples, n_features)
-			The vector data on which we need to compute the anomaly score.
-
-		Returns
-		-------
-		window_anomalies : ndarray of shape (n_samples,)
-			The anomaly label of each window.
-		"""
 		# Builds the model and fits it to the vector data
 		self.build_wrapped()
 		self._wrapped_model.fit(vector_data)
@@ -95,18 +83,6 @@ class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowWrapper):
 		return window_anomalies
 	
 	def compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
-		"""Compute the score of the passed windows.
-		
-		Parameters
-		----------
-		vector_data : ndarray of shape (n_samples, n_features)
-			The vector data on which we need to compute the anomaly score.
-
-		Returns
-		-------
-		window_scores : ndarray of shape (n_samples,)
-			The anomaly score of each window.
-		"""
 		# Builds the model and fits it to the vector data
 		self.build_wrapped()
 		self._wrapped_model.fit(vector_data)
@@ -146,12 +122,6 @@ class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowWrapper):
 		return anomaly_scores
 	
 	def build_wrapped(self) -> None:
-		"""Instantiates the DBSCAN model as specified.
-
-		Returns
-		-------
-		None
-		"""
 		self._wrapped_model = DBSCAN(self.eps,
 									 min_samples=self.min_samples,
 									 metric=self.metric,
