@@ -3,21 +3,21 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyGRU import \
-	TimeSeriesAnomalyGRU
-from models.time_series.anomaly.deep_learning import TimeSeriesAnomalyLSTM
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyLSTMAutoencoder import \
-	TimeSeriesAnomalyLSTMAutoencoder
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyGRU import TimeSeriesAnomalyGRU
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyLSTM import TimeSeriesAnomalyLSTM
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyLSTMAutoencoder import TimeSeriesAnomalyLSTMAutoencoder
+from visualizer.Viewer import plot_time_series_forecast
 
-DUMMIES = ["all_1", "all_0", "random"]
-ALGORITHM = "lstm autoencoder"
+ALGORITHM = "cnn"
 
 VALIDATION_DIM = 0.2
 DATASET = "ambient_temperature_system_failure.csv"
-DATASET_FOLDER = "dataset/"
-TRAINING_PREFIX = "training_"
-TESTING_PREFIX = "test_"
-TRUTH_PREFIX = "truth"
+PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
+GROUND_WINDOWS_PATH = "dataset/combined_windows.json"
+DATASET_PATH = "dataset/"
+TRAINING_PATH = DATASET_PATH + "training_dl/"
+TESTING_PATH = DATASET_PATH + "testing_dl/"
+ANNOTATED_PATH = DATASET_PATH + "annotated_dl/"
 ALL_METRICS = True
 LOAD_MODEL = False
 CHECK_OVERFITTING = False
@@ -27,21 +27,37 @@ def preprocess(X) -> np.ndarray:
 	return StandardScaler().fit_transform(X)
 
 
-all = pd.read_csv(DATASET_FOLDER + "truth_" + DATASET)
-all_timestamps = all["timestamp"]
-all_data = all["value"]
-all_labels = all["target"]
+#################################
+#								#
+#								#
+#			LOAD DATA			#
+#								#
+#								#
+#################################
+model = None
 
-training = pd.read_csv(DATASET_FOLDER + TRAINING_PREFIX + DATASET)
+all_df = pd.read_csv(ANNOTATED_PATH + DATASET)
+all_timestamps = all_df["timestamp"]
+all_data = all_df["value"]
+all_labels = all_df["target"]
+
+training = pd.read_csv(TRAINING_PATH + DATASET)
 training_timestamps = training["timestamp"]
 training_data = training["value"]
 training_labels = training["target"]
 
-test = pd.read_csv(DATASET_FOLDER + TESTING_PREFIX + DATASET)
+test = pd.read_csv(TESTING_PATH + DATASET)
 test_timestamps = test["timestamp"]
 test_data = test["value"]
 test_labels = test["target"]
 
+#################################
+#								#
+#								#
+#			DEFINE DATA			#
+#								#
+#								#
+#################################
 # Data used to train
 data = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
 data_labels = training_labels
@@ -81,13 +97,13 @@ for i in range(len(change_idx)):
 	else:
 		normal_slices.append(slice(start, stop))
 
-training_slices = [slice(0, 3134), slice(4312, 5814)]
-validation_slices = [slice(3140, 4302)]
+training_slices = [slice(0, 2878)]
+validation_slices = [slice(2878, 3580)]
 
 match ALGORITHM:
 	case "lstm":
 		model = TimeSeriesAnomalyLSTM(window=30,
-									  max_epochs=50,
+									  max_epochs=100,
 									  batch_size=32,
 									  batch_divide_training=True,
 									  filename="lstm_paper")
@@ -98,7 +114,7 @@ match ALGORITHM:
 	
 	case "gru":
 		model = TimeSeriesAnomalyGRU(window=30,
-									 max_epochs=50,
+									 max_epochs=100,
 									 batch_size=32,
 									 batch_divide_training=True,
 									 filename="gru_paper")
@@ -109,7 +125,7 @@ match ALGORITHM:
 	
 	case "cnn":
 		model = TimeSeriesAnomalyGRU(window=30,
-									 max_epochs=50,
+									 max_epochs=100,
 									 batch_size=32,
 									 batch_divide_training=True,
 									 filename="cnn_paper")
@@ -120,7 +136,7 @@ match ALGORITHM:
 	
 	case "lstm autoencoder":
 		model = TimeSeriesAnomalyLSTMAutoencoder(window=32,
-												 max_epochs=50,
+												 max_epochs=100,
 												 batch_size=32,
 												 filename="lstm_ae_paper",
 												 extend_not_multiple=True)
@@ -131,7 +147,7 @@ match ALGORITHM:
 	
 	case "gru autoencoder":
 		model = TimeSeriesAnomalyGRU(window=30,
-									 max_epochs=50,
+									 max_epochs=100,
 									 batch_size=32,
 									 filename="gru_paper")
 		if LOAD_MODEL:
@@ -141,7 +157,7 @@ match ALGORITHM:
 	
 	case "cnn autoencoder":
 		model = TimeSeriesAnomalyGRU(window=30,
-									 max_epochs=50,
+									 max_epochs=100,
 									 batch_size=32,
 									 filename="cnn_paper")
 		if LOAD_MODEL:
@@ -150,26 +166,14 @@ match ALGORITHM:
 			model.fit(data, training_slices, validation_slices, data_labels)
 
 true_labels = data_test_labels
-if ALGORITHM not in DUMMIES:
-	labels = model.predict(data, data_test)
-	scores = model.anomaly_score(data, data_test)
-else:
-	# With all_1 all are categorized as anomalies, with all_0 all the
-	# points are categorized as being normal. With random all the points are
-	# randomly drawn
-	num_pts = data.shape[0]
-	if ALGORITHM == "all_1":
-		labels = np.ones(num_pts)
-		scores = np.ones(num_pts)
-	elif ALGORITHM == "all_0":
-		labels = np.zeros(num_pts)
-		scores = np.zeros(num_pts)
-	else:
-		labels = np.random.randint(0, 2, num_pts)
-		scores = labels == 1
+labels = model.predict(data, data_test)
+scores = model.anomaly_score(data, data_test)
 
 if ALL_METRICS:
 	compute_metrics(true_labels, scores, labels, False)
 	make_metric_plots(dataframe, true_labels, scores, labels)
+	predictions = model.predict_time_series(data[validation_slices[0]], data_test)
+	plot_time_series_forecast(data_test, predictions, on_same_plot=True)
+	plot_time_series_forecast(data_test, predictions, on_same_plot=False)
 else:
 	compute_metrics(true_labels, scores, only_roc_auc=True)

@@ -1,22 +1,58 @@
-# Python imports
 import abc
 from abc import ABC
 from typing import Tuple
 
-# External imports
 import numpy as np
+import tensorflow as tf
 from keras.callbacks import History
 from scipy.optimize import minimize_scalar
-from sklearn.base import BaseEstimator
+from scipy.stats import truncnorm
 from sklearn.metrics import log_loss
-from sklearn.utils import check_array, check_X_y
-import tensorflow as tf
-
-# Project imports
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.utils import check_X_y
 
 
-class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
-	"""TimeSeriesAnomalyWindowDL"""
+class TimeSeriesAnomalyWindowDL(ABC):
+	"""DL models using a window approach and forecast error to find anomalies.
+
+	Parameters
+	----------
+	window : int, default=200
+		The number of previous points to be used to predict if the following
+		point is an anomaly or not.
+
+	stride : int, default=1
+		The number of steps of which the window is moved when analysing input.
+		If stride=1 and the first window is [0,1,2], the second window will be
+		[1,2,3].
+
+	forecast : int, default=1
+		The number of points to predict in one step.
+
+	batch_size : int, default=32
+		The batch size used for training the model. Number of points used in
+		batch training.
+
+	max_epochs : int, default=50
+		The maximum number of epochs for which the model is trained.
+
+	predict_validation : float, default=0.2
+		The percentage of training samples used to perform validation for the
+		DL model.
+
+	batch_divide_training : bool, default=False
+		States whether the training size must be a multiple of batch. If it is
+		True and the training is not a multiple of batch, the exceeding points
+		will be deleted and not considered for training.
+
+	folder_save_path : str, default="nn_models/"
+		The path of the folder to which the model must be saved and to which its
+		checkpoints will be saved.
+
+	filename : str, default="lstm"
+		The name of the checkpoint file and of the model file after it has been
+		trained.
+	"""
 	
 	def __init__(self, window: int = 200,
 				 stride: int = 1,
@@ -40,19 +76,54 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 		self.filename = filename
 	
 	@abc.abstractmethod
-	def _build_x_y_sequences(self, X) -> Tuple[np.ndarray, np.ndarray]:
+	def _build_x_y_sequences(self, x) -> Tuple[np.ndarray, np.ndarray]:
+		"""Build the neural network inputs to perform regression.
+
+		Parameters
+		----------
+		x : np.ndarray
+			The training input sequence.
+
+		Returns
+		-------
+		x_train : np.ndarray
+			Sequences of training samples to use as training.
+		y_train : np.ndarray
+			Targets of each training sample to use.
+		"""
+
 		pass
 	
 	@abc.abstractmethod
-	def _predict_future(self, X: np.ndarray, points: int) -> np.ndarray:
+	def _predict_future(self, xp: np.ndarray, x: np.ndarray) -> np.ndarray:
+		"""Starting from the window X, it predicts the next N points.
+
+		It predicts points in an autoregressive way using the class forecast
+		dimension.
+
+		Parameters
+		----------
+		xp : ndarray of shape (window, n_features)
+			The window from which we have to predict the next samples.
+
+		x : ndarray of shape (n_samples, n_features)
+			The points for which we want to predict whether they are anomaly
+			points or not.
+
+		Returns
+		-------
+		predicted_values : ndarray of shape (points, n_features)
+			The predicted values for the next points.
+		"""
+
 		pass
 	
-	def _learn_threshold(self, X, y) -> None:
+	def _learn_threshold(self, x, y) -> None:
 		"""Learn a model to evaluate the threshold for the anomaly.
 
 		Parameters
 		----------
-		X : array-like of shape (n_samples, n_features)
+		x : array-like of shape (n_samples, n_features)
 			Data of the prediction errors on the validation points.
 
 		y : array-like of shape (n_samples, n_features)
@@ -65,26 +136,25 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 		threshold : float
 			The threshold learnt from validation data.
 		"""
-		check_X_y(X, y)
-		X = np.array(X)
+		check_X_y(x, y)
+		x = np.array(x)
 		y = np.array(y)
 		
-		# Binary cross entropy to find the best threshold
-		def cross_entropy(threshold):
-			predictions = np.zeros(X.shape[0])
-			anomalies = np.argwhere(X >= threshold)
-			predictions[anomalies] = 1
-			return log_loss(y, predictions, labels=[0, 1])
+		# We are only interested in absolute errors
+		x = np.absolute(x)
 		
-		result = minimize_scalar(cross_entropy)
-		self.threshold_ = result.x
+		# We fit a truncated gaussian to the errors (errors are scalars)
+		mean = np.mean(x)
+		std = np.std(x)
+		a, b = (0 - mean) / std, (1 - mean) / std
+		self.threshold_ = truncnorm.ppf(0.99, a, b, loc=mean, scale=std)
 	
-	def fit(self, X, training_idx, validation_idx, y) -> list[History]:
+	def fit(self, x, training_idx, validation_idx, y) -> list[History]:
 		"""Train the predictor and the threshold using a simple Perceptron.
 
 		Parameters
 		----------
-		X : array-like of ndarray of shape (n_samples, n_features)
+		x : array-like of ndarray of shape (n_samples, n_features)
 			Data on which the predictor is trained to be able to learn a model
 			capable of providing good prediction performances and on which it
 			is validated to learn the threshold to evaluate if a point is an
@@ -107,21 +177,21 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 		histories: list of History
 			The list of the training history for the predictor.
 		"""
-		check_X_y(X, y)
-		X = np.array(X)
+		check_X_y(x, y)
+		x = np.array(x)
 		y = np.array(y)
 		
 		# List of the histories for the training on the various data
 		histories = []
-		input_shape = (self.window, X.shape[1])
+		input_shape = (self.window, x.shape[1])
 		self.model_ = self._learning_create_model(input_shape)
-		Xs = []
+		xs = []
 		
 		for slice_ in training_idx:
-			Xs.append(X[slice_])
+			xs.append(x[slice_])
 		
 		# Perform training on each training slice
-		for data in Xs:
+		for data in xs:
 			if self.window > data.shape[0]:
 				raise ValueError("Window cannot be larger than data size.")
 			elif data.shape[1] > 1:
@@ -174,8 +244,7 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 														 patience=30,
 														 mode="min"),
 					tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
-													   monitor="val_loss",
-													   )
+													   monitor="val_loss")
 				]
 			)
 			
@@ -196,7 +265,7 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 		valid_predictions = np.array([[]])
 		valid_true_labels = np.array([[]])
 		for slice_ in validation_idx:
-			errors = self._compute_errors(X[:slice_.stop], X[slice_])
+			errors = self._compute_errors(x[:slice_.stop], x[slice_])
 			
 			# Numpy works with a shape of (n_samples, n_features)
 			errors = errors.reshape((errors.shape[0], 1))
@@ -214,15 +283,15 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 		
 		return histories
 	
-	def _compute_errors(self, Xp, X) -> np.ndarray:
+	def _compute_errors(self, xp, x) -> np.ndarray:
 		"""Predict if a sample is an anomaly or not.
 
 		Parameters
 		----------
-		Xp : array-like of shape (n_samples, n_features)
+		xp : array-like of shape (n_samples, n_features)
 			Data immediately before the values to predict.
 
-		X : array-like of shape (n_samples, n_features)
+		x : array-like of shape (n_samples, n_features)
 			Data of the points to predict.
 
 		Returns
@@ -230,18 +299,18 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 		prediction_errors : ndarray
 			Errors of the prediction.
 		"""
-		predictions = self.predict_time_series(Xp, X)
-		return np.linalg.norm(X - predictions, axis=1)
+		predictions = self.predict_time_series(xp, x)
+		return np.linalg.norm(x - predictions, axis=1)
 	
-	def anomaly_score(self, Xp, X) -> np.ndarray:
+	def anomaly_score(self, xp, x) -> np.ndarray:
 		"""Predict if a sample is an anomaly or not.
 
 		Parameters
 		----------
-		Xp : array-like of shape (n_samples, n_features)
+		xp : array-like of shape (n_samples, n_features)
 			Data immediately before the values to predict.
 
-		X : array-like of shape (n_samples, n_features)
+		x : array-like of shape (n_samples, n_features)
 			Data of the points to predict.
 
 		Returns
@@ -251,24 +320,43 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 			less than 0 is normal. The bigger the more abnormal.
 		"""
 		# Input validated in compute errors
-		errors = self._compute_errors(Xp, X)
-		scores = errors - self.threshold_
+		errors = self._compute_errors(xp, x)
+		errors = np.abs(errors)
+		
+		scores = errors.reshape((errors.shape[0], 1))
+		scores = MinMaxScaler().fit_transform(scores)
+		scores = scores.reshape(scores.shape[0])
 		
 		return scores
 	
 	@abc.abstractmethod
-	def predict_time_series(self, Xp, X) -> np.ndarray:
+	def predict_time_series(self, xp, x) -> np.ndarray:
+		"""Predict the future values of the time series.
+
+		Parameters
+		----------
+		xp : array-like of shape (n_samples, n_features)
+			Data immediately before the values to predict.
+
+		x : array-like of shape (n_samples, n_features)
+			Data of the points to predict.
+
+		Returns
+		-------
+		labels : ndarray
+			The values of the steps predicted from the time series.
+		"""
 		pass
 	
-	def predict(self, Xp, X) -> np.ndarray:
+	def predict(self, xp, x) -> np.ndarray:
 		"""Predict if a sample is an anomaly or not.
 
 		Parameters
 		----------
-		Xp : array-like of shape (n_samples, n_features)
+		xp : array-like of shape (n_samples, n_features)
 			Data immediately before the values to predict.
 
-		X : array-like of shape (n_samples, n_features)
+		x : array-like of shape (n_samples, n_features)
 			Data of the points to predict.
 
 		Returns
@@ -278,10 +366,10 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 			point.
 		"""
 		# Input validated in compute errors
-		errors = self._compute_errors(Xp, X)
+		errors = self._compute_errors(xp, x)
 		
 		anomalies = np.argwhere(errors >= self.threshold_)
-		pred_labels = np.zeros(X.shape[0])
+		pred_labels = np.zeros(x.shape[0])
 		pred_labels[anomalies] = 1
 		
 		return pred_labels
@@ -294,8 +382,40 @@ class TimeSeriesAnomalyWindowDL(BaseEstimator, ABC):
 	
 	@abc.abstractmethod
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
+		"""Creates the model to be used for predictions.
+
+		Generally, it is identical to the learning model. However, there are
+		some cases in which we want to change the batch size of the model from
+		training to prediction. For instance, we would like to train the model
+		using a mini-batch training while we want to produce predictions for one
+		point at a time.
+
+		Parameters
+		----------
+		input_shape : Tuple
+			Represents the shape of the input to the prediction model.
+
+		Returns
+		-------
+		model : tf.keras.Model
+			The model for the prediction.
+		"""
 		pass
 	
 	@abc.abstractmethod
 	def _learning_create_model(self, input_shape: Tuple) -> tf.keras.Model:
+		"""Creates the model to be used for learning.
+
+		It is the network we want to train to perform anomaly detection.
+
+		Parameters
+		----------
+		input_shape : Tuple
+			Represents the shape of the input to the prediction model.
+
+		Returns
+		-------
+		model : tf.keras.Model
+			The model for the prediction.
+		"""
 		pass

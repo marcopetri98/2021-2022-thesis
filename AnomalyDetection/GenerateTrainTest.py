@@ -1,15 +1,10 @@
-# Python imports
-
-# External imports
-
-# Project imports
 import pandas as pd
 
-PERC_TRAIN = 0.8
+PERC_TRAIN = 0.5
 DATASET_PATH = "dataset/"
-TRAINING_PATH = DATASET_PATH + "training/"
-TESTING_PATH = DATASET_PATH + "testing/"
-ANNOTATED_PATH = DATASET_PATH + "annotated/"
+TRAINING_PATH = DATASET_PATH + "training_dl/"
+TESTING_PATH = DATASET_PATH + "testing_dl/"
+ANNOTATED_PATH = DATASET_PATH + "annotated_dl/"
 PURE_DATA = "ambient_temperature_system_failure.csv"
 DETAILED_DATA = "detailed_" + PURE_DATA
 NO_WINDOW = True

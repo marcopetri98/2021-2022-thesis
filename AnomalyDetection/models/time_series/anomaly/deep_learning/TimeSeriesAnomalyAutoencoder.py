@@ -1,12 +1,8 @@
-# Python imports
 import abc
 from typing import Tuple
 
-# External imports
 import numpy as np
 import tensorflow as tf
-
-# Project imports
 from keras.callbacks import History
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted, check_X_y
@@ -38,12 +34,12 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL):
 		
 		self.extend_not_multiple = extend_not_multiple
 	
-	def fit(self, X, training_idx, validation_idx, y) -> list[History]:
+	def fit(self, x, training_idx, validation_idx, y) -> list[History]:
 		"""Train the predictor and the threshold using a simple Perceptron.
 
 		Parameters
 		----------
-		X : array-like of ndarray of shape (n_samples, n_features)
+		x : array-like of ndarray of shape (n_samples, n_features)
 			Data on which the predictor is trained to be able to learn a model
 			capable of providing good prediction performances and on which it
 			is validated to learn the threshold to evaluate if a point is an
@@ -66,8 +62,8 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL):
 		histories: list of History
 			The list of the training history for the predictor.
 		"""
-		check_X_y(X, y)
-		X = np.array(X)
+		check_X_y(x, y)
+		x = np.array(x)
 		y = np.array(y)
 		
 		if self.extend_not_multiple:
@@ -92,44 +88,30 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL):
 					print("WARNING: On ", i+1, "th validation slice, ",
 						  remainder, " points have been lost")
 					
-		history = super().fit(X, training_idx, validation_idx, y)
+		history = super().fit(x, training_idx, validation_idx, y)
 		return history
 	
-	def _build_x_y_sequences(self, X) -> Tuple[np.ndarray, np.ndarray]:
-		"""Build the neural network inputs to perform regression.
-
-		Parameters
-		----------
-		X : np.ndarray
-			The training input sequence.
-
-		Returns
-		-------
-		x_train : np.ndarray
-			Sequences of training samples to use as training.
-		y_train : np.ndarray
-			Targets of each training sample to use.
-		"""
+	def _build_x_y_sequences(self, x) -> Tuple[np.ndarray, np.ndarray]:
 		samples = []
 		targets = []
 		
-		for i in range(0, X.shape[0] - self.window, self.stride):
-			samples.append(X[i:i + self.window])
-			targets.append(X[i:i + self.window])
+		for i in range(0, x.shape[0] - self.window, self.stride):
+			samples.append(x[i:i + self.window])
+			targets.append(x[i:i + self.window])
 		
 		return np.array(samples), np.array(targets)
 	
-	def _predict_future(self, X: np.ndarray, points: int) -> np.ndarray:
+	def _predict_future(self, xp: np.ndarray, x: int) -> np.ndarray:
 		"""Starting from the window X, it predicts the next N points.
 
 		It predicts points window by window being an autoencoder.
 
 		Parameters
 		----------
-		X : ndarray of shape (window, n_features)
+		xp : ndarray of shape (window, n_features)
 			The data to be predicted from the autoencoder.
 
-		points : int
+		x : int
 			The number of points we need to predict.
 
 		Returns
@@ -138,41 +120,41 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL):
 			The predicted values for the next points.
 		"""
 		check_is_fitted(self, ["threshold_"])
-		check_array(X)
-		X = np.array(X)
+		check_array(xp)
+		xp = np.array(xp)
 		
-		if points % self.window != 0:
+		if x % self.window != 0:
 			raise ValueError("The autoencoder can predict only a number of "
 							 "points such that points % self.window == 0")
 		
 		predictions = np.array([])
-		for idx in range(0, points, self.stride):
+		for idx in range(0, x, self.stride):
 			# Make prediction window by window
-			input_ = X[idx:idx + self.window]
-			input_ = input_.reshape((1, X.shape[0], X.shape[1]))
-			prediction = self.model_.predict(input_)
-			not_batch_output = prediction.reshape((self.window, X.shape[1]))
+			input_ = xp[idx:idx + self.window]
+			input_ = input_.reshape((1, xp.shape[0], xp.shape[1]))
+			prediction = self.model_.predict(input_, )
+			not_batch_output = prediction.reshape((self.window, xp.shape[1]))
 			
 			if len(predictions) == 0:
 				predictions = not_batch_output
 			else:
 				predictions = np.concatenate((predictions, not_batch_output))
 		
-		if predictions.shape[0] > points:
-			to_discard = predictions.shape[0] - points
+		if predictions.shape[0] > x:
+			to_discard = predictions.shape[0] - x
 			predictions = predictions[:-to_discard]
 		
 		return predictions
 	
-	def predict_time_series(self, Xp, X) -> np.ndarray:
+	def predict_time_series(self, xp, x) -> np.ndarray:
 		"""Predict the future values of the time series.
 
 		Parameters
 		----------
-		Xp : Ignored
+		xp : Ignored
 			Present because of API consistency.
 
-		X : array-like of shape (n_samples, n_features)
+		x : array-like of shape (n_samples, n_features)
 			Data of the points to predict.
 
 		Returns
@@ -181,17 +163,17 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL):
 			The values of the steps predicted from the time series.
 		"""
 		check_is_fitted(self, ["model_"])
-		check_array(X)
-		X = np.array(X)
+		check_array(x)
+		x = np.array(x)
 		
-		if X.shape[0] < self.window:
+		if x.shape[0] < self.window:
 			raise ValueError("You must provide at lest window points to predict")
-		elif X.shape[0] % self.window != 0:
+		elif x.shape[0] % self.window != 0:
 			raise ValueError("An autoencoder must receive as input a multiple "
 							 "of window to be able to predict. Namely, the input"
 							 "must be such that X.shape[0] % self.window == 0")
 		
-		return self._predict_future(X, X.shape[0])
+		return self._predict_future(x, x.shape[0])
 	
 	@abc.abstractmethod
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:

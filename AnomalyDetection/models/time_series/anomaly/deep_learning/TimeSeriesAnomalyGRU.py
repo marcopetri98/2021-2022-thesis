@@ -1,14 +1,13 @@
-# Python imports
 from typing import Tuple
 
-# External imports
 import tensorflow as tf
 
-# Project imports
 from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyAutoregressive import TimeSeriesAnomalyAutoregressive
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySliding import \
+	TimeSeriesAnomalySliding
 
 
-class TimeSeriesAnomalyGRU(TimeSeriesAnomalyAutoregressive):
+class TimeSeriesAnomalyGRU(TimeSeriesAnomalySliding):
 	"""LSTM model to identify anomalies in time series."""
 	
 	def __init__(self, window: int = 200,

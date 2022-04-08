@@ -81,6 +81,49 @@ def plot_time_series_ndarray(array: np.ndarray,
 	plt.title("Time series data")
 	plt.show()
 
+def plot_time_series_forecast(real_array: np.ndarray,
+							  pred_array: np.ndarray,
+							  num_ticks: int = 5,
+							  fig_size: Tuple = (16, 6),
+							  real_color: str = 'k',
+							  pred_color: str = 'g',
+							  on_same_plot: bool = True) -> None:
+	"""Plot the time series and its prediction."""
+	fictitious_idx = np.arange(real_array.shape[0])
+	indexes = np.linspace(0, real_array.shape[0] - 1, num_ticks, dtype=np.intc)
+	ticks = indexes
+	real_data_fmt = real_color + '-'
+	pred_data_fmt = pred_color + '-'
+	
+	if on_same_plot:
+		fig = plt.figure(figsize=fig_size)
+		plt.plot(fictitious_idx,
+				 real_array,
+				 real_data_fmt,
+				 linewidth=1)
+		plt.plot(fictitious_idx,
+				 pred_array,
+				 pred_data_fmt,
+				 linewidth=1)
+		plt.xticks(indexes, ticks)
+		plt.title("Time series data")
+		plt.show()
+	else:
+		fig, axs = plt.subplots(2, 1, figsize=fig_size)
+		axs[0].plot(fictitious_idx,
+				 real_array,
+				 real_data_fmt,
+				 linewidth=1)
+		axs[0].set_xticks(indexes, ticks)
+		axs[0].set_title("Time series data")
+		
+		axs[1].plot(fictitious_idx,
+				 pred_array,
+				 pred_data_fmt,
+				 linewidth=1)
+		axs[1].set_xticks(indexes, ticks)
+		axs[1].set_title("Time series predictions")
+		plt.show()
 
 def plot_time_series_with_predicitons_bars(dataframe: pd.DataFrame,
 										   predictions: np.ndarray,

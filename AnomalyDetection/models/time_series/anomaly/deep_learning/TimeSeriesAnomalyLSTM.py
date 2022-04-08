@@ -1,14 +1,11 @@
-# Python imports
 from typing import Tuple
 
-# External imports
 import tensorflow as tf
 
-# Project imports
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyAutoregressive import TimeSeriesAnomalyAutoregressive
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySliding import TimeSeriesAnomalySliding
 
 
-class TimeSeriesAnomalyLSTM(TimeSeriesAnomalyAutoregressive):
+class TimeSeriesAnomalyLSTM(TimeSeriesAnomalySliding):
 	"""LSTM model to identify anomalies in time series."""
 	
 	def __init__(self, window: int = 200,
@@ -37,6 +34,10 @@ class TimeSeriesAnomalyLSTM(TimeSeriesAnomalyAutoregressive):
 		with batch=1 while the training is done with fixed batch and a batch
 		greater than 1 (the prediction batch). If the batch is not fixed in
 		training, this function should call ``_learning_create_model``.
+
+		Parameters
+		----------
+
 
 		Returns
 		-------

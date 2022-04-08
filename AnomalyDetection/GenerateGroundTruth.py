@@ -1,17 +1,13 @@
-# Python imports
 import datetime
-
-# External imports
 import json
+
 import pandas as pd
 import numpy as np
 
-# Project imports
-
 DATASET_PATH = "dataset/"
-TRAINING_PATH = DATASET_PATH + "training/"
-TESTING_PATH = DATASET_PATH + "testing/"
-ANNOTATED_PATH = DATASET_PATH + "annotated/"
+TRAINING_PATH = DATASET_PATH + "training_dl/"
+TESTING_PATH = DATASET_PATH + "testing_dl/"
+ANNOTATED_PATH = DATASET_PATH + "annotated_dl/"
 PURE_DATA = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
 GROUND_TRUTHS_PATH = "dataset/combined_labels.json"

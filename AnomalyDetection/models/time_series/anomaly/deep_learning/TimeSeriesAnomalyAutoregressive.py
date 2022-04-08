@@ -1,19 +1,12 @@
-# Python imports
-import abc
-from typing import Tuple
+from abc import ABC
 
-# External imports
 import numpy as np
-import tensorflow as tf
-
-# Project imports
 from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted
 
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyWindowDL import TimeSeriesAnomalyWindowDL
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySequential import TimeSeriesAnomalySequential
 
 
-class TimeSeriesAnomalyAutoregressive(TimeSeriesAnomalyWindowDL):
+class TimeSeriesAnomalyAutoregressive(TimeSeriesAnomalySequential, ABC):
 	"""TimeSeriesAnomalyAutoregressive"""
 	
 	def __init__(self, window: int = 200,
@@ -35,59 +28,17 @@ class TimeSeriesAnomalyAutoregressive(TimeSeriesAnomalyWindowDL):
 						 folder_save_path,
 						 filename)
 	
-	def _build_x_y_sequences(self, X) -> Tuple[np.ndarray, np.ndarray]:
-		"""Build the neural network inputs to perform regression.
-
-		Parameters
-		----------
-		X : np.ndarray
-			The training input sequence.
-
-		Returns
-		-------
-		x_train : np.ndarray
-			Sequences of training samples to use as training.
-		y_train : np.ndarray
-			Targets of each training sample to use.
-		"""
-		samples = []
-		targets = []
-		
-		for i in range(0, X.shape[0] - self.window - self.forecast,
-					   self.stride):
-			samples.append(X[i:i + self.window])
-			targets.append(X[i + self.window:i + self.window + self.forecast])
-		
-		return np.array(samples), np.array(targets)
-	
-	def _predict_future(self, X: np.ndarray, points: int) -> np.ndarray:
-		"""Starting from the window X, it predicts the next N points.
-
-		It predicts points in an autoregressive way using the class forecast
-		dimension.
-
-		Parameters
-		----------
-		X : ndarray of shape (window, n_features)
-			The window from which we have to predict the next samples.
-
-		points : int
-			The number of points we need to predict.
-
-		Returns
-		-------
-		predicted_values : ndarray of shape (points, n_features)
-			The predicted values for the next points.
-		"""
-		check_array(X)
-		X = np.array(X)
+	def _predict_future(self, xp: np.ndarray, x: int) -> np.ndarray:
+		check_is_fitted(self, ["model_"])
+		check_array(xp)
+		xp = np.array(xp)
 		
 		predictions = np.array([])
-		for _ in range(0, points, self.forecast):
+		for _ in range(0, xp, self.forecast):
 			# Make prediction assuming shape as (forecast, features)
-			input_ = X.reshape((1, X.shape[0], X.shape[1]))
-			prediction = self.model_.predict(input_)
-			not_batch_output = prediction.reshape((self.forecast, X.shape[1]))
+			input_ = xp.reshape((1, xp.shape[0], xp.shape[1]))
+			prediction = self.model_.predict(input_, )
+			not_batch_output = prediction.reshape((self.forecast, xp.shape[1]))
 			
 			if len(predictions) == 0:
 				predictions = not_batch_output
@@ -95,46 +46,10 @@ class TimeSeriesAnomalyAutoregressive(TimeSeriesAnomalyWindowDL):
 				predictions = np.concatenate((predictions, not_batch_output))
 			
 			# Autoregressive step
-			# TODO: ERRORE
-			X = np.concatenate((X[self.forecast:], not_batch_output), axis=0)
+			xp = np.concatenate((xp[self.forecast:], not_batch_output), axis=0)
 		
-		if predictions.shape[0] > points:
-			to_discard = predictions.shape[0] - points
+		if predictions.shape[0] > xp:
+			to_discard = predictions.shape[0] - xp
 			predictions = predictions[:-to_discard]
 		
 		return predictions
-	
-	def predict_time_series(self, Xp, X) -> np.ndarray:
-		"""Predict the future values of the time series.
-
-		Parameters
-		----------
-		Xp : array-like of shape (n_samples, n_features)
-			Data immediately before the values to predict.
-
-		X : array-like of shape (n_samples, n_features)
-			Data of the points to predict.
-
-		Returns
-		-------
-		labels : ndarray
-			The values of the steps predicted from the time series.
-		"""
-		check_is_fitted(self, ["threshold_", "model_"])
-		check_array(Xp)
-		check_array(X)
-		Xp = np.array(Xp)
-		X = np.array(X)
-		
-		if Xp.shape[0] < self.window:
-			raise ValueError("You must provide at lest window points to predict")
-		
-		return self._predict_future(X[-self.window:], X.shape[0])
-	
-	@abc.abstractmethod
-	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
-		pass
-	
-	@abc.abstractmethod
-	def _learning_create_model(self, input_shape: Tuple) -> tf.keras.Model:
-		pass
