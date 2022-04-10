@@ -8,10 +8,14 @@ from models.time_series.anomaly.deep_learning.BraeiDenseAutoencoder import \
 	BraeiDenseAutoencoder
 from models.time_series.anomaly.deep_learning.BraeiGRU import BraeiGRU
 from models.time_series.anomaly.deep_learning.BraeiLSTM import BraeiLSTM
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyLSTMAutoencoder import TimeSeriesAnomalyLSTMAutoencoder
+from models.time_series.anomaly.deep_learning.CNNAutoencoder import \
+	CNNAutoencoder
+from models.time_series.anomaly.deep_learning.GRUAutoencoder import \
+	GRUAutoencoder
+from models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
 from visualizer.Viewer import plot_time_series_forecast
 
-ALGORITHM = "dense autoencoder"
+ALGORITHM = "cnn autoencoder"
 
 VALIDATION_DIM = 0.2
 DATASET = "ambient_temperature_system_failure.csv"
@@ -25,7 +29,7 @@ ALL_METRICS = True
 LOAD_MODEL = False
 CHECK_OVERFITTING = False
 AUTOENCODER = True
-AUTOENCODER_WINDOW = 30
+AUTOENCODER_WINDOW = 15
 
 
 def preprocess(X) -> np.ndarray:
@@ -129,8 +133,8 @@ for i in range(len(change_idx)):
 	else:
 		normal_slices.append(slice(start, stop))
 
-training_slices = [slice(0, 2878)]
-validation_slices = [slice(2878, 3580)]
+training_slices = [slice(0, 2880)]
+validation_slices = [slice(2880, 3584)]
 
 match ALGORITHM:
 	case "lstm":
@@ -178,33 +182,35 @@ match ALGORITHM:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "lstm autoencoder":
-		model = TimeSeriesAnomalyLSTMAutoencoder(window=AUTOENCODER_WINDOW,
-												 max_epochs=100,
-												 batch_size=32,
-												 filename="lstm_ae_paper",
-												 extend_not_multiple=True)
+		model = LSTMAutoencoder(window=AUTOENCODER_WINDOW,
+								max_epochs=500,
+								batch_size=15,
+								filename="lstm_ae",
+								extend_not_multiple=True)
 		if LOAD_MODEL:
-			model.load_model("nn_models/lstm_ae_paper")
+			model.load_model("nn_models/lstm_ae")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "gru autoencoder":
-		model = BraeiGRU(window=AUTOENCODER_WINDOW,
-						 max_epochs=100,
-						 batch_size=32,
-						 filename="gru_paper")
+		model = GRUAutoencoder(window=AUTOENCODER_WINDOW,
+							   max_epochs=500,
+							   batch_size=15,
+							   filename="gru_ae",
+							   extend_not_multiple=True)
 		if LOAD_MODEL:
-			model.load_model("nn_models/gru_paper")
+			model.load_model("nn_models/gru_ae")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "cnn autoencoder":
-		model = BraeiGRU(window=AUTOENCODER_WINDOW,
-						 max_epochs=100,
-						 batch_size=32,
-						 filename="cnn_paper")
+		model = CNNAutoencoder(window=AUTOENCODER_WINDOW,
+							   max_epochs=250,
+							   batch_size=15,
+							   filename="cnn_ae",
+							   extend_not_multiple=True)
 		if LOAD_MODEL:
-			model.load_model("nn_models/cnn_paper")
+			model.load_model("nn_models/cnn_ae")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 

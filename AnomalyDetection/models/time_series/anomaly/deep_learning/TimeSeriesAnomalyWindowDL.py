@@ -215,6 +215,11 @@ class TimeSeriesAnomalyWindowDL(ABC):
 				x_train, y_train = x_train[:points], y_train[:points]
 				
 				points = int(x_train.shape[0] * split / self.batch_size) * self.batch_size
+				
+				if points == 0:
+					raise ValueError("With the specified batch size, there are "
+									 "exactly 0 validation points. Which is "
+									 "impossible. Fix the batch size.")
 			
 			# Build training and validation sets
 			x_val = x_train[-points:]
