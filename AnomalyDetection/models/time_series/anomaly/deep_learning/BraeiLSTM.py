@@ -5,7 +5,7 @@ import tensorflow as tf
 from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySliding import TimeSeriesAnomalySliding
 
 
-class TimeSeriesAnomalyLSTM(TimeSeriesAnomalySliding):
+class BraeiLSTM(TimeSeriesAnomalySliding):
 	"""LSTM model to identify anomalies in time series."""
 	
 	def __init__(self, window: int = 200,

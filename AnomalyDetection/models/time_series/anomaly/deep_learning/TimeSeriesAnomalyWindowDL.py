@@ -5,9 +5,7 @@ from typing import Tuple
 import numpy as np
 import tensorflow as tf
 from keras.callbacks import History
-from scipy.optimize import minimize_scalar
 from scipy.stats import truncnorm
-from sklearn.metrics import log_loss
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import check_X_y
 
@@ -138,7 +136,6 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		"""
 		check_X_y(x, y)
 		x = np.array(x)
-		y = np.array(y)
 		
 		# We are only interested in absolute errors
 		x = np.absolute(x)
@@ -236,12 +233,12 @@ class TimeSeriesAnomalyWindowDL(ABC):
 				validation_data=(x_val, y_val),
 				callbacks=[
 					tf.keras.callbacks.EarlyStopping(monitor="val_loss",
-													 patience=10,
+													 patience=30,
 													 mode="min",
 													 restore_best_weights=True),
 					tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss",
 														 factor=0.1,
-														 patience=30,
+														 patience=20,
 														 mode="min"),
 					tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
 													   monitor="val_loss")
@@ -406,7 +403,7 @@ class TimeSeriesAnomalyWindowDL(ABC):
 	def _learning_create_model(self, input_shape: Tuple) -> tf.keras.Model:
 		"""Creates the model to be used for learning.
 
-		It is the network we want to train to perform anomaly detection.
+		It is the network we want to train on anomaly detection tasks.
 
 		Parameters
 		----------

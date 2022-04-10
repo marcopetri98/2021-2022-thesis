@@ -1,14 +1,17 @@
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyGRU import TimeSeriesAnomalyGRU
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyLSTM import TimeSeriesAnomalyLSTM
+from models.time_series.anomaly.deep_learning.BraeiDenseAutoencoder import \
+	BraeiDenseAutoencoder
+from models.time_series.anomaly.deep_learning.BraeiGRU import BraeiGRU
+from models.time_series.anomaly.deep_learning.BraeiLSTM import BraeiLSTM
 from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyLSTMAutoencoder import TimeSeriesAnomalyLSTMAutoencoder
 from visualizer.Viewer import plot_time_series_forecast
 
-ALGORITHM = "cnn"
+ALGORITHM = "dense autoencoder"
 
 VALIDATION_DIM = 0.2
 DATASET = "ambient_temperature_system_failure.csv"
@@ -21,6 +24,8 @@ ANNOTATED_PATH = DATASET_PATH + "annotated_dl/"
 ALL_METRICS = True
 LOAD_MODEL = False
 CHECK_OVERFITTING = False
+AUTOENCODER = True
+AUTOENCODER_WINDOW = 30
 
 
 def preprocess(X) -> np.ndarray:
@@ -34,6 +39,8 @@ def preprocess(X) -> np.ndarray:
 #								#
 #								#
 #################################
+np.random.seed(57)
+tf.random.set_seed(57)
 model = None
 
 all_df = pd.read_csv(ANNOTATED_PATH + DATASET)
@@ -65,6 +72,31 @@ data_labels = training_labels
 # Data used to test
 data_test = preprocess(np.array(test_data).reshape(test_data.shape[0], 1))
 data_test_labels = test_labels
+
+if AUTOENCODER:
+	if data_test.shape[0] % AUTOENCODER_WINDOW != 0:
+		remainder_points = data_test.shape[0] % AUTOENCODER_WINDOW
+		
+		np_data = np.array(data)
+		np_data_test = np.array(data_test)
+		np_data_labels = np.array(data_labels)
+		np_data_test_labels = np.array(data_test_labels)
+		data = np.concatenate((np_data, np_data_test[0:remainder_points]))
+		data_labels = np.concatenate((np_data_labels, np_data_test_labels[0:remainder_points]))
+		data_test = data_test[remainder_points:]
+		data_test_labels = data_test_labels[remainder_points:]
+		
+		np_train = np.concatenate((np.array(training), np.array(test[:remainder_points])))
+		training = pd.DataFrame(np_train, columns=training.columns)
+		training_timestamps = training["timestamp"]
+		training_data = training["value"]
+		training_labels = training["target"]
+		
+		np_test = np.array(test[remainder_points:])
+		test = pd.DataFrame(np_test, columns=test.columns)
+		test_timestamps = test["timestamp"]
+		test_data = test["value"]
+		test_labels = test["target"]
 
 # Data used to evaluate
 dataframe = test.copy()
@@ -102,40 +134,51 @@ validation_slices = [slice(2878, 3580)]
 
 match ALGORITHM:
 	case "lstm":
-		model = TimeSeriesAnomalyLSTM(window=30,
-									  max_epochs=100,
-									  batch_size=32,
-									  batch_divide_training=True,
-									  filename="lstm_paper")
+		model = BraeiLSTM(window=30,
+						  max_epochs=100,
+						  batch_size=32,
+						  batch_divide_training=True,
+						  filename="lstm_paper")
 		if LOAD_MODEL:
 			model.load_model("nn_models/lstm_paper")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "gru":
-		model = TimeSeriesAnomalyGRU(window=30,
-									 max_epochs=100,
-									 batch_size=32,
-									 batch_divide_training=True,
-									 filename="gru_paper")
+		model = BraeiGRU(window=30,
+						 max_epochs=100,
+						 batch_size=32,
+						 batch_divide_training=True,
+						 filename="gru_paper")
 		if LOAD_MODEL:
 			model.load_model("nn_models/gru_paper")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "cnn":
-		model = TimeSeriesAnomalyGRU(window=30,
-									 max_epochs=100,
-									 batch_size=32,
-									 batch_divide_training=True,
-									 filename="cnn_paper")
+		model = BraeiGRU(window=30,
+						 max_epochs=100,
+						 batch_size=32,
+						 batch_divide_training=True,
+						 filename="cnn_paper")
 		if LOAD_MODEL:
 			model.load_model("nn_models/cnn_paper")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
+			
+	case "dense autoencoder":
+		model = BraeiDenseAutoencoder(window=AUTOENCODER_WINDOW,
+									  max_epochs=250,
+									  batch_size=32,
+									  filename="dense_ae_paper")
+		
+		if LOAD_MODEL:
+			model.load_model("nn_models/dense_ae_paper")
+		else:
+			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "lstm autoencoder":
-		model = TimeSeriesAnomalyLSTMAutoencoder(window=32,
+		model = TimeSeriesAnomalyLSTMAutoencoder(window=AUTOENCODER_WINDOW,
 												 max_epochs=100,
 												 batch_size=32,
 												 filename="lstm_ae_paper",
@@ -146,20 +189,20 @@ match ALGORITHM:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "gru autoencoder":
-		model = TimeSeriesAnomalyGRU(window=30,
-									 max_epochs=100,
-									 batch_size=32,
-									 filename="gru_paper")
+		model = BraeiGRU(window=AUTOENCODER_WINDOW,
+						 max_epochs=100,
+						 batch_size=32,
+						 filename="gru_paper")
 		if LOAD_MODEL:
 			model.load_model("nn_models/gru_paper")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "cnn autoencoder":
-		model = TimeSeriesAnomalyGRU(window=30,
-									 max_epochs=100,
-									 batch_size=32,
-									 filename="cnn_paper")
+		model = BraeiGRU(window=AUTOENCODER_WINDOW,
+						 max_epochs=100,
+						 batch_size=32,
+						 filename="cnn_paper")
 		if LOAD_MODEL:
 			model.load_model("nn_models/cnn_paper")
 		else:

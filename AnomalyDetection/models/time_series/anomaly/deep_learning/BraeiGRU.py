@@ -7,7 +7,7 @@ from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySliding import \
 	TimeSeriesAnomalySliding
 
 
-class TimeSeriesAnomalyGRU(TimeSeriesAnomalySliding):
+class BraeiGRU(TimeSeriesAnomalySliding):
 	"""LSTM model to identify anomalies in time series."""
 	
 	def __init__(self, window: int = 200,

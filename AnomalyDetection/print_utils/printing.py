@@ -1,14 +1,9 @@
-# Python imports
 import colorama
 from colorama import Fore, Style
 
-# External imports
-
-# Project imports
-
 
 def print_header(heading: str, separator: str = "=") -> None:
-	"""Prints an heading.
+	"""Prints a heading.
 
 	Parameters
 	----------
@@ -55,23 +50,34 @@ def print_step(text: str) -> None:
 	print(step_print)
 
 
-def print_warning(warning_text: str) -> None:
+def print_warning(warning_text: str, *args) -> None:
 	"""Prints a warning on screen.
 
 	Parameters
 	----------
 	warning_text: str
 		A string representing the execution step.
+		
+	args
+		A series of values of strings in case the print is formatted using
+		commas instead of string concatenation.
 
 	Returns
 	-------
 	None
 	"""
-	if len(warning_text) == 0:
+	if len(warning_text) == 0 and len(args) == 0:
 		raise ValueError("The warning must have a text")
 
 	colorama.init()
 	warning = "WARNING: "
+	
 	warning += warning_text
+	if len(args) != 0:
+		for var in args:
+			if isinstance(var, str):
+				warning += var
+			else:
+				warning += str(var)
 
 	print(Fore.RED + Style.BRIGHT + warning + Style.RESET_ALL)

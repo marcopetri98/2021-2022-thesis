@@ -1,15 +1,12 @@
-# Python imports
 from typing import Tuple
 
-# External imports
 import tensorflow as tf
 
-# Project imports
 from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyAutoencoder import TimeSeriesAnomalyAutoencoder
 
 
-class TimeSeriesAnomalyLSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
-	"""LSTM model to identify anomalies in time series."""
+class BraeiDenseAutoencoder(TimeSeriesAnomalyAutoencoder):
+	"""BraeiDenseAutoencoder"""
 	
 	def __init__(self, window: int = 200,
 				 forecast: int = 1,
@@ -37,38 +34,33 @@ class TimeSeriesAnomalyLSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
 		input_layer = tf.keras.layers.Input(input_shape,
 											name="input")
 		
-		encoder = tf.keras.layers.LSTM(32,
-									   return_sequences=True,
+		flattening = tf.keras.layers.Flatten(name="flatten")(input_layer)
+		
+		encoder = tf.keras.layers.Dense(32,
+										activation="relu",
+										name="encoder_dense_1")(flattening)
+		encoder = tf.keras.layers.Dense(16,
+										activation="relu",
+										name="encoder_dense_2")(encoder)
+		
+		latent = tf.keras.layers.Dense(8,
 									   activation="relu",
-									   name="encoder_lstm_1")(input_layer)
+									   name="latent_layer")(encoder)
 		
-		encoder = tf.keras.layers.LSTM(16,
-									   activation="relu",
-									   name="encoder_lstm_2")(encoder)
+		decoder = tf.keras.layers.Dense(16,
+										activation="relu",
+										name="decoder_dense_1")(latent)
+		decoder = tf.keras.layers.Dense(32,
+										activation="relu",
+										name="decoder_dense_2")(decoder)
 		
-		middle = tf.keras.layers.RepeatVector(self.window)(encoder)
-		
-		decoder = tf.keras.layers.LSTM(16,
-									   return_sequences=True,
-									   activation="relu",
-									   name="decoder_lstm_1")(middle)
-		
-		decoder = tf.keras.layers.LSTM(32,
-									   activation="relu",
-									   name="decoder_lstm_2")(decoder)
-		
-		output = tf.keras.layers.TimeDistributed()
-		
-		output_layer = tf.keras.layers.Dense(self.window * input_shape[1],
-											 name="output",
-											 activation="linear")(decoder)
-		
-		output_layer = tf.keras.layers.Reshape((self.window, input_shape[1]),
-											   name="reshape")(output_layer)
+		output_layer = tf.keras.layers.Dense(input_shape[0] * input_shape[1],
+											 activation="linear",
+											 name="output")(decoder)
 		
 		model = tf.keras.Model(inputs=input_layer,
 							   outputs=output_layer,
-							   name="lstm_autoencoder")
+							   name="dense_autoencoder")
 		
 		model.compile(loss="mse",
 					  optimizer=tf.keras.optimizers.Adam(),

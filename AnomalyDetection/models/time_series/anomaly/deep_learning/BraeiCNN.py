@@ -2,12 +2,10 @@ from typing import Tuple
 
 import tensorflow as tf
 
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyAutoregressive import TimeSeriesAnomalyAutoregressive
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySliding import \
-	TimeSeriesAnomalySliding
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySliding import TimeSeriesAnomalySliding
 
 
-class TimeSeriesAnomalyCNN(TimeSeriesAnomalySliding):
+class BraeiCNN(TimeSeriesAnomalySliding):
 	"""TimeSeriesAnomalyCNN."""
 	
 	def __init__(self, window: int = 200,
