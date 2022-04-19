@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.utils import check_array
 
-from input_validation.attribute_checks import check_training_attributes
+from input_validation.attribute_checks import check_not_default_attributes
 from models.IParametric import IParametric
 from models.time_series.anomaly.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
 
@@ -60,36 +60,36 @@ class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
 		check_array(X)
 		X = np.array(X)
 		
-		x_new, windows_per_point = self.project_time_series(X)
-		self.build_wrapped()
+		x_new, windows_per_point = self._project_time_series(X)
+		self._build_wrapped()
 		self._wrapped_model.fit(x_new)
 
 	def anomaly_score(self, X) -> np.ndarray:
-		check_training_attributes(self, {"_wrapped_model": None})
+		check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().anomaly_score(X)
 	
 	def classify(self, X) -> np.ndarray:
-		check_training_attributes(self, {"_wrapped_model": None})
+		check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().classify(X)
 	
-	def compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		# If the model is used as novelty it directly predicts
 		if self.novelty:
 			# Anomalies are -1 in LOF
 			window_anomalies = self._wrapped_model.predict(vector_data) * -1
 		else:
-			self.build_wrapped()
+			self._build_wrapped()
 			
 			# Anomalies are -1 in LOF
 			window_anomalies = self._wrapped_model.fit_predict(vector_data) * -1
 			
 		return window_anomalies
 
-	def compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
 		if self.novelty:
 			window_scores = - self._wrapped_model.decision_function(vector_data)
 		else:
-			self.build_wrapped()
+			self._build_wrapped()
 			
 			# I use fit since I do not need the labels
 			self._wrapped_model.fit(vector_data)
@@ -97,7 +97,7 @@ class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
 		
 		return window_scores
 
-	def build_wrapped(self) -> None:
+	def _build_wrapped(self) -> None:
 		self._wrapped_model = LocalOutlierFactor(self.n_neighbors,
 												 algorithm=self.algorithm,
 												 leaf_size=self.leaf_size,

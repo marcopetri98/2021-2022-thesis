@@ -19,6 +19,15 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 		States whether the training and validation sets must be resized in case
 		they are not a multiple of window. If true, exceeding elements will be
 		discarded to train and validate on multiple of window size.
+		
+	allow_overlapping : bool, default=True
+		States whether the training examples can overlap. An autoencoder takes a
+		window and projects it onto the latent space and back-projects it to the
+		starting space. For time series we take 1,2,...,w points as window where
+		w is window length, and we project them onto latent space. If this flag
+		is True, we define for training examples such as 1,2,...,w and overlapped
+		ones such as 2,3,...,w+1 and 3,4,...,w+2. If it is false, we will
+		generate 1,2,...,w, w+1, w+2,...,2w and so on.
 	"""
 	
 	def __init__(self, window: int = 200,
@@ -28,19 +37,25 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
 				 folder_save_path: str = "nn_models/",
-				 filename: str = "lstm",
-				 extend_not_multiple: bool = True):
-		super().__init__(window,
-						 window,
-						 forecast,
-						 batch_size,
-						 max_epochs,
-						 predict_validation,
-						 batch_divide_training,
-						 folder_save_path,
-						 filename)
+				 filename: str = "autoencoder",
+				 extend_not_multiple: bool = True,
+				 distribution: str = "gaussian",
+				 perc_quantile: float = 0.999,
+				 allow_overlapping: bool = True):
+		super().__init__(window=window,
+						 stride=window,
+						 forecast=forecast,
+						 batch_size=batch_size,
+						 max_epochs=max_epochs,
+						 predict_validation=predict_validation,
+						 batch_divide_training=batch_divide_training,
+						 folder_save_path=folder_save_path,
+						 filename=filename,
+						 distribution=distribution,
+						 perc_quantile=perc_quantile)
 		
 		self.extend_not_multiple = extend_not_multiple
+		self.allow_overlapping = allow_overlapping
 	
 	def fit(self, x, training_idx, validation_idx, y) -> list[History]:
 		check_X_y(x, y)
@@ -79,7 +94,12 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 		samples = []
 		targets = []
 		
-		for i in range(0, x.shape[0] - self.window, self.stride):
+		if not self.allow_overlapping:
+			increment = self.stride
+		else:
+			increment = 1
+		
+		for i in range(0, x.shape[0] - self.window, increment):
 			samples.append(x[i:i + self.window])
 			targets.append(x[i:i + self.window])
 		

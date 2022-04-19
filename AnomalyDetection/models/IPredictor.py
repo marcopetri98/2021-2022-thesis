@@ -9,5 +9,17 @@ class IPredictor(ABC):
     """
 	
 	@abc.abstractmethod
-	def predict(self) -> np.ndarray:
+	def predict(self, X) -> np.ndarray:
+		"""
+		
+		Parameters
+		----------
+		X : array-like of shape (n_samples, n_features)
+			The training data representing containing the features.
+
+		Returns
+		-------
+		predictions : ndarray of shape (n_samples, n_prediction)
+			The prediction for each of the samples given in input.
+		"""
 		pass

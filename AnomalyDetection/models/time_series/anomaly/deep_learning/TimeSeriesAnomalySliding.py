@@ -18,16 +18,20 @@ class TimeSeriesAnomalySliding(TimeSeriesAnomalySequential, ABC):
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
 				 folder_save_path: str = "nn_models/",
-				 filename: str = "lstm"):
-		super().__init__(window,
-						 stride,
-						 forecast,
-						 batch_size,
-						 max_epochs,
-						 predict_validation,
-						 batch_divide_training,
-						 folder_save_path,
-						 filename)
+				 filename: str = "sliding",
+				 distribution: str = "gaussian",
+				 perc_quantile: float = 0.999):
+		super().__init__(window=window,
+						 stride=stride,
+						 forecast=forecast,
+						 batch_size=batch_size,
+						 max_epochs=max_epochs,
+						 predict_validation=predict_validation,
+						 batch_divide_training=batch_divide_training,
+						 folder_save_path=folder_save_path,
+						 filename=filename,
+						 distribution=distribution,
+						 perc_quantile=perc_quantile)
 	
 	def _predict_future(self, xp: np.ndarray, x: np.ndarray) -> np.ndarray:
 		check_is_fitted(self, ["model_"])

@@ -5,7 +5,7 @@ from typing import Tuple
 import numpy as np
 import tensorflow as tf
 from keras.callbacks import History
-from scipy.stats import truncnorm
+from scipy.stats import truncnorm, norm
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import check_X_y
 
@@ -50,7 +50,19 @@ class TimeSeriesAnomalyWindowDL(ABC):
 	filename : str, default="lstm"
 		The name of the checkpoint file and of the model file after it has been
 		trained.
+		
+	distribution : str, default="gaussian"
+		It is the distribution used to compute the threshold of error over which
+		a point is considered an anomaly. EFFECTIVE ONLY BEFORE FITTING.
+	
+	perc_quantile : float, default=0.999
+		The percentage for which we want to find the quantile to be the
+		threshold of the model in performing anomaly detection. EFFECTIVE ONLY
+		BEFORE FITTING.
 	"""
+	__GAUSSIAN_DIST = "gaussian"
+	__TRUNC_GAUSSIAN_DIST = "truncated_gaussian"
+	ACCEPTED_DISTRIBUTIONS = [__GAUSSIAN_DIST, __TRUNC_GAUSSIAN_DIST]
 	
 	def __init__(self, window: int = 200,
 				 stride: int = 1,
@@ -60,7 +72,27 @@ class TimeSeriesAnomalyWindowDL(ABC):
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
 				 folder_save_path: str = "nn_models/",
-				 filename: str = "lstm"):
+				 filename: str = "window_dl",
+				 distribution: str = "gaussian",
+				 perc_quantile: float = 0.999):
+		if window < 1:
+			raise ValueError("The window must be positive and integer")
+		elif stride < 1:
+			raise ValueError("The stride must be positive and integer")
+		elif batch_size < 1:
+			raise ValueError("The batch size must be positive and integer")
+		elif max_epochs < 1:
+			raise ValueError("The maximum number of epochs must be positive and"
+							 " integer")
+		elif not 0 <= predict_validation < 1:
+			raise ValueError("Predict validation must be in [0, 1)")
+		elif distribution not in self.ACCEPTED_DISTRIBUTIONS:
+			raise ValueError("Error distribution must be one of %s" %
+							 self.ACCEPTED_DISTRIBUTIONS)
+		elif not 0 < perc_quantile < 1:
+			raise ValueError("The percentage used to compute the quantile must "
+							 "lies in range (0,1)")
+		
 		super().__init__()
 		
 		self.window = window
@@ -72,6 +104,8 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		self.batch_divide_training = batch_divide_training
 		self.folder_save_path = folder_save_path
 		self.filename = filename
+		self.distribution = distribution
+		self.perc_quantile = perc_quantile
 	
 	@abc.abstractmethod
 	def _build_x_y_sequences(self, x) -> Tuple[np.ndarray, np.ndarray]:
@@ -137,14 +171,25 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		check_X_y(x, y)
 		x = np.array(x)
 		
-		# We are only interested in absolute errors
-		x = np.absolute(x)
-		
-		# We fit a truncated gaussian to the errors (errors are scalars)
-		mean = np.mean(x)
-		std = np.std(x)
-		a, b = (0 - mean) / std, (1 - mean) / std
-		self.threshold_ = truncnorm.ppf(0.99, a, b, loc=mean, scale=std)
+		match self.distribution:
+			case self.__GAUSSIAN_DIST:
+				# We fit a truncated gaussian to the errors (errors are scalars)
+				mean = np.mean(x)
+				std = np.std(x)
+				self.threshold_ = norm.ppf(self.perc_quantile,
+										   loc=mean,
+										   scale=std)
+				
+			case self.__TRUNC_GAUSSIAN_DIST:
+				# We fit a truncated gaussian to the errors (errors are scalars)
+				mean = np.mean(x)
+				std = np.std(x)
+				a, b = (0 - mean) / std, (1 - mean) / std
+				self.threshold_ = truncnorm.ppf(self.perc_quantile,
+												a,
+												b,
+												loc=mean,
+												scale=std)
 	
 	def fit(self, x, training_idx, validation_idx, y) -> list[History]:
 		"""Train the predictor and the threshold using a simple Perceptron.
@@ -323,13 +368,12 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		"""
 		# Input validated in compute errors
 		errors = self._compute_errors(xp, x)
-		errors = np.abs(errors)
 		
 		scores = errors.reshape((errors.shape[0], 1))
 		scores = MinMaxScaler().fit_transform(scores)
 		scores = scores.reshape(scores.shape[0])
 		
-		return scores
+		return errors
 	
 	@abc.abstractmethod
 	def predict_time_series(self, xp, x) -> np.ndarray:

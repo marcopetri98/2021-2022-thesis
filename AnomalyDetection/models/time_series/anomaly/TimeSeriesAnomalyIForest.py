@@ -56,19 +56,19 @@ class TimeSeriesAnomalyIForest(TimeSeriesAnomalyWindowWrapper, IParametric):
 		check_array(X)
 		X = np.array(X)
 		
-		x_new, windows_per_point = self.project_time_series(X)
-		self.build_wrapped()
+		x_new, windows_per_point = self._project_time_series(X)
+		self._build_wrapped()
 		self._wrapped_model.fit(x_new)
 	
-	def compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		window_anomalies = self._wrapped_model.predict(vector_data) * -1
 		return window_anomalies
 	
-	def compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
 		window_scores = self._wrapped_model.decision_function(vector_data) * -1
 		return window_scores
 
-	def build_wrapped(self):
+	def _build_wrapped(self):
 		self._wrapped_model = IsolationForest(n_estimators=self.n_estimators,
 											  max_samples=self.max_samples,
 											  contamination=self.contamination,

@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.svm import OneClassSVM
 from sklearn.utils import check_array, check_X_y
 
-from input_validation.attribute_checks import check_training_attributes
+from input_validation.attribute_checks import check_not_default_attributes
 from models.IParametric import IParametric
 from models.time_series.anomaly.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
 
@@ -70,27 +70,27 @@ class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
 		else:
 			normal_data = X
 			
-		x_new, windows_per_point = self.project_time_series(normal_data)
-		self.build_wrapped()
+		x_new, windows_per_point = self._project_time_series(normal_data)
+		self._build_wrapped()
 		self._wrapped_model.fit(x_new)
 
 	def anomaly_score(self, X) -> np.ndarray:
-		check_training_attributes(self, {"_wrapped_model": None})
+		check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().anomaly_score(X)
 	
 	def classify(self, X) -> np.ndarray:
-		check_training_attributes(self, {"_wrapped_model": None})
+		check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().classify(X)
 
-	def compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		window_anomalies = self._wrapped_model.predict(vector_data) * -1
 		return window_anomalies
 	
-	def compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
 		window_scores = self._wrapped_model.decision_function(vector_data) * -1
 		return window_scores
 
-	def build_wrapped(self):
+	def _build_wrapped(self):
 		self._wrapped_model = OneClassSVM(kernel=self.kernel,
 										  degree=self.degree,
 										  gamma=self.gamma,

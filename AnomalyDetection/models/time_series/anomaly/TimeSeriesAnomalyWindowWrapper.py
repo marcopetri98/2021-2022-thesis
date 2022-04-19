@@ -44,12 +44,12 @@ class TimeSeriesAnomalyWindowWrapper(TimeSeriesAnomalyWindow, ITimeSeriesAnomaly
 		X = np.array(X)
 		
 		# Projects the time series onto a vector space
-		x_new, windows_per_point = self.project_time_series(X)
+		x_new, windows_per_point = self._project_time_series(X)
 		
 		# Get the window scores
-		window_scores = self.compute_window_scores(x_new)
-		anomaly_scores= self.compute_point_scores(window_scores,
-												  windows_per_point)
+		window_scores = self._compute_window_scores(x_new)
+		anomaly_scores= self._compute_point_scores(window_scores,
+												   windows_per_point)
 		return anomaly_scores
 	
 	def classify(self, X) -> np.ndarray:
@@ -58,14 +58,14 @@ class TimeSeriesAnomalyWindowWrapper(TimeSeriesAnomalyWindow, ITimeSeriesAnomaly
 		X = np.array(X)
 		
 		# Projects the time series onto a vector space
-		x_new, windows_per_point = self.project_time_series(X)
+		x_new, windows_per_point = self._project_time_series(X)
 		
 		# Get window labels
-		window_scores = self.compute_window_scores(x_new)
-		window_anomalies = self.compute_window_labels(x_new)
-		anomaly_scores = self.compute_point_scores(window_scores,
-												   windows_per_point)
-		labels, _ = self.compute_point_labels(window_anomalies,
-											  windows_per_point,
-											  anomaly_scores)
+		window_scores = self._compute_window_scores(x_new)
+		window_anomalies = self._compute_window_labels(x_new)
+		anomaly_scores = self._compute_point_scores(window_scores,
+													windows_per_point)
+		labels, _ = self._compute_point_labels(window_anomalies,
+											   windows_per_point,
+											   anomaly_scores)
 		return labels

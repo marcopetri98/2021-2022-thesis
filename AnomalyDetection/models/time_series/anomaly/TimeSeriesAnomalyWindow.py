@@ -69,8 +69,8 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 		super().set_params()
 		self.__check_parameters()
 	
-	def project_time_series(self, time_series: np.ndarray) -> Tuple[np.ndarray,
-																	np.ndarray]:
+	def _project_time_series(self, time_series: np.ndarray) -> Tuple[np.ndarray,
+																	 np.ndarray]:
 		# Input validation
 		check_array(time_series)
 		data = np.array(time_series)
@@ -99,8 +99,8 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 
 		return x_new, num_windows
 	
-	def compute_point_scores(self, window_scores,
-							 windows_per_point) -> np.ndarray:
+	def _compute_point_scores(self, window_scores,
+							  windows_per_point) -> np.ndarray:
 		check_x_y_smaller_1d(window_scores, windows_per_point)
 
 		window_scores = np.array(window_scores)
@@ -125,9 +125,9 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 
 		return scores
 	
-	def compute_point_labels(self, window_labels,
-							 windows_per_point,
-							 point_scores=None) -> Tuple[np.ndarray, float]:
+	def _compute_point_labels(self, window_labels,
+							  windows_per_point,
+							  point_scores=None) -> Tuple[np.ndarray, float]:
 		check_x_y_smaller_1d(window_labels, windows_per_point)
 
 		window_labels = np.array(window_labels)

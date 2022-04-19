@@ -32,8 +32,8 @@ def check_attributes_exists(estimator,
 				raise ValueError("%s does not have attribute %s" %
 								 (estimator.__class__, attribute))
 
-def check_training_attributes(estimator,
-							  attributes: dict) -> None:
+def check_not_default_attributes(estimator,
+								 attributes: dict) -> None:
 	"""Checks if the attributes have the default not trained value.
 	
 	It raises an exception if at least one of the attribute has the default not

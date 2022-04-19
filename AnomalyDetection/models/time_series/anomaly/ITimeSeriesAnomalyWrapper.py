@@ -7,7 +7,7 @@ class ITimeSeriesAnomalyWrapper(ABC):
     """
 	
 	@abc.abstractmethod
-	def build_wrapped(self) -> None:
+	def _build_wrapped(self) -> None:
 		"""Instantiates the wrapped model.
 
 		Returns

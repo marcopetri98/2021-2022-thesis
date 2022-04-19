@@ -28,8 +28,8 @@ def print_header(heading: str, separator: str = "=") -> None:
 
 	print(string_to_print)
 
-
-def print_step(text: str) -> None:
+# TODO: remove first variable to allow not string variables as first variable
+def print_step(text: str, *args) -> None:
 	"""Prints a step of execution.
 
 	Parameters
@@ -41,15 +41,21 @@ def print_step(text: str) -> None:
 	-------
 	None
 	"""
-	if len(text) == 0:
+	if len(text) == 0 and len(args) == 0:
 		raise ValueError("An execution step print must have a text")
 
 	step_print = "Execution: "
 	step_print += text
+	if len(args) != 0:
+		for var in args:
+			if isinstance(var, str):
+				step_print += var
+			else:
+				step_print += str(var)
 
 	print(step_print)
 
-
+# TODO: remove first variable to allow not string variables as first variable
 def print_warning(warning_text: str, *args) -> None:
 	"""Prints a warning on screen.
 

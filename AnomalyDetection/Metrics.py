@@ -11,6 +11,7 @@ import visualizer.Viewer as vw
 def compute_metrics(true_labels: np.ndarray,
 					scores: np.ndarray,
 					pred_labels: np.ndarray = None,
+					compute_roc_auc: bool = True,
 					only_roc_auc: bool = False):
 	if not only_roc_auc:
 		precision = metrics.precision_score(true_labels, pred_labels)
@@ -28,8 +29,9 @@ def compute_metrics(true_labels: np.ndarray,
 		print("AVERAGE PRECISION SCORE: ", avg_precision)
 		print("PRECISION-RECALL AUC SCORE: ", precision_recall_auc)
 	
-	roc_auc = roc_auc_score(true_labels, scores)
-	print("ROC AUC SCORE: ", roc_auc)
+	if compute_roc_auc:
+		roc_auc = roc_auc_score(true_labels, scores)
+		print("ROC AUC SCORE: ", roc_auc)
 
 def make_metric_plots(dataframe: pd.DataFrame,
 					  true_labels: np.ndarray,

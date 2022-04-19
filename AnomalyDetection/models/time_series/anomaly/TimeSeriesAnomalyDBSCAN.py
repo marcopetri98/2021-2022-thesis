@@ -69,9 +69,9 @@ class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowWrapper):
 		super().set_params(**params)
 		self.__check_parameters()
 
-	def compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		# Builds the model and fits it to the vector data
-		self.build_wrapped()
+		self._build_wrapped()
 		self._wrapped_model.fit(vector_data)
 		
 		anomalies = np.argwhere(self._wrapped_model.labels_ == -1)
@@ -82,9 +82,9 @@ class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowWrapper):
 		
 		return window_anomalies
 	
-	def compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
 		# Builds the model and fits it to the vector data
-		self.build_wrapped()
+		self._build_wrapped()
 		self._wrapped_model.fit(vector_data)
 		
 		clusters = set(self._wrapped_model.labels_).difference({-1})
@@ -121,7 +121,7 @@ class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowWrapper):
 				
 		return anomaly_scores
 	
-	def build_wrapped(self) -> None:
+	def _build_wrapped(self) -> None:
 		self._wrapped_model = DBSCAN(self.eps,
 									 min_samples=self.min_samples,
 									 metric=self.metric,

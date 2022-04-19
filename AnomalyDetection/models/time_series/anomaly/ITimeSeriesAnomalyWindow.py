@@ -10,7 +10,7 @@ class ITimeSeriesAnomalyWindow(ITimeSeriesAnomaly):
     """
 	
 	@abc.abstractmethod
-	def project_time_series(self, time_series: np.ndarray) -> np.ndarray:
+	def _project_time_series(self, time_series: np.ndarray) -> np.ndarray:
 		"""Compute the new space.
 
 		Parameters
@@ -29,8 +29,8 @@ class ITimeSeriesAnomalyWindow(ITimeSeriesAnomaly):
 		pass
 	
 	@abc.abstractmethod
-	def compute_point_scores(self, window_scores,
-							 windows_per_point) -> np.ndarray:
+	def _compute_point_scores(self, window_scores,
+							  windows_per_point) -> np.ndarray:
 		"""Computes the scoring of the points for the time series.
 
 		Parameters
@@ -49,9 +49,9 @@ class ITimeSeriesAnomalyWindow(ITimeSeriesAnomaly):
 		pass
 	
 	@abc.abstractmethod
-	def compute_point_labels(self, window_labels,
-							 windows_per_point,
-							 point_scores=None) -> np.ndarray:
+	def _compute_point_labels(self, window_labels,
+							  windows_per_point,
+							  point_scores=None) -> np.ndarray:
 		"""Computes the scoring of the points for the time series.
 
 		Parameters
@@ -76,7 +76,7 @@ class ITimeSeriesAnomalyWindow(ITimeSeriesAnomaly):
 		pass
 	
 	@abc.abstractmethod
-	def compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:
 		"""Compute the score of the passed windows.
 		
 		Parameters
@@ -92,7 +92,7 @@ class ITimeSeriesAnomalyWindow(ITimeSeriesAnomaly):
 		pass
 	
 	@abc.abstractmethod
-	def compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
+	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		"""Compute the labels of the passed windows.
 		
 		Parameters
