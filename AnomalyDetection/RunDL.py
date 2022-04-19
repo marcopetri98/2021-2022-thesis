@@ -1,9 +1,14 @@
+import os
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
+from get_windows_indices import get_windows_indices
+from models.time_series.anomaly.deep_learning.BraeiCNN import BraeiCNN
+from models.time_series.anomaly.deep_learning.BraeiCNNBatch import BraeiCNNBatch
 from models.time_series.anomaly.deep_learning.BraeiDenseAutoencoder import \
 	BraeiDenseAutoencoder
 from models.time_series.anomaly.deep_learning.BraeiGRU import BraeiGRU
@@ -13,9 +18,10 @@ from models.time_series.anomaly.deep_learning.CNNAutoencoder import \
 from models.time_series.anomaly.deep_learning.GRUAutoencoder import \
 	GRUAutoencoder
 from models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
-from visualizer.Viewer import plot_time_series_forecast
+from visualizer.Viewer import plot_time_series_forecast, \
+	plot_time_series_with_predicitons_bars
 
-ALGORITHM = "cnn autoencoder"
+ALGORITHM = "dense autoencoder"
 
 VALIDATION_DIM = 0.2
 DATASET = "ambient_temperature_system_failure.csv"
@@ -29,7 +35,7 @@ ALL_METRICS = True
 LOAD_MODEL = False
 CHECK_OVERFITTING = False
 AUTOENCODER = True
-AUTOENCODER_WINDOW = 15
+AUTOENCODER_WINDOW = 32
 
 
 def preprocess(X) -> np.ndarray:
@@ -133,8 +139,8 @@ for i in range(len(change_idx)):
 	else:
 		normal_slices.append(slice(start, stop))
 
-training_slices = [slice(0, 2880)]
-validation_slices = [slice(2880, 3584)]
+training_slices = [slice(0, 2878)]
+validation_slices = [slice(2878, 3582)]
 
 match ALGORITHM:
 	case "lstm":
@@ -142,9 +148,10 @@ match ALGORITHM:
 						  max_epochs=100,
 						  batch_size=32,
 						  batch_divide_training=True,
-						  filename="lstm_paper")
+						  distribution="truncated_gaussian",
+						  filename="lstm_paper_tg")
 		if LOAD_MODEL:
-			model.load_model("nn_models/lstm_paper")
+			model.load_model("nn_models/lstm_paper_tg")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
@@ -160,7 +167,9 @@ match ALGORITHM:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "cnn":
-		model = BraeiGRU(window=30,
+		os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+		
+		model = BraeiCNN(window=30,
 						 max_epochs=100,
 						 batch_size=32,
 						 batch_divide_training=True,
@@ -169,26 +178,41 @@ match ALGORITHM:
 			model.load_model("nn_models/cnn_paper")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
+	
+	case "cnn-batch":
+		os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+		
+		model = BraeiCNNBatch(window=30,
+							  max_epochs=100,
+							  batch_size=32,
+							  batch_divide_training=True,
+							  filename="cnnb_paper")
+		if LOAD_MODEL:
+			model.load_model("nn_models/cnnb_paper")
+		else:
+			model.fit(data, training_slices, validation_slices, data_labels)
 			
 	case "dense autoencoder":
 		model = BraeiDenseAutoencoder(window=AUTOENCODER_WINDOW,
 									  max_epochs=250,
-									  batch_size=32,
-									  filename="dense_ae_paper")
+									  batch_size=16,
+									  perc_quantile=0.98,
+									  filename="dense_ae_paper_ov")
 		
 		if LOAD_MODEL:
-			model.load_model("nn_models/dense_ae_paper")
+			model.load_model("nn_models/dense_ae_paper_ov")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "lstm autoencoder":
 		model = LSTMAutoencoder(window=AUTOENCODER_WINDOW,
 								max_epochs=500,
-								batch_size=15,
-								filename="lstm_ae",
+								batch_size=32,
+								filename="lstm_ae_ov",
+								#distribution="truncated_gaussian",
 								extend_not_multiple=True)
 		if LOAD_MODEL:
-			model.load_model("nn_models/lstm_ae")
+			model.load_model("nn_models/lstm_ae_ov")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
@@ -204,9 +228,11 @@ match ALGORITHM:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
 	case "cnn autoencoder":
+		os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+		
 		model = CNNAutoencoder(window=AUTOENCODER_WINDOW,
-							   max_epochs=250,
-							   batch_size=15,
+							   max_epochs=500,
+							   batch_size=30,
 							   filename="cnn_ae",
 							   extend_not_multiple=True)
 		if LOAD_MODEL:
@@ -217,12 +243,26 @@ match ALGORITHM:
 true_labels = data_test_labels
 labels = model.predict(data, data_test)
 scores = model.anomaly_score(data, data_test)
+perc = np.sum(labels) / labels.shape[0]
 
 if ALL_METRICS:
-	compute_metrics(true_labels, scores, labels, False)
+	compute_metrics(true_labels, scores, labels, compute_roc_auc=not CHECK_OVERFITTING, only_roc_auc=False)
 	make_metric_plots(dataframe, true_labels, scores, labels)
 	predictions = model.predict_time_series(data[validation_slices[0]], data_test)
 	plot_time_series_forecast(data_test, predictions, on_same_plot=True)
 	plot_time_series_forecast(data_test, predictions, on_same_plot=False)
+	
+	bars = get_windows_indices(all_df,
+							   PURE_DATA_KEY,
+							   GROUND_WINDOWS_PATH)
+	all_timestamps = all_df["timestamp"].tolist()
+	bars = [dataframe["timestamp"].tolist().index(all_timestamps[int(bar)])
+			for bar in bars
+			if all_timestamps[int(bar)] in dataframe["timestamp"].tolist()]
+	bars = np.array(bars)
+	plot_time_series_with_predicitons_bars(dataframe,
+										   labels,
+										   bars,
+										   pred_color='r')
 else:
-	compute_metrics(true_labels, scores, only_roc_auc=True)
+	compute_metrics(true_labels, scores, compute_roc_auc=not CHECK_OVERFITTING, only_roc_auc=True)

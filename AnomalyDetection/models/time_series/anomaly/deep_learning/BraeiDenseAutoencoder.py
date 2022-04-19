@@ -15,17 +15,23 @@ class BraeiDenseAutoencoder(TimeSeriesAnomalyAutoencoder):
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
 				 folder_save_path: str = "nn_models/",
-				 filename: str = "lstm",
-				 extend_not_multiple: bool = True):
-		super().__init__(window,
-						 forecast,
-						 batch_size,
-						 max_epochs,
-						 predict_validation,
-						 batch_divide_training,
-						 folder_save_path,
-						 filename,
-						 extend_not_multiple)
+				 filename: str = "dense_ae",
+				 extend_not_multiple: bool = True,
+				 distribution: str = "gaussian",
+				 perc_quantile: float = 0.999,
+				 allow_overlapping: bool = True):
+		super().__init__(window=window,
+						 forecast=forecast,
+						 batch_size=batch_size,
+						 max_epochs=max_epochs,
+						 predict_validation=predict_validation,
+						 batch_divide_training=batch_divide_training,
+						 folder_save_path=folder_save_path,
+						 filename=filename,
+						 extend_not_multiple=extend_not_multiple,
+						 distribution=distribution,
+						 perc_quantile=perc_quantile,
+						 allow_overlapping=allow_overlapping)
 	
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
 		return self._learning_create_model(input_shape)

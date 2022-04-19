@@ -18,16 +18,20 @@ class BraeiGRU(TimeSeriesAnomalySliding):
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
 				 folder_save_path: str = "nn_models/",
-				 filename: str = "lstm"):
-		super().__init__(window,
-						 stride,
-						 forecast,
-						 batch_size,
-						 max_epochs,
-						 predict_validation,
-						 batch_divide_training,
-						 folder_save_path,
-						 filename)
+				 filename: str = "gru",
+				 distribution: str = "gaussian",
+				 perc_quantile: float = 0.999):
+		super().__init__(window=window,
+						 stride=stride,
+						 forecast=forecast,
+						 batch_size=batch_size,
+						 max_epochs=max_epochs,
+						 predict_validation=predict_validation,
+						 batch_divide_training=batch_divide_training,
+						 folder_save_path=folder_save_path,
+						 filename=filename,
+						 distribution=distribution,
+						 perc_quantile=perc_quantile)
 	
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
 		"""Creates the LSTM model to perform the predictions.
@@ -58,9 +62,6 @@ class BraeiGRU(TimeSeriesAnomalySliding):
 		
 		output_layer = tf.keras.layers.Dense(self.forecast * input_shape[1],
 											 name="output")(gru_2)
-		
-		output_layer = tf.keras.layers.Reshape((self.forecast, input_shape[1]),
-											   name="reshape")(output_layer)
 		
 		model = tf.keras.Model(inputs=input_layer,
 							   outputs=output_layer,
@@ -97,12 +98,9 @@ class BraeiGRU(TimeSeriesAnomalySliding):
 		output_layer = tf.keras.layers.Dense(self.forecast * input_shape[1],
 											 name="output")(gru_2)
 		
-		output_layer = tf.keras.layers.Reshape((self.forecast, input_shape[1]),
-											   name="reshape")(output_layer)
-		
 		model = tf.keras.Model(inputs=input_layer,
 							   outputs=output_layer,
-							   name="lstm_model")
+							   name="gru_model")
 		
 		model.compile(loss="mse",
 					  optimizer=tf.keras.optimizers.Adam(),

@@ -2,10 +2,11 @@ from typing import Tuple
 
 import tensorflow as tf
 
-from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySliding import TimeSeriesAnomalySliding
+from models.time_series.anomaly.deep_learning.TimeSeriesAnomalySliding import \
+	TimeSeriesAnomalySliding
 
 
-class BraeiCNN(TimeSeriesAnomalySliding):
+class BraeiCNNBatch(TimeSeriesAnomalySliding):
 	"""TimeSeriesAnomalyCNN."""
 	
 	def __init__(self, window: int = 200,
@@ -16,7 +17,7 @@ class BraeiCNN(TimeSeriesAnomalySliding):
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
 				 folder_save_path: str = "nn_models/",
-				 filename: str = "cnn",
+				 filename: str = "cnnb",
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999):
 		super().__init__(window=window,
@@ -58,22 +59,19 @@ class BraeiCNN(TimeSeriesAnomalySliding):
 		input_layer = tf.keras.layers.Input(input_shape,
 											name="input")
 		
-		cnn_model = tf.keras.layers.Conv1D(8, 2,
+		cnn_model = tf.keras.layers.Conv1D(256,
+										   3,
+										   padding="same",
 										   activation="relu",
 										   name="conv1d_1")(input_layer)
-		cnn_model = tf.keras.layers.MaxPool1D(2,
-											  name="maxpool1d_1")(cnn_model)
-		cnn_model = tf.keras.layers.Conv1D(16, 2,
+		cnn_model = tf.keras.layers.BatchNormalization(name="batch_1")(cnn_model)
+		cnn_model = tf.keras.layers.Conv1D(256,
+										   3,
+										   padding="same",
 										   activation="relu",
 										   name="conv1d_2")(cnn_model)
-		cnn_model = tf.keras.layers.MaxPool1D(2,
-											  name="maxpool1d_2")(cnn_model)
-		cnn_model = tf.keras.layers.Conv1D(32, 2,
-										   activation="relu",
-										   name="conv1d_3")(cnn_model)
-		cnn_model = tf.keras.layers.MaxPool1D(2,
-											  name="maxpool1d_3")(cnn_model)
-		
+		cnn_model = tf.keras.layers.BatchNormalization(name="batch_2")(cnn_model)
+
 		cnn_model = tf.keras.layers.Flatten()(cnn_model)
 		cnn_model = tf.keras.layers.Dense(50,
 										  activation="relu",
@@ -84,7 +82,7 @@ class BraeiCNN(TimeSeriesAnomalySliding):
 		
 		model = tf.keras.Model(inputs=input_layer,
 							   outputs=output_layer,
-							   name="cnn_model")
+							   name="batch_cnn_model")
 		
 		model.compile(loss="mse",
 					  optimizer=tf.keras.optimizers.Adam(),

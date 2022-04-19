@@ -1,10 +1,7 @@
-# Python imports
 from typing import Tuple
 
-# External imports
 import tensorflow as tf
 
-# Project imports
 from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyAutoencoder import TimeSeriesAnomalyAutoencoder
 
 
@@ -19,16 +16,22 @@ class LSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
 				 batch_divide_training: bool = False,
 				 folder_save_path: str = "nn_models/",
 				 filename: str = "lstm",
-				 extend_not_multiple: bool = True):
-		super().__init__(window,
-						 forecast,
-						 batch_size,
-						 max_epochs,
-						 predict_validation,
-						 batch_divide_training,
-						 folder_save_path,
-						 filename,
-						 extend_not_multiple)
+				 extend_not_multiple: bool = True,
+				 distribution: str = "gaussian",
+				 perc_quantile: float = 0.999,
+				 allow_overlapping: bool = True):
+		super().__init__(window=window,
+						 forecast=forecast,
+						 batch_size=batch_size,
+						 max_epochs=max_epochs,
+						 predict_validation=predict_validation,
+						 batch_divide_training=batch_divide_training,
+						 folder_save_path=folder_save_path,
+						 filename=filename,
+						 extend_not_multiple=extend_not_multiple,
+						 distribution=distribution,
+						 perc_quantile=perc_quantile,
+						 allow_overlapping=allow_overlapping)
 	
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
 		return self._learning_create_model(input_shape)
@@ -37,21 +40,18 @@ class LSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
 		input_layer = tf.keras.layers.Input(input_shape,
 											name="input")
 		
-		encoder = tf.keras.layers.LSTM(32,
+		encoder = tf.keras.layers.LSTM(128,
 									   return_sequences=True,
 									   name="encoder_lstm_1")(input_layer)
-		encoder = tf.keras.layers.LSTM(16,
-									   return_sequences=True,
+		encoder = tf.keras.layers.LSTM(64,
 									   name="encoder_lstm_2")(encoder)
 		
-		middle = tf.keras.layers.LSTM(8,
-									  name="encoder_lstm_3")(encoder)
-		middle = tf.keras.layers.RepeatVector(self.window)(middle)
+		middle = tf.keras.layers.RepeatVector(self.window)(encoder)
 		
-		decoder = tf.keras.layers.LSTM(16,
+		decoder = tf.keras.layers.LSTM(64,
 									   return_sequences=True,
 									   name="decoder_lstm_1")(middle)
-		decoder = tf.keras.layers.LSTM(32,
+		decoder = tf.keras.layers.LSTM(128,
 									   return_sequences=True,
 									   name="decoder_lstm_2")(decoder)
 		
