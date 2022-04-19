@@ -55,5 +55,9 @@ def check_not_default_attributes(estimator,
 	for key, value in attributes.items():
 		check_attributes_exists(estimator, key)
 		attr_val = getattr(estimator, key)
-		if attr_val == value:
-			raise RuntimeError("Train the model before calling this method")
+		if value is None:
+			if attr_val is None:
+				raise RuntimeError("Train the model before calling this method")
+		else:
+			if attr_val == value:
+				raise RuntimeError("Train the model before calling this method")

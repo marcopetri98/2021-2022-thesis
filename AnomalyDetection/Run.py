@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
@@ -10,6 +9,7 @@ from models.time_series.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomal
 from models.time_series.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 from models.time_series.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 from models.time_series.anomaly.TimeSeriesAnomalyOSVMPhase import TimeSeriesAnomalyOSVMPhase
+from reader.NABTimeSeriesReader import NABTimeSeriesReader
 
 #################################
 #								#
@@ -18,15 +18,13 @@ from models.time_series.anomaly.TimeSeriesAnomalyOSVMPhase import TimeSeriesAnom
 #								#
 #								#
 #################################
+
 ALGORITHM = "lof"
 
+DATASET_PATH = "dataset/"
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
 GROUND_WINDOWS_PATH = "dataset/combined_windows.json"
-DATASET_PATH = "dataset/"
-TRAINING_PATH = DATASET_PATH + "training/"
-TESTING_PATH = DATASET_PATH + "testing/"
-ANNOTATED_PATH = DATASET_PATH + "annotated/"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
 ALL_DATA = True
@@ -46,20 +44,9 @@ def preprocess(X) -> np.ndarray:
 #################################
 model = None
 
-all_df = pd.read_csv(ANNOTATED_PATH + DATASET)
-all_timestamps = all_df["timestamp"]
-all_data = all_df["value"]
-all_labels = all_df["target"]
-
-training = pd.read_csv(TRAINING_PATH + DATASET)
-training_timestamps = training["timestamp"]
-training_data = training["value"]
-training_labels = training["target"]
-
-test = pd.read_csv(TESTING_PATH + DATASET)
-test_timestamps = test["timestamp"]
-test_data = test["value"]
-test_labels = test["target"]
+reader = NABTimeSeriesReader(DATASET_PATH)
+all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
+training, test = reader.train_test_split(train_perc=0.8).get_train_test_dataframes()
 
 #################################
 #								#
@@ -69,16 +56,16 @@ test_labels = test["target"]
 #								#
 #################################
 # Data used to train
-data = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
-data_labels = training_labels
+data = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
+data_labels = training["target"]
 
 # Data used to test
-data_test = preprocess(np.array(test_data).reshape(test_data.shape[0], 1))
-data_test_labels = test_labels
+data_test = preprocess(np.array(test["value"]).reshape(test["value"].shape[0], 1))
+data_test_labels = test["target"]
 
 # Data used to evaluate
 dataframe = test.copy()
-dataframe["value"] = test_data
+dataframe["value"] = test["value"]
 
 training_slices = [slice(0, 3600), slice(3900, 5814)]
 validation_slices = [slice(3600, 3900)]
@@ -91,13 +78,13 @@ for slice_ in training_slices:
 		train = np.concatenate([train, data[slice_]], axis=0)
 
 if CHECK_OVERFITTING:
-	data_test = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
-	data_test_labels = training_labels
+	data_test = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
+	data_test_labels = training["target"]
 	dataframe = training.copy()
 	dataframe["value"] = data_test
 elif ALL_DATA:
-	data_test = preprocess(np.array(all_data).reshape(all_data.shape[0], 1))
-	data_test_labels = all_labels
+	data_test = preprocess(np.array(all_df["value"]).reshape(all_df["value"].shape[0], 1))
+	data_test_labels = all_df["target"]
 	dataframe = all_df.copy()
 	dataframe["value"] = data_test
 
@@ -160,7 +147,7 @@ labels = model.classify(data_test)
 scores = model.anomaly_score(data_test)
 
 if ALL_METRICS:
-	compute_metrics(true_labels, scores, labels, False)
+	compute_metrics(true_labels, scores, labels, only_roc_auc=False)
 	make_metric_plots(dataframe, true_labels, scores, labels)
 	bars = get_windows_indices(all_df,
 							   PURE_DATA_KEY,

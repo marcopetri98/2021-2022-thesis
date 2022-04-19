@@ -18,19 +18,17 @@ from models.time_series.anomaly.deep_learning.CNNAutoencoder import \
 from models.time_series.anomaly.deep_learning.GRUAutoencoder import \
 	GRUAutoencoder
 from models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
+from reader.NABTimeSeriesReader import NABTimeSeriesReader
 from visualizer.Viewer import plot_time_series_forecast, \
 	plot_time_series_with_predicitons_bars
 
 ALGORITHM = "dense autoencoder"
 
 VALIDATION_DIM = 0.2
+DATASET_PATH = "dataset/"
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
 GROUND_WINDOWS_PATH = "dataset/combined_windows.json"
-DATASET_PATH = "dataset/"
-TRAINING_PATH = DATASET_PATH + "training_dl/"
-TESTING_PATH = DATASET_PATH + "testing_dl/"
-ANNOTATED_PATH = DATASET_PATH + "annotated_dl/"
 ALL_METRICS = True
 LOAD_MODEL = False
 CHECK_OVERFITTING = False
@@ -53,20 +51,9 @@ np.random.seed(57)
 tf.random.set_seed(57)
 model = None
 
-all_df = pd.read_csv(ANNOTATED_PATH + DATASET)
-all_timestamps = all_df["timestamp"]
-all_data = all_df["value"]
-all_labels = all_df["target"]
-
-training = pd.read_csv(TRAINING_PATH + DATASET)
-training_timestamps = training["timestamp"]
-training_data = training["value"]
-training_labels = training["target"]
-
-test = pd.read_csv(TESTING_PATH + DATASET)
-test_timestamps = test["timestamp"]
-test_data = test["value"]
-test_labels = test["target"]
+reader = NABTimeSeriesReader(DATASET_PATH)
+all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
+training, test = reader.train_test_split(train_perc=0.5).get_train_test_dataframes()
 
 #################################
 #								#
@@ -76,12 +63,12 @@ test_labels = test["target"]
 #								#
 #################################
 # Data used to train
-data = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
-data_labels = training_labels
+data = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
+data_labels = training["target"]
 
 # Data used to test
-data_test = preprocess(np.array(test_data).reshape(test_data.shape[0], 1))
-data_test_labels = test_labels
+data_test = preprocess(np.array(test["value"]).reshape(test["value"].shape[0], 1))
+data_test_labels = test["target"]
 
 if AUTOENCODER:
 	if data_test.shape[0] % AUTOENCODER_WINDOW != 0:
@@ -98,23 +85,17 @@ if AUTOENCODER:
 		
 		np_train = np.concatenate((np.array(training), np.array(test[:remainder_points])))
 		training = pd.DataFrame(np_train, columns=training.columns)
-		training_timestamps = training["timestamp"]
-		training_data = training["value"]
-		training_labels = training["target"]
 		
 		np_test = np.array(test[remainder_points:])
 		test = pd.DataFrame(np_test, columns=test.columns)
-		test_timestamps = test["timestamp"]
-		test_data = test["value"]
-		test_labels = test["target"]
 
 # Data used to evaluate
 dataframe = test.copy()
 dataframe["value"] = data_test
 
 if CHECK_OVERFITTING:
-	data_test = preprocess(np.array(training_data).reshape(training_data.shape[0], 1))
-	data_test_labels = training_labels
+	data_test = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
+	data_test_labels = training["target"]
 	dataframe = training.copy()
 	dataframe["value"] = data_test
 
@@ -195,7 +176,7 @@ match ALGORITHM:
 	case "dense autoencoder":
 		model = BraeiDenseAutoencoder(window=AUTOENCODER_WINDOW,
 									  max_epochs=250,
-									  batch_size=16,
+									  batch_size=32,
 									  perc_quantile=0.98,
 									  filename="dense_ae_paper_ov")
 		

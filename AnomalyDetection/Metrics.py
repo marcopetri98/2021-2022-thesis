@@ -31,7 +31,7 @@ def compute_metrics(true_labels: np.ndarray,
 	
 	if compute_roc_auc:
 		roc_auc = roc_auc_score(true_labels, scores)
-		print("ROC AUC SCORE: ", roc_auc)
+		print("AUROC SCORE: ", roc_auc)
 
 def make_metric_plots(dataframe: pd.DataFrame,
 					  true_labels: np.ndarray,
