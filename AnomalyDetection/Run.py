@@ -4,6 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from Metrics import compute_metrics, make_metric_plots
 from get_windows_indices import get_windows_indices
 import visualizer.Viewer as vw
+from models.time_series.anomaly.TimeSeriesAnomalyARIMA import TimeSeriesAnomalyARIMA
 from models.time_series.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
 from models.time_series.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
 from models.time_series.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
@@ -19,15 +20,17 @@ from reader.NABTimeSeriesReader import NABTimeSeriesReader
 #								#
 #################################
 
-ALGORITHM = "lof"
+ALGORITHM = "MA"
 
+# DATASET 1: ambient_temperature_system_failure
+# DATASET 2: nyc_taxi
 DATASET_PATH = "dataset/"
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
 GROUND_WINDOWS_PATH = "dataset/combined_windows.json"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
-ALL_DATA = True
+ALL_DATA = False
 UNSUPERVISED = False
 SELF_SUPERVISED = True
 
@@ -46,7 +49,7 @@ model = None
 
 reader = NABTimeSeriesReader(DATASET_PATH)
 all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
-training, test = reader.train_test_split(train_perc=0.8).get_train_test_dataframes()
+training, test = reader.train_test_split(train_perc=0.3).get_train_test_dataframes()
 
 #################################
 #								#
@@ -67,15 +70,7 @@ data_test_labels = test["target"]
 dataframe = test.copy()
 dataframe["value"] = test["value"]
 
-training_slices = [slice(0, 3600), slice(3900, 5814)]
-validation_slices = [slice(3600, 3900)]
-
-train = None
-for slice_ in training_slices:
-	if train is None:
-		train = data[slice_]
-	else:
-		train = np.concatenate([train, data[slice_]], axis=0)
+train = data
 
 if CHECK_OVERFITTING:
 	data_test = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
@@ -134,6 +129,22 @@ elif SELF_SUPERVISED and ALGORITHM == "iforest":
 									 # max_samples=30,
 									 random_state=22)
 	model.fit(train)
+elif SELF_SUPERVISED and ALGORITHM == "AR":
+	model = TimeSeriesAnomalyARIMA(endog=train,
+								   order=(1, 1, 0))
+	model.fit(method="statespace",
+			  gls=True)
+elif SELF_SUPERVISED and ALGORITHM == "MA":
+	model = TimeSeriesAnomalyARIMA(endog=train,
+								   order=(0, 1, 2))
+	model.fit(method="statespace",
+			  gls=True)
+elif SELF_SUPERVISED and ALGORITHM == "ARIMA":
+	model = TimeSeriesAnomalyARIMA(endog=train,
+								   order=(1, 1, 3),
+								   perc_quantile=0.98)
+	model.fit(method="statespace",
+			  gls=True)
 
 #################################
 #								#
@@ -143,12 +154,23 @@ elif SELF_SUPERVISED and ALGORITHM == "iforest":
 #								#
 #################################
 true_labels = data_test_labels
-labels = model.classify(data_test)
-scores = model.anomaly_score(data_test)
+if ALGORITHM in ["ARIMA", "AR", "MA"]:
+	labels = model.classify(data_test.reshape((-1, 1)), data.reshape((-1, 1)))
+	scores = model.anomaly_score(data_test.reshape((-1, 1)), data.reshape((-1, 1)))
+else:
+	labels = model.classify(data_test.reshape((-1, 1)))
+	scores = model.anomaly_score(data_test.reshape((-1, 1)))
 
 if ALL_METRICS:
 	compute_metrics(true_labels, scores, labels, only_roc_auc=False)
 	make_metric_plots(dataframe, true_labels, scores, labels)
+	
+	if ALGORITHM in ["ARIMA", "AR", "MA"]:
+		predictions = model.predict_time_series(data,
+												data_test)
+		vw.plot_time_series_forecast(data_test, predictions, on_same_plot=True)
+		vw.plot_time_series_forecast(data_test, predictions, on_same_plot=False)
+	
 	bars = get_windows_indices(all_df,
 							   PURE_DATA_KEY,
 							   GROUND_WINDOWS_PATH)

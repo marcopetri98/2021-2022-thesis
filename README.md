@@ -12,3 +12,4 @@ The required python module to be able to run the codes of this repository are:
 6. scikit-optimize 0.9.0
 7. seaborn 0.11.2
 8. colorama 0.4.4
+9. Cython 0.29.28

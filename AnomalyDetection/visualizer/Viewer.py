@@ -230,7 +230,7 @@ def __compute_idx_ticks(dataframe: pd.DataFrame,
 						index_column: str):
 	fictitious_idx = np.arange(dataframe.shape[0])
 	indexes = np.linspace(0, dataframe.shape[0] - 1, num_ticks, dtype=np.intc)
-	ticks = dataframe[index_column][indexes] if index_column is not None else indexes
+	ticks = np.array(dataframe[index_column])[indexes] if index_column is not None else indexes
 	return fictitious_idx, indexes, ticks
 
 

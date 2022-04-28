@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import colorama
 from colorama import Fore, Style
 
@@ -28,24 +30,24 @@ def print_header(heading: str, separator: str = "=") -> None:
 
 	print(string_to_print)
 
-# TODO: remove first variable to allow not string variables as first variable
-def print_step(text: str, *args) -> None:
+def print_step(*args) -> None:
 	"""Prints a step of execution.
 
 	Parameters
 	----------
-	text: str
-		A string representing the execution step.
+	*args
+		Objects representing the message to be printed.
 
 	Returns
 	-------
 	None
 	"""
-	if len(text) == 0 and len(args) == 0:
+	if len(args) == 0:
 		raise ValueError("An execution step print must have a text")
 
-	step_print = "Execution: "
-	step_print += text
+	current_timestamp = datetime.now()
+	step_print = "[" + current_timestamp.strftime("%Y/%m/%d %H:%M:%S") + "] "
+	step_print += "Execution: "
 	if len(args) != 0:
 		for var in args:
 			if isinstance(var, str):
@@ -55,30 +57,25 @@ def print_step(text: str, *args) -> None:
 
 	print(step_print)
 
-# TODO: remove first variable to allow not string variables as first variable
-def print_warning(warning_text: str, *args) -> None:
+def print_warning(*args) -> None:
 	"""Prints a warning on screen.
 
 	Parameters
 	----------
-	warning_text: str
-		A string representing the execution step.
-		
-	args
-		A series of values of strings in case the print is formatted using
-		commas instead of string concatenation.
+	*args
+		Objects representing the message to be printed.
 
 	Returns
 	-------
 	None
 	"""
-	if len(warning_text) == 0 and len(args) == 0:
+	if len(args) == 0:
 		raise ValueError("The warning must have a text")
 
 	colorama.init()
-	warning = "WARNING: "
-	
-	warning += warning_text
+	current_timestamp = datetime.now()
+	warning = "[" + current_timestamp.strftime("%Y/%m/%d %H:%M:%S") + "] "
+	warning += "WARNING: "
 	if len(args) != 0:
 		for var in args:
 			if isinstance(var, str):
