@@ -19,7 +19,8 @@ class BraeiDenseAutoencoder(TimeSeriesAnomalyAutoencoder):
 				 extend_not_multiple: bool = True,
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999,
-				 allow_overlapping: bool = True):
+				 train_overlapping: bool = True,
+				 test_overlapping: bool = True):
 		super().__init__(window=window,
 						 forecast=forecast,
 						 batch_size=batch_size,
@@ -31,7 +32,8 @@ class BraeiDenseAutoencoder(TimeSeriesAnomalyAutoencoder):
 						 extend_not_multiple=extend_not_multiple,
 						 distribution=distribution,
 						 perc_quantile=perc_quantile,
-						 allow_overlapping=allow_overlapping)
+						 train_overlapping=train_overlapping,
+						 test_overlapping=test_overlapping)
 	
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
 		return self._learning_create_model(input_shape)

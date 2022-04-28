@@ -19,7 +19,8 @@ class LSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
 				 extend_not_multiple: bool = True,
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999,
-				 allow_overlapping: bool = True):
+				 train_overlapping: bool = True,
+				 test_overlapping: bool = True):
 		super().__init__(window=window,
 						 forecast=forecast,
 						 batch_size=batch_size,
@@ -31,7 +32,8 @@ class LSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
 						 extend_not_multiple=extend_not_multiple,
 						 distribution=distribution,
 						 perc_quantile=perc_quantile,
-						 allow_overlapping=allow_overlapping)
+						 train_overlapping=train_overlapping,
+						 test_overlapping=test_overlapping)
 	
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
 		return self._learning_create_model(input_shape)
@@ -40,20 +42,26 @@ class LSTMAutoencoder(TimeSeriesAnomalyAutoencoder):
 		input_layer = tf.keras.layers.Input(input_shape,
 											name="input")
 		
-		encoder = tf.keras.layers.LSTM(128,
+		encoder = tf.keras.layers.LSTM(32,
 									   return_sequences=True,
 									   name="encoder_lstm_1")(input_layer)
-		encoder = tf.keras.layers.LSTM(64,
+		encoder = tf.keras.layers.LSTM(8,
+									   return_sequences=True,
 									   name="encoder_lstm_2")(encoder)
+		encoder = tf.keras.layers.LSTM(2,
+									   name="encoder_lstm_3")(encoder)
 		
 		middle = tf.keras.layers.RepeatVector(self.window)(encoder)
 		
-		decoder = tf.keras.layers.LSTM(64,
+		decoder = tf.keras.layers.LSTM(2,
 									   return_sequences=True,
 									   name="decoder_lstm_1")(middle)
-		decoder = tf.keras.layers.LSTM(128,
+		decoder = tf.keras.layers.LSTM(8,
 									   return_sequences=True,
 									   name="decoder_lstm_2")(decoder)
+		decoder = tf.keras.layers.LSTM(32,
+									   return_sequences=True,
+									   name="decoder_lstm_3")(decoder)
 		
 		dense = tf.keras.layers.Dense(input_shape[1],
 									  activation="linear",

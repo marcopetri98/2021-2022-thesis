@@ -20,7 +20,7 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 		they are not a multiple of window. If true, exceeding elements will be
 		discarded to train and validate on multiple of window size.
 		
-	allow_overlapping : bool, default=True
+	train_overlapping : bool, default=True
 		States whether the training examples can overlap. An autoencoder takes a
 		window and projects it onto the latent space and back-projects it to the
 		starting space. For time series we take 1,2,...,w points as window where
@@ -28,6 +28,12 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 		is True, we define for training examples such as 1,2,...,w and overlapped
 		ones such as 2,3,...,w+1 and 3,4,...,w+2. If it is false, we will
 		generate 1,2,...,w, w+1, w+2,...,2w and so on.
+		
+	test_overlapping : bool, default=True
+		States whether the test examples can overlap. Overlapping works exactly
+		as in the training. Some points will be predicted from at most ```window```
+		windows. If overlapping on test is set to true, each point will be
+		predicted as the average value of all the windows predicting that point.
 	"""
 	
 	def __init__(self, window: int = 200,
@@ -41,7 +47,8 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 				 extend_not_multiple: bool = True,
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999,
-				 allow_overlapping: bool = True):
+				 train_overlapping: bool = True,
+				 test_overlapping: bool = True):
 		super().__init__(window=window,
 						 stride=window,
 						 forecast=forecast,
@@ -55,7 +62,8 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 						 perc_quantile=perc_quantile)
 		
 		self.extend_not_multiple = extend_not_multiple
-		self.allow_overlapping = allow_overlapping
+		self.train_overlapping = train_overlapping
+		self.test_overlapping = test_overlapping
 	
 	def fit(self, x, training_idx, validation_idx, y) -> list[History]:
 		check_X_y(x, y)
@@ -94,7 +102,7 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 		samples = []
 		targets = []
 		
-		if not self.allow_overlapping:
+		if not self.train_overlapping:
 			increment = self.stride
 		else:
 			increment = 1
@@ -110,23 +118,37 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 		check_array(x)
 		x = np.array(x)
 		
-		if x.shape[0] % self.window != 0:
+		if not self.test_overlapping and x.shape[0] % self.window != 0:
 			raise ValueError("The autoencoder can predict only a number of "
 							 "points such that points % self.window == 0")
 			
+		if not self.test_overlapping:
+			increment = self.stride
+		else:
+			increment = 1
+			
 		# I build the array of inputs for the model
 		inputs = []
-		for i in range(0, x.shape[0], self.window):
+		window_mask = np.zeros(x.shape[0])
+		for i in range(0, x.shape[0] - self.window + 1, increment):
 			next_input = x[i:i + self.window]
+			window_mask[i:i + self.window] += 1
 			inputs.append(next_input.copy())
 		inputs = np.array(inputs)
 		
 		predictions = self.model_.predict(inputs, batch_size=1)
-		# The number of predicted points is batches * input.shape[0]
-		num_points = predictions.shape[0] * predictions.shape[1]
-		predictions = predictions.reshape((num_points, 1))
 		
-		return predictions
+		# Compute the average on the overlapping windows
+		final_predictions = np.zeros(x.shape[0])
+		predictions = predictions.reshape((predictions.shape[0],
+										   predictions.shape[1]))
+		for i in range(predictions.shape[0]):
+			start = i*increment
+			final_predictions[start:start + self.window] += predictions[i]
+		final_predictions = final_predictions / window_mask
+		final_predictions = final_predictions.reshape(x.shape[0], 1)
+		
+		return final_predictions
 	
 	def predict_time_series(self, xp, x) -> np.ndarray:
 		check_is_fitted(self, ["model_"])
@@ -135,9 +157,9 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
 		
 		if x.shape[0] < self.window:
 			raise ValueError("You must provide at lest window points to predict")
-		elif x.shape[0] % self.window != 0:
-			raise ValueError("An autoencoder must receive as input a multiple "
-							 "of window to be able to predict. Namely, the input"
-							 "must be such that X.shape[0] % self.window == 0")
+		elif not self.test_overlapping and x.shape[0] % self.window != 0:
+				raise ValueError("An autoencoder must receive as input a multiple "
+								 "of window to be able to predict. Namely, the input"
+								 "must be such that X.shape[0] % self.window == 0")
 		
 		return self._predict_future(xp, x)
