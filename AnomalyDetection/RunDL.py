@@ -22,8 +22,10 @@ from reader.NABTimeSeriesReader import NABTimeSeriesReader
 from visualizer.Viewer import plot_time_series_forecast, \
 	plot_time_series_with_predicitons_bars
 
-ALGORITHM = "dense autoencoder"
+ALGORITHM = "lstm autoencoder"
 
+# DATASET 1: ambient_temperature_system_failure
+# DATASET 2: nyc_taxi
 VALIDATION_DIM = 0.2
 DATASET_PATH = "dataset/"
 DATASET = "ambient_temperature_system_failure.csv"
@@ -189,9 +191,11 @@ match ALGORITHM:
 		model = LSTMAutoencoder(window=AUTOENCODER_WINDOW,
 								max_epochs=500,
 								batch_size=32,
-								filename="lstm_ae_ov",
+								folder_save_path="nn_models/custom/",
+								filename="autoencoder_lstm_1",
 								#distribution="truncated_gaussian",
-								extend_not_multiple=True)
+								extend_not_multiple=True,
+								test_overlapping=True)
 		if LOAD_MODEL:
 			model.load_model("nn_models/lstm_ae_ov")
 		else:
@@ -200,11 +204,11 @@ match ALGORITHM:
 	case "gru autoencoder":
 		model = GRUAutoencoder(window=AUTOENCODER_WINDOW,
 							   max_epochs=500,
-							   batch_size=15,
-							   filename="gru_ae",
+							   batch_size=32,
+							   filename="gru_ae_ov",
 							   extend_not_multiple=True)
 		if LOAD_MODEL:
-			model.load_model("nn_models/gru_ae")
+			model.load_model("nn_models/gru_ae_ov")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 	
@@ -213,20 +217,21 @@ match ALGORITHM:
 		
 		model = CNNAutoencoder(window=AUTOENCODER_WINDOW,
 							   max_epochs=500,
-							   batch_size=30,
-							   filename="cnn_ae",
+							   batch_size=32,
+							   filename="cnn_ae_ov",
 							   extend_not_multiple=True)
 		if LOAD_MODEL:
-			model.load_model("nn_models/cnn_ae")
+			model.load_model("nn_models/cnn_ae_ov")
 		else:
 			model.fit(data, training_slices, validation_slices, data_labels)
 
-true_labels = data_test_labels
+true_labels = np.asarray(data_test_labels, dtype=np.intc)
 labels = model.predict(data, data_test)
 scores = model.anomaly_score(data, data_test)
 perc = np.sum(labels) / labels.shape[0]
 
 if ALL_METRICS:
+	print("MODEL BEST VALIDATION ERROR: %f" % model.validation_best_error_)
 	compute_metrics(true_labels, scores, labels, compute_roc_auc=not CHECK_OVERFITTING, only_roc_auc=False)
 	make_metric_plots(dataframe, true_labels, scores, labels)
 	predictions = model.predict_time_series(data[validation_slices[0]], data_test)

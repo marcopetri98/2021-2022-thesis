@@ -225,6 +225,7 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		
 		# List of the histories for the training on the various data
 		histories = []
+		validation_errors = []
 		input_shape = (self.window, x.shape[1])
 		self.model_ = self._learning_create_model(input_shape)
 		xs = []
@@ -275,7 +276,8 @@ class TimeSeriesAnomalyWindowDL(ABC):
 			# Fit the model on this slice
 			self.model_.summary()
 			checkpoint_path = self.folder_save_path + "/checkpoint/" + self.filename + ".h5"
-			history = self.model_.fit(
+			tensorboard_path = self.folder_save_path + "/tf_board/" + self.filename + "/"
+			history: History = self.model_.fit(
 				x=x_train,
 				y=y_train,
 				batch_size=self.batch_size,
@@ -291,13 +293,15 @@ class TimeSeriesAnomalyWindowDL(ABC):
 														 patience=20,
 														 mode="min"),
 					tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
-													   monitor="val_loss")
+													   monitor="val_loss"),
+					tf.keras.callbacks.TensorBoard(tensorboard_path)
 				]
 			)
 			
 			# Save history and reset state and metrics before training on the
 			# next time series values.
 			histories.append(history)
+			validation_errors.append(min(history.history["val_loss"]))
 			self.model_.reset_states()
 			self.model_.reset_metrics()
 		
@@ -307,6 +311,8 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		self.model_.set_weights(trained_model.get_weights())
 		self.model_.save(self.folder_save_path + self.filename,
 						 save_format="h5")
+		validation_file = self.folder_save_path + self.filename + ".validation"
+		np.save(validation_file, np.array([min(validation_errors)]))
 		
 		# Compute the predictions of the model and build supervised values
 		valid_predictions = np.array([[]])
@@ -347,7 +353,8 @@ class TimeSeriesAnomalyWindowDL(ABC):
 			Errors of the prediction.
 		"""
 		predictions = self.predict_time_series(xp, x)
-		return np.linalg.norm(x - predictions, axis=1)
+		errors = np.linalg.norm(x - predictions, axis=1)
+		return errors
 	
 	def anomaly_score(self, xp, x) -> np.ndarray:
 		"""Predict if a sample is an anomaly or not.
@@ -369,6 +376,7 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		# Input validated in compute errors
 		errors = self._compute_errors(xp, x)
 		
+		# TODO: maybe minmax scaling is useless
 		scores = errors.reshape((errors.shape[0], 1))
 		scores = MinMaxScaler().fit_transform(scores)
 		scores = scores.reshape(scores.shape[0])
@@ -415,16 +423,19 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		errors = self._compute_errors(xp, x)
 		
 		anomalies = np.argwhere(errors >= self.threshold_)
-		pred_labels = np.zeros(x.shape[0])
+		pred_labels = np.zeros(x.shape[0], dtype=np.intc)
 		pred_labels[anomalies] = 1
 		
 		return pred_labels
 	
 	def load_model(self, file_path: str) -> None:
 		self.model_ = tf.keras.models.load_model(file_path)
+		validation_file = file_path + ".validation.npy"
 		threshold_file = file_path + ".threshold.npy"
+		validation_array = np.load(validation_file)
 		threshold_array = np.load(threshold_file)
 		self.threshold_ = threshold_array[0]
+		self.validation_best_error_ = validation_array[0]
 	
 	@abc.abstractmethod
 	def _prediction_create_model(self, input_shape: Tuple) -> tf.keras.Model:
