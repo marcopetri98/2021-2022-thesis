@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from skopt.space import Integer
 
 from models.time_series.anomaly import TimeSeriesAnomalyLOF
-from tuning.hyperparameter.HyperparameterSearch import HyperparameterSearch
+from tuning.hyperparameter.GaussianProcessesSearch import GaussianProcessesSearch
 
 DATASET = "ambient_temperature_system_failure.csv"
 DATASET_PATH = "dataset/"
@@ -36,9 +36,9 @@ for slice_ in training_slices:
 		train = np.concatenate([train, data[slice_]], axis=0)
 		train_labels = np.concatenate([train_labels, data_labels[slice_]], axis=0)
 
-hyper_searcher = HyperparameterSearch(TimeSeriesAnomalyLOF(classification="points_score",
-														   anomaly_contamination=0.01),
-									  [
+hyper_searcher = GaussianProcessesSearch(TimeSeriesAnomalyLOF(classification="points_score",
+															  anomaly_contamination=0.01),
+										 [
 										  Integer(2, 100, name="window"),
 										  # Integer(1, 20, name="stride"),
 										  # Real(0.0, 1.0, name="anomaly_threshold"),
@@ -47,11 +47,11 @@ hyper_searcher = HyperparameterSearch(TimeSeriesAnomalyLOF(classification="point
 										  Integer(2, 50, name="max_samples")
 									  ],
 									  "searches/lof/",
-									  "temperature_window_neighbors_gaussian_2",
-									  80,
-									  10,
-									  train_and_test=True,
-									  load_checkpoint=False)
+										 "temperature_window_neighbors_gaussian_2",
+										 80,
+										 10,
+										 train_and_test=True,
+										 load_checkpoint=False)
 if TRAIN:
 	if UNSUPERVISED:
 		hyper_searcher.fit(data, data_labels)

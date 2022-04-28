@@ -17,10 +17,10 @@ class IPredictor(ABC):
 		X : array-like of shape (n_samples, n_features)
 			The training data representing containing the features.
 			
-		*args
+		args
 			Not used, present to allow multiple inheritance and signature change.
 			
-		*kwargs
+		kwargs
 			Not used, present to allow multiple inheritance and signature change.
 
 		Returns

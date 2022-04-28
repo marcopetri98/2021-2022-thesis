@@ -18,10 +18,10 @@ class IRegressor(ABC):
 			The array of the samples for which we need to regress the quantity
 			estimated by the model.
 			
-		*args
+		args
 			Not used, present to allow multiple inheritance and signature change.
 			
-		*kwargs
+		kwargs
 			Not used, present to allow multiple inheritance and signature change.
 
 		Returns
