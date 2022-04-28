@@ -52,7 +52,7 @@ class TimeSeriesAnomalyIForest(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.verbose = verbose
 		self.warm_start = warm_start
 	
-	def fit(self, X, y=None) -> None:
+	def fit(self, X, y=None, *args, **kwargs) -> None:
 		check_array(X)
 		X = np.array(X)
 		

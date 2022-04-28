@@ -9,7 +9,7 @@ class IClassifier(ABC):
     """
 	
 	@abc.abstractmethod
-	def classify(self, X) -> np.ndarray:
+	def classify(self, X, *args, **kwargs) -> np.ndarray:
 		"""Computes the labels for the given points.
 		
 		If a point has 1 as label it is classified as anomaly while if it has
@@ -21,6 +21,12 @@ class IClassifier(ABC):
 		----------
 		X : array-like of shape (n_samples, n_features)
 			The points for which we must compute the anomaly score.
+			
+		*args
+			Not used, present to allow multiple inheritance and signature change.
+			
+		*kwargs
+			Not used, present to allow multiple inheritance and signature change.
 
 		Returns
 		-------

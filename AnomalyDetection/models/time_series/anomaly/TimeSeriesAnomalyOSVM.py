@@ -52,7 +52,7 @@ class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.verbose = verbose
 		self.max_iter = max_iter
 
-	def fit(self, X, y=None) -> None:
+	def fit(self, X, y=None, *args, **kwargs) -> None:
 		check_array(X)
 		if y is not None:
 			check_X_y(X, y)
@@ -74,11 +74,11 @@ class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self._build_wrapped()
 		self._wrapped_model.fit(x_new)
 
-	def anomaly_score(self, X) -> np.ndarray:
+	def anomaly_score(self, X, *args, **kwargs) -> np.ndarray:
 		check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().anomaly_score(X)
 	
-	def classify(self, X) -> np.ndarray:
+	def classify(self, X, *args, **kwargs) -> np.ndarray:
 		check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().classify(X)
 

@@ -7,7 +7,7 @@ class IParametric(ABC):
     """
 	
 	@abc.abstractmethod
-	def fit(self, X, y=None) -> None:
+	def fit(self, X, y=None, *args, **kwargs) -> None:
 		"""Fits the model to the given training data.
 		
 		Parameters
@@ -18,6 +18,12 @@ class IParametric(ABC):
 		y : array-like of shape (n_samples, n_label_features)
 			The target for the training data which may be used by either
 			classification or regression models.
+			
+		*args
+			Not used, present to allow multiple inheritance and signature change.
+			
+		*kwargs
+			Not used, present to allow multiple inheritance and signature change.
 
 		Returns
 		-------

@@ -31,13 +31,13 @@ def plot_roc_curve(true_labels: np.ndarray,
 
 
 def plot_precision_recall_curve(true_labels: np.ndarray,
-								true_scores: np.ndarray,
+								scores: np.ndarray,
 								pos_label: int = 1,
 								sample_weights: np.ndarray = None,
 								fig_size: Tuple = (6, 6),
 								curve_color: str = 'b') -> None:
 	pre, rec, thresholds = precision_recall_curve(true_labels,
-												  true_scores,
+												  scores,
 												  pos_label=pos_label,
 												  sample_weight=sample_weights)
 	curve_fmt = curve_color + '-'

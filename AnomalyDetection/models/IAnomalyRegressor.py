@@ -10,7 +10,7 @@ class IAnomalyRegressor(IRegressor):
     """
 	
 	@abc.abstractmethod
-	def anomaly_score(self, X) -> np.ndarray:
+	def anomaly_score(self, X, *args, **kwargs) -> np.ndarray:
 		"""Computes the anomaly score of the given points.
 		
 		Scores in the range [0,1], the higher is the score the more abnormal
@@ -21,6 +21,12 @@ class IAnomalyRegressor(IRegressor):
 		----------
 		X : array-like of shape (n_samples, n_features)
 			The points for which we must compute the anomaly score.
+			
+		*args
+			Not used, present to allow multiple inheritance and signature change.
+			
+		*kwargs
+			Not used, present to allow multiple inheritance and signature change.
 
 		Returns
 		-------

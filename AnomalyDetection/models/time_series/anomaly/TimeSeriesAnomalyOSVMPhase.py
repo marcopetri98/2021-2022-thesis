@@ -71,14 +71,14 @@ class TimeSeriesAnomalyOSVMPhase(TimeSeriesAnomalyOSVM):
 		self.phase_agreement = phase_agreement
 		self.models = None
 	
-	def fit(self, X, y=None) -> None:
+	def fit(self, X, y=None, *args, **kwargs) -> None:
 		self.models = []
 		for embedding in self.windows:
 			self.window = embedding
 			super().fit(X, y)
 			self.models.append(self._wrapped_model)
 	
-	def classify(self, X) -> np.ndarray:
+	def classify(self, X, *args, **kwargs) -> np.ndarray:
 		anomaly_votes = np.zeros(X.shape[0])
 		for i in range(len(self.windows)):
 			self.window = self.windows[i]
@@ -93,7 +93,7 @@ class TimeSeriesAnomalyOSVMPhase(TimeSeriesAnomalyOSVM):
 		
 		return anomalies
 	
-	def anomaly_score(self, X) -> np.ndarray:
+	def anomaly_score(self, X, *args, **kwargs) -> np.ndarray:
 		scores = np.zeros(X.shape[0])
 		for i in range(len(self.windows)):
 			self.window = self.windows[i]

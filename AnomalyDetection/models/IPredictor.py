@@ -9,13 +9,19 @@ class IPredictor(ABC):
     """
 	
 	@abc.abstractmethod
-	def predict(self, X) -> np.ndarray:
+	def predict(self, X, *args, **kwargs) -> np.ndarray:
 		"""
 		
 		Parameters
 		----------
 		X : array-like of shape (n_samples, n_features)
 			The training data representing containing the features.
+			
+		*args
+			Not used, present to allow multiple inheritance and signature change.
+			
+		*kwargs
+			Not used, present to allow multiple inheritance and signature change.
 
 		Returns
 		-------
