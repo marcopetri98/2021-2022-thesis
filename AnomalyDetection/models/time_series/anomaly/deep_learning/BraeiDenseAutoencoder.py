@@ -14,7 +14,7 @@ class BraeiDenseAutoencoder(TimeSeriesAnomalyAutoencoder):
 				 max_epochs: int = 50,
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
-				 folder_save_path: str = "nn_models/",
+				 folder_save_path: str = "data/nn_models/",
 				 filename: str = "dense_ae",
 				 extend_not_multiple: bool = True,
 				 distribution: str = "gaussian",

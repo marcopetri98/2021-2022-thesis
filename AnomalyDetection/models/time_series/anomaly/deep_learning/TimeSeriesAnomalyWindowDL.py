@@ -71,7 +71,7 @@ class TimeSeriesAnomalyWindowDL(ABC):
 				 max_epochs: int = 50,
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
-				 folder_save_path: str = "nn_models/",
+				 folder_save_path: str = "data/nn_models/",
 				 filename: str = "window_dl",
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999):

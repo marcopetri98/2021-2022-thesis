@@ -15,7 +15,7 @@ class BraeiCNN(TimeSeriesAnomalySliding):
 				 max_epochs: int = 50,
 				 predict_validation: float = 0.2,
 				 batch_divide_training: bool = False,
-				 folder_save_path: str = "nn_models/",
+				 folder_save_path: str = "data/nn_models/",
 				 filename: str = "cnn",
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999):

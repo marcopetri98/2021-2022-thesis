@@ -24,10 +24,10 @@ ALGORITHM = "MA"
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
-DATASET_PATH = "dataset/"
+DATASET_PATH = "data/dataset/"
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
-GROUND_WINDOWS_PATH = "dataset/combined_windows.json"
+GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
 ALL_DATA = False

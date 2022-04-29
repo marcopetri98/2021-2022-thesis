@@ -27,10 +27,10 @@ ALGORITHM = "lstm autoencoder"
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
 VALIDATION_DIM = 0.2
-DATASET_PATH = "dataset/"
+DATASET_PATH = "data/dataset/"
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
-GROUND_WINDOWS_PATH = "dataset/combined_windows.json"
+GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
 ALL_METRICS = True
 LOAD_MODEL = False
 CHECK_OVERFITTING = False
@@ -191,7 +191,7 @@ match ALGORITHM:
 		model = LSTMAutoencoder(window=AUTOENCODER_WINDOW,
 								max_epochs=500,
 								batch_size=32,
-								folder_save_path="nn_models/custom/",
+								folder_save_path="data/nn_models/custom/",
 								filename="autoencoder_lstm_1",
 								#distribution="truncated_gaussian",
 								extend_not_multiple=True,
