@@ -41,3 +41,26 @@ class IHyperparameterSearchResults(ABC):
 			values: score and tried parameters as a dictionary.
 		"""
 		pass
+	
+	@abc.abstractmethod
+	def print_search(self, *args,
+					 **kwargs) -> None:
+		"""Prints the results of the search stored on the file path.
+
+		It uses the format specified by the fit function to read and print the
+		results of the search at the specified file path. If there is no search
+		file, an error will be raised.
+
+		Parameters
+		----------
+		args
+			Not used, present to allow multiple inheritance and signature change.
+
+		kwargs
+			Not used, present to allow multiple inheritance and signature change.
+
+		Returns
+		-------
+		None
+		"""
+		pass

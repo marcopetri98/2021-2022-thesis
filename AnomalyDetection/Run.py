@@ -59,11 +59,11 @@ training, test = reader.train_test_split(train_perc=0.3).get_train_test_datafram
 #								#
 #################################
 # Data used to train
-data = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
+data = preprocess(np.array(training["value"]).reshape((training["value"].shape[0], 1)))
 data_labels = training["target"]
 
 # Data used to test
-data_test = preprocess(np.array(test["value"]).reshape(test["value"].shape[0], 1))
+data_test = preprocess(np.array(test["value"]).reshape((test["value"].shape[0], 1)))
 data_test_labels = test["target"]
 
 # Data used to evaluate
@@ -130,21 +130,14 @@ elif SELF_SUPERVISED and ALGORITHM == "iforest":
 									 random_state=22)
 	model.fit(train)
 elif SELF_SUPERVISED and ALGORITHM == "AR":
-	model = TimeSeriesAnomalyARIMA(endog=train,
-								   order=(1, 1, 0))
-	model.fit(method="statespace",
-			  gls=True)
+	model = TimeSeriesAnomalyARIMA(endog=train, order=(1, 1, 0))
+	model.fit(method="statespace", gls=True)
 elif SELF_SUPERVISED and ALGORITHM == "MA":
-	model = TimeSeriesAnomalyARIMA(endog=train,
-								   order=(0, 1, 2))
-	model.fit(method="statespace",
-			  gls=True)
+	model = TimeSeriesAnomalyARIMA(endog=train, order=(0, 1, 2))
+	model.fit(method="statespace", gls=True)
 elif SELF_SUPERVISED and ALGORITHM == "ARIMA":
-	model = TimeSeriesAnomalyARIMA(endog=train,
-								   order=(1, 1, 3),
-								   perc_quantile=0.98)
-	model.fit(method="statespace",
-			  gls=True)
+	model = TimeSeriesAnomalyARIMA(endog=train, order=(1, 1, 3), perc_quantile=0.98)
+	model.fit(method="statespace", gls=True)
 
 #################################
 #								#

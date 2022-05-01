@@ -1,3 +1,4 @@
+from copy import copy
 from typing import Tuple, Optional, Iterable
 
 import numpy as np
@@ -9,7 +10,7 @@ from input_validation.attribute_checks import check_not_default_attributes
 from models.BaseModel import BaseModel
 from models.IParametric import IParametric
 from models.time_series.anomaly.ITimeSeriesAnomaly import ITimeSeriesAnomaly
-from print_utils.printing import print_step, print_header
+from utils.printing import print_step, print_header
 
 
 class TimeSeriesAnomalyARIMA(ITimeSeriesAnomaly, IParametric, BaseModel):
@@ -76,7 +77,7 @@ class TimeSeriesAnomalyARIMA(ITimeSeriesAnomaly, IParametric, BaseModel):
 		self.__check_parameters()
 		
 	def set_params(self, **params) -> None:
-		super().set_params()
+		super().set_params(**params)
 		self.__check_parameters()
 
 	def fit(self, X=None,
@@ -94,7 +95,7 @@ class TimeSeriesAnomalyARIMA(ITimeSeriesAnomaly, IParametric, BaseModel):
 			return_params: Optional[bool] = None,
 			low_memory: Optional[bool] = None,
 			*args,
-			**kwargs) -> None:
+			**kwargs) -> ARIMAResults:
 		"""
 		Parameters
 		----------
@@ -140,6 +141,8 @@ class TimeSeriesAnomalyARIMA(ITimeSeriesAnomaly, IParametric, BaseModel):
 					   self._fitted_model.summary())
 			print_step("The learnt threshold is ", self._threshold)
 			print_header("End of the model fit")
+			
+		return copy(self._fitted_model)
 	
 	def classify(self, X,
 				 previous = None,

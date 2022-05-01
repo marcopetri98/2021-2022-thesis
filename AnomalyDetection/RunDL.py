@@ -65,11 +65,11 @@ training, test = reader.train_test_split(train_perc=0.5).get_train_test_datafram
 #								#
 #################################
 # Data used to train
-data = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
+data = preprocess(np.array(training["value"]).reshape((training["value"].shape[0], 1)))
 data_labels = training["target"]
 
 # Data used to test
-data_test = preprocess(np.array(test["value"]).reshape(test["value"].shape[0], 1))
+data_test = preprocess(np.array(test["value"]).reshape((test["value"].shape[0], 1)))
 data_test_labels = test["target"]
 
 if AUTOENCODER:

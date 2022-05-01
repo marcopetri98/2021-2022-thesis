@@ -1,17 +1,14 @@
 # Python imports
-import time
 from typing import Union, Callable
 
-import numpy as np
 import skopt
 from scipy.optimize import OptimizeResult
 from sklearn import metrics
-from sklearn.utils import check_X_y
 from skopt.callbacks import CheckpointSaver
 from sklearn.base import BaseEstimator, clone
 from sklearn.model_selection import KFold
 
-from print_utils.printing import print_header, print_step
+from utils.printing import print_header, print_step
 from tuning.hyperparameter.HyperparameterSearch import HyperparameterSearch
 
 
@@ -38,7 +35,7 @@ class GaussianProcessesSearch(HyperparameterSearch):
 				 parameter_space: list,
 				 model_folder_path: str,
 				 search_filename: str,
-				 train_test_splitter: Callable,
+				 cross_val_generator: Callable,
 				 verbose: bool = True,
 				 calls: int = 10,
 				 initial_starts: int = 10,
@@ -48,7 +45,7 @@ class GaussianProcessesSearch(HyperparameterSearch):
 		super().__init__(parameter_space=parameter_space,
 						 model_folder_path=model_folder_path,
 						 search_filename=search_filename,
-						 train_test_splitter=train_test_splitter,
+						 cross_val_generator=cross_val_generator,
 						 verbose=verbose)
 
 		self.estimator = estimator

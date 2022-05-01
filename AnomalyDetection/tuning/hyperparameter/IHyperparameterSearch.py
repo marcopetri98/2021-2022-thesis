@@ -16,6 +16,8 @@ class IHyperparameterSearch(ABC):
 			   y,
 			   objective_function: Callable[[np.ndarray,
 											 np.ndarray,
+											 np.ndarray,
+											 np.ndarray,
 											 dict], float],
 			   *args,
 			   **kwargs) -> IHyperparameterSearchResults:
@@ -42,10 +44,11 @@ class IHyperparameterSearch(ABC):
 		
 		objective_function : Callable
 			It is a function training the model and evaluating its performances.
-			The first argument is the training set, the second argument is the
-			validation set and the third argument is a dictionary of all the
+			The first arguments are the training set, the second arguments are
+			the validation set and the third argument is a dictionary of all the
 			parameters of the model. The parameters must be used to instantiate
-			the model.
+			the model. Basically, objective_function(train_data, train_labels,
+			valid_data, valid_labels, parameters).
 		
 		args
 			Not used, present to allow multiple inheritance and signature change.
@@ -55,29 +58,19 @@ class IHyperparameterSearch(ABC):
 
 		Returns
 		-------
-
+		search_results : IHyperparameterSearchResults
+			The results of the search.
 		"""
 		pass
 	
 	@abc.abstractmethod
-	def print_search(self, *args,
-					 **kwargs) -> None:
-		"""Prints the results of the search stored on the file path.
+	def get_results(self) -> IHyperparameterSearchResults:
+		"""Get search results.
 		
-		It uses the format specified by the fit function to read and print the
-		results of the search at the specified file path. If there is no search
-		file, an error will be raised.
-		
-		Parameters
-		----------
-		args
-			Not used, present to allow multiple inheritance and signature change.
-			
-		kwargs
-			Not used, present to allow multiple inheritance and signature change.
-
 		Returns
 		-------
-		None
+		search_results : IHyperparameterSearchResults
+			The results of the last search or the specified search at
+			initialization.
 		"""
 		pass

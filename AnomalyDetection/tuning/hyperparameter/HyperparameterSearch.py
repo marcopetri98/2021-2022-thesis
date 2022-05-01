@@ -1,17 +1,19 @@
 import abc
+import json
 import time
 from abc import ABC
 from typing import Callable
 
 import numpy as np
+from sklearn.model_selection import KFold
 from sklearn.utils import check_X_y
 
-from print_utils.printing import print_header, print_step
-from tuning.hyperparameter.HyperparameterSearchResults import \
-	HyperparameterSearchResults
+from utils.json import load_py_json, save_py_json
+from utils.printing import print_header, print_step
+from tuning.hyperparameter.HyperparameterSearchResults import HyperparameterSearchResults
 from tuning.hyperparameter.IHyperparameterSearch import IHyperparameterSearch
-from tuning.hyperparameter.IHyperparameterSearchResults import \
-	IHyperparameterSearchResults
+from tuning.hyperparameter.IHyperparameterSearchResults import IHyperparameterSearchResults
+from utils.lists import all_indices
 
 
 class HyperparameterSearch(IHyperparameterSearch, ABC):
@@ -21,7 +23,8 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 	----------
 	parameter_space : list
 		It is the space of the parameters to explore to perform hyperparameter
-		search.
+		search. This object must be a list of skopt space objects. To be precise,
+		this function uses scikit-optimize as core library of implementation.
 
 	model_folder_path : str
 		It is the folder where the search results must be saved.
@@ -29,25 +32,25 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 	search_filename : str
 		It is the filename of the file where to store the results of the search.
 		
-	train_test_splitter : Callable
-		It is the object performing the train-test split of the dataset.
-	
-	verbose : bool, default=True
-			States if default printing or detailed printing must be performed.
+	cross_val_generator : object, default=None
+		It is the cross validation generator returning a train/test generator.
+		If nothing is passed, standard K Fold Cross validation is used. Moreover,
+		the cross validation generator must provide the same interface provided
+		by scikit-learn cross validation generators.
 	"""
+	__SCORE = "Score"
+	__EXT = ".search"
 	
 	def __init__(self, parameter_space: list,
 				 model_folder_path: str,
 				 search_filename: str,
-				 train_test_splitter: Callable[[np.ndarray], np.ndarray],
-				 verbose: bool = True):
+				 cross_val_generator: object = None):
 		super().__init__()
 		
 		self.parameter_space = parameter_space
 		self.model_folder_path = model_folder_path
 		self.search_filename = search_filename
-		self.train_test_splitter = train_test_splitter
-		self.verbose = verbose
+		self.cross_val_generator = cross_val_generator
 		
 		self._data = None
 		self._data_labels = None
@@ -57,7 +60,10 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 			   y,
 			   objective_function: Callable[[np.ndarray,
 											 np.ndarray,
+											 np.ndarray,
+											 np.ndarray,
 											 dict], float],
+			   verbose: bool = False,
 			   *args,
 			   **kwargs) -> IHyperparameterSearchResults:
 		check_X_y(x, y)
@@ -67,48 +73,36 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		start_time = time.time()
 		self._data, self._data_labels = x, y
 		
-		if self.verbose:
+		if verbose:
 			print_header("Starting the hyperparameter search")
 		
-		self._run_optimization(objective_function)
+		self._run_optimization(objective_function, verbose=verbose)
 		
-		final_history = [self._create_first_row(), *self._search_history]
-		final_history = np.array(final_history, dtype=object)
-		np.save(self.model_folder_path + self.search_filename, final_history)
+		final_history = self.__create_result_history()
+		save_py_json(final_history, self.model_folder_path + self.search_filename + self.__EXT)
 		
-		results = HyperparameterSearchResults(np.array(final_history))
+		results = HyperparameterSearchResults(final_history)
 		
 		self._data, self._data_labels, self._search_history = None, None, None
-		if self.verbose:
+		if verbose:
 			print_step("Search lasted for: " + str(time.time() - start_time))
 			print_header("Hyperparameter search ended")
 			
 		return results
 	
-	def print_search(self, *args, **kwargs) -> None:
-		tries = np.load(self.model_folder_path + self.search_filename + ".npy",
-						allow_pickle=True)
-		indices = (np.argsort(tries[1:, 0]) + 1).tolist()
-		indices.reverse()
-		indices.insert(0, 0)
-		tries = tries[np.array(indices)]
-
-		print("Total number of tries: ", tries.shape[0] - 1)
-		first = True
-		for config in tries:
-			if first:
-				first = False
-			else:
-				text = ""
-				for i in range(len(config)):
-					text += str(tries[0, i])
-					text += ": " + str(config[i]) + " "
-				print(text)
+	def get_results(self) -> IHyperparameterSearchResults:
+		history = load_py_json(self.model_folder_path + self.search_filename + self.__EXT)
+		history = history if history is not None else []
+		
+		return HyperparameterSearchResults(history)
 	
 	@abc.abstractmethod
 	def _run_optimization(self, objective_function: Callable[[np.ndarray,
 															  np.ndarray,
-															  dict], float]):
+															  np.ndarray,
+															  np.ndarray,
+															  dict], float],
+						  verbose: bool = False):
 		"""Runs the optimization search.
 		
 		Parameters
@@ -123,10 +117,12 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		"""
 		pass
 	
-	@abc.abstractmethod
 	def _objective_call(self, objective_function: Callable[[np.ndarray,
 															np.ndarray,
+															np.ndarray,
+															np.ndarray,
 															dict], float],
+						verbose: bool = False,
 						*args) -> float:
 		"""The function wrapping the loss to minimize.
 		
@@ -153,9 +149,32 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		See :meth:`~tuning.hyperparameter.HyperparameterSearch.search` for more
 		details about objective_function.
 		"""
-		pass
+		params = self._build_input_dict(*args)
+		
+		if verbose:
+			print_step("Trying the configuration with: ", params)
+		
+		score = 0
+		
+		if self.cross_val_generator is None:
+			self.cross_val_generator = KFold(n_splits=5, random_state=98)
+		
+		for train, test in self.cross_val_generator.split(self._data,
+														  self._data_labels):
+			x_train, x_test = self._data[train], self._data[test]
+			y_train, y_test = self._data[train], self._data[test]
+			obj = objective_function(x_train, y_train, x_test, y_test, params)
+			score += obj
+		
+		score = score / self.cross_val_generator.get_n_splits()
+		
+		if verbose:
+			print_step("The configuration has a score of ", score)
+		
+		return score
 	
-	def _add_search_entry(self, score, args) -> None:
+	def _add_search_entry(self, score,
+						  *args) -> None:
 		"""It adds an entry to the search history.
 		
 		Parameters
@@ -170,16 +189,73 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		-------
 		None
 		"""
-		vals = [score]
-		for arg in args:
-			vals.append(arg)
+		params = self._build_input_dict(*args)
 		
 		if self._search_history is None:
-			self._search_history = [vals]
+			self._search_history = {self.__SCORE: [score]}
+			
+			for key, value in params.items():
+				self._search_history[key] = [value]
 		else:
-			self._search_history.append(vals)
+			self._search_history[self.__SCORE].append(score)
+			
+			common_keys = set(self._search_history.keys()).intersection(set(params.keys()))
+			only_history_keys = set(self._search_history.keys()).difference(set(params.keys())).difference({self.__SCORE})
+			only_params_keys = set(params.keys()).difference(set(self._search_history.keys()))
+			
+			for key in common_keys:
+				self._search_history[key].append(params[key])
+				
+			for key in only_history_keys:
+				self._search_history[key].append(None)
+				
+			for key in only_params_keys:
+				self._search_history[key] = [None] * len(self._search_history[self.__SCORE])
+				self._search_history[key][-1] = params[key]
+				
+	def _find_history_entry(self, *args) -> bool:
+		"""Search if a configuration has just been tried.
+		
+		Parameters
+		----------
+		args
+			The passed arguments to the optimization function.
+
+		Returns
+		-------
+		is_present : bool
+			True if the configuration has been already tried, False otherwise.
+		"""
+		params = self._build_input_dict(*args)
+		found = False
+		
+		if self._search_history is not None:
+			only_params_keys = set(params.keys()).difference(set(self._search_history.keys()))
+			
+			if len(only_params_keys) == 0:
+				# All keys passed are keys of the history, it might be a
+				# configuration already tried.
+				config = None
+				for key in params.keys():
+					curr = set(all_indices(self._search_history[key], params[key]))
+					
+					if config is None:
+						# For the first key I search the identical values
+						config = curr
+					elif len(config) == 0:
+						# Since config has no elements, config has not been tried
+						# yet
+						break
+					else:
+						# Search another key and compare indexes
+						config = config.intersection(curr)
+						
+				if len(config) > 0:
+					found = True
+		
+		return found
 	
-	def _build_input_dict(self, args) -> dict:
+	def _build_input_dict(self, *args) -> dict:
 		"""Build the dictionary of the parameters.
 
 		Parameters
@@ -213,3 +289,24 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		for parameter in self.parameter_space:
 			parameters.append(parameter.name)
 		return parameters
+
+	def __create_result_history(self) -> list:
+		"""Creates the search result list from history.
+		
+		Returns
+		-------
+		search : list
+			The results of the search with as first row the names of the
+			parameters of the model.
+		"""
+		keys = [key
+				for key in self._search_history.keys()]
+		tries = [[self._search_history[key][i]
+				  for key in self._search_history.keys()]
+				 for i in range(len(self._search_history[self.__SCORE]))]
+		final_history = [keys]
+		
+		for try_ in tries:
+			final_history.append(try_)
+		
+		return final_history
