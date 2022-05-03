@@ -52,11 +52,11 @@ class TimeSeriesAnomalyIForest(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.verbose = verbose
 		self.warm_start = warm_start
 	
-	def fit(self, X, y=None, *args, **kwargs) -> None:
-		check_array(X)
-		X = np.array(X)
+	def fit(self, x, y=None, *args, **kwargs) -> None:
+		check_array(x)
+		x = np.array(x)
 		
-		x_new, windows_per_point = self._project_time_series(X)
+		x_new, windows_per_point = self._project_time_series(x)
 		self._build_wrapped()
 		self._wrapped_model.fit(x_new)
 	

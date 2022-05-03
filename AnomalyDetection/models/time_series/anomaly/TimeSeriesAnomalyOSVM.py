@@ -52,13 +52,13 @@ class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.verbose = verbose
 		self.max_iter = max_iter
 
-	def fit(self, X, y=None, *args, **kwargs) -> None:
-		check_array(X)
+	def fit(self, x, y=None, *args, **kwargs) -> None:
+		check_array(x)
 		if y is not None:
-			check_X_y(X, y)
+			check_X_y(x, y)
 			y = np.array(y)
 		
-		X = np.array(X)
+		x = np.array(x)
 		
 		# Project time series onto vector space using only the normal data for
 		# training since the One-class SVM requires to learn a boundary of
@@ -66,17 +66,17 @@ class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
 		if y is not None:
 			normal_data = np.argwhere(y == 0)
 			normal_data = normal_data.reshape(normal_data.shape[0])
-			normal_data = X[normal_data]
+			normal_data = x[normal_data]
 		else:
-			normal_data = X
+			normal_data = x
 			
 		x_new, windows_per_point = self._project_time_series(normal_data)
 		self._build_wrapped()
 		self._wrapped_model.fit(x_new)
 
-	def anomaly_score(self, X, *args, **kwargs) -> np.ndarray:
+	def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
 		check_not_default_attributes(self, {"_wrapped_model": None})
-		return super().anomaly_score(X)
+		return super().anomaly_score(x)
 	
 	def classify(self, X, *args, **kwargs) -> np.ndarray:
 		check_not_default_attributes(self, {"_wrapped_model": None})

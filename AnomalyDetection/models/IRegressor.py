@@ -9,12 +9,12 @@ class IRegressor(ABC):
     """
 	
 	@abc.abstractmethod
-	def regress(self, X, *args, **kwargs) -> np.ndarray:
+	def regress(self, x, *args, **kwargs) -> np.ndarray:
 		"""Computes regression given the points X.
 		
 		Parameters
 		----------
-		X : array-like of shape (n_samples, n_features)
+		x : array-like of shape (n_samples, n_features)
 			The array of the samples for which we need to regress the quantity
 			estimated by the model.
 			

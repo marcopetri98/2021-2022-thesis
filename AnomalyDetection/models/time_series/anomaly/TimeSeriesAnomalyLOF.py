@@ -56,17 +56,17 @@ class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.novelty = novelty
 		self.n_jobs = n_jobs
 
-	def fit(self, X, y=None, *args, **kwargs) -> None:
-		check_array(X)
-		X = np.array(X)
+	def fit(self, x, y=None, *args, **kwargs) -> None:
+		check_array(x)
+		x = np.array(x)
 		
-		x_new, windows_per_point = self._project_time_series(X)
+		x_new, windows_per_point = self._project_time_series(x)
 		self._build_wrapped()
 		self._wrapped_model.fit(x_new)
 
-	def anomaly_score(self, X, *args, **kwargs) -> np.ndarray:
+	def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
 		check_not_default_attributes(self, {"_wrapped_model": None})
-		return super().anomaly_score(X)
+		return super().anomaly_score(x)
 	
 	def classify(self, X, *args, **kwargs) -> np.ndarray:
 		check_not_default_attributes(self, {"_wrapped_model": None})

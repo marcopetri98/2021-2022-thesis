@@ -7,12 +7,12 @@ class IParametric(ABC):
     """
 	
 	@abc.abstractmethod
-	def fit(self, X, y=None, *args, **kwargs) -> None:
+	def fit(self, x, y=None, *args, **kwargs) -> None:
 		"""Fits the model to the given training data.
 		
 		Parameters
 		----------
-		X : array-like of shape (n_samples, n_features)
+		x : array-like of shape (n_samples, n_features)
 			The training data representing containing the features.
 
 		y : array-like of shape (n_samples, n_label_features)

@@ -34,17 +34,17 @@ class TimeSeriesAnomalyWindowWrapper(TimeSeriesAnomalyWindow, ITimeSeriesAnomaly
 		
 		self._wrapped_model = None
 		
-	def regress(self, X, *args, **kwargs) -> np.ndarray:
+	def regress(self, x, *args, **kwargs) -> np.ndarray:
 		"""Alias for anomaly_score."""
-		return self.anomaly_score(X)
+		return self.anomaly_score(x)
 	
-	def anomaly_score(self, X, *args, **kwargs) -> np.ndarray:
+	def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
 		# Input validation
-		check_array(X)
-		X = np.array(X)
+		check_array(x)
+		x = np.array(x)
 		
 		# Projects the time series onto a vector space
-		x_new, windows_per_point = self._project_time_series(X)
+		x_new, windows_per_point = self._project_time_series(x)
 		
 		# Get the window scores
 		window_scores = self._compute_window_scores(x_new)

@@ -19,7 +19,7 @@ DATASET_PATH = "data/dataset/"
 DATASET = "ambient_temperature_system_failure.csv"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
 GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
-TRAIN = False
+TRAIN = True
 LOAD_PREVIOUS = True
 
 def preprocess(X) -> np.ndarray:
@@ -116,9 +116,9 @@ hyper_searcher = TimeSeriesGridSearch([
 										  # Real(0.0, 1.0, name="anomaly_threshold"),
 										  # Real(0.00001, 0.5, prior="log-uniform", name="contamination"),
 										  #Integer(2, 100, name="n_estimators"),
-										  Categorical(create_ARIMA([1, 5, 10, 15, 20, 25, 30, 35, 40],
+										  Categorical(create_ARIMA([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
 																   [1],
-																   [1, 5, 10, 15, 20, 25, 30, 35, 40]), name="order")
+																   [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]), name="order")
 									  ],
 									  "data/searches/arima/",
 									  "temp_no_refit_gls_statespace_arima",
