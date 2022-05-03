@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.cluster import DBSCAN
 
-from models.time_series.anomaly.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
 
 
 class TimeSeriesAnomalyDBSCAN(TimeSeriesAnomalyWindowWrapper):

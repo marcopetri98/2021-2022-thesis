@@ -6,7 +6,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.utils import check_array
 
 from models.IParametric import IParametric
-from models.time_series.anomaly.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
 
 
 class TimeSeriesAnomalyIForest(TimeSeriesAnomalyWindowWrapper, IParametric):

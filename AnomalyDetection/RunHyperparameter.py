@@ -5,9 +5,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
-from skopt.space import Integer, Categorical
+from skopt.space import Categorical
 
-from models.time_series.anomaly.TimeSeriesAnomalyARIMA import \
+from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
 	TimeSeriesAnomalyARIMA
 from reader.NABTimeSeriesReader import NABTimeSeriesReader
 

@@ -4,14 +4,14 @@ from sklearn.preprocessing import StandardScaler
 from Metrics import compute_metrics, make_metric_plots
 from get_windows_indices import get_windows_indices
 import visualizer.Viewer as vw
-from models.time_series.anomaly.TimeSeriesAnomalyARIMA import TimeSeriesAnomalyARIMA
-from models.time_series.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
-from models.time_series.anomaly.TimeSeriesAnomalyES import TimeSeriesAnomalyES
-from models.time_series.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
-from models.time_series.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
-from models.time_series.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
-from models.time_series.anomaly.TimeSeriesAnomalyOSVMPhase import TimeSeriesAnomalyOSVMPhase
-from models.time_series.anomaly.TimeSeriesAnomalySES import TimeSeriesAnomalySES
+from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import TimeSeriesAnomalyARIMA
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
+from models.time_series.anomaly.statistical.TimeSeriesAnomalyES import TimeSeriesAnomalyES
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVMPhase import TimeSeriesAnomalyOSVMPhase
+from models.time_series.anomaly.statistical.TimeSeriesAnomalySES import TimeSeriesAnomalySES
 from reader.NABTimeSeriesReader import NABTimeSeriesReader
 
 #################################
@@ -22,8 +22,9 @@ from reader.NABTimeSeriesReader import NABTimeSeriesReader
 #								#
 #################################
 
-ALGORITHM = "ES"
+ALGORITHM = "lof"
 
+# dbscan, lof, osvm, phase osvm, iforest, AR, MA, ARIMA, SES, ES
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
 DATASET_PATH = "data/dataset/"
@@ -33,8 +34,8 @@ GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
 ALL_DATA = False
-UNSUPERVISED = False
-SELF_SUPERVISED = True
+UNSUPERVISED = True
+SELF_SUPERVISED = False
 
 
 def preprocess(X) -> np.ndarray:

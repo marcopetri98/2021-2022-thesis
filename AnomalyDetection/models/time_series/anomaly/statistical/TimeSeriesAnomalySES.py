@@ -1,13 +1,18 @@
 from copy import copy
 
 import numpy as np
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from statsmodels.tsa.holtwinters import SimpleExpSmoothing
 
-from models.time_series.anomaly.TimeSeriesAnomalyForecaster import TimeSeriesAnomalyForecaster
+from models.time_series.anomaly.statistical.TimeSeriesAnomalyForecaster import TimeSeriesAnomalyForecaster
 
 
-class TimeSeriesAnomalyES(TimeSeriesAnomalyForecaster):
-	"""ES model to perform anomaly detection on time series.
+class TimeSeriesAnomalySES(TimeSeriesAnomalyForecaster):
+	"""SES model to perform anomaly detection on time series.
+	
+	The SES implemented by statsmodels is the Holt-Winters definition of Simple
+	Exponential Smoothing, which is a specific case of Exponential smoothing.
+	For more details check the `statsmodels <https://www.statsmodels.org/stable/
+	api.html>` implementation.
 	
 	When points are predicted using SES, it is important to know that the points
 	to be predicted must be the whole sequence immediately after the training.
@@ -18,19 +23,19 @@ class TimeSeriesAnomalyES(TimeSeriesAnomalyForecaster):
 	-----
 	For all the other parameters that are not included in the documentation, see
 	the `statsmodels <https://www.statsmodels.org/stable/api.html>`
-	documentation for `ARIMA models <https://www.statsmodels.org/stable/generate
-	d/statsmodels.tsa.holtwinters.SimpleExpSmoothing.html>`."""
-	
+	documentation for `SES models <https://www.statsmodels.org/stable/generated/
+	statsmodels.tsa.holtwinters.SimpleExpSmoothing.html>`."""
+
 	def __init__(self, validation_split: float = 0.1,
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999,
-				 es_params: dict = None):
+				 ses_params: dict = None):
 		super().__init__(validation_split=validation_split,
 						 distribution=distribution,
 						 perc_quantile=perc_quantile)
 		
-		self.es_params = es_params
-		
+		self.ses_params = ses_params
+
 		self.__check_parameters()
 	
 	def set_params(self, **params) -> None:
@@ -49,7 +54,7 @@ class TimeSeriesAnomalyES(TimeSeriesAnomalyForecaster):
 		x
 			Ignored by definition since ARIMA stores endogenous variables.
 		"""
-		return super().fit(self.es_params["endog"],
+		return super().fit(self.ses_params["endog"],
 						   y,
 						   verbose,
 						   fit_params,
@@ -62,7 +67,7 @@ class TimeSeriesAnomalyES(TimeSeriesAnomalyForecaster):
 			previous_points = previous.shape[0]
 		else:
 			previous_points = 0
-		num_to_discard = self.es_params["endog"].shape[0] - previous_points
+		num_to_discard = self.ses_params["endog"].shape[0] - previous_points
 		pred = self._fitted_model.forecast(num_to_discard + x.shape[0])
 		predictions = pred[num_to_discard:]
 		return predictions
@@ -71,13 +76,13 @@ class TimeSeriesAnomalyES(TimeSeriesAnomalyForecaster):
 		self._fitted_model = self._model.fit(**kwargs)
 	
 	def _model_build(self) -> None:
-		endog = self.es_params["endog"]
+		endog = self.ses_params["endog"]
 		num_validation = int(endog.shape[0] * self.validation_split)
 		endog_training_data = endog[:-num_validation]
-		new_params = copy(self.es_params)
+		new_params = copy(self.ses_params)
 		new_params["endog"] = endog_training_data
 		
-		self._model = ExponentialSmoothing(**new_params)
+		self._model = SimpleExpSmoothing(**new_params)
 	
 	def __check_parameters(self):
 		"""Checks that the class parameters are correct.
@@ -86,7 +91,7 @@ class TimeSeriesAnomalyES(TimeSeriesAnomalyForecaster):
 		-------
 		None
 		"""
-		if "endog" in self.es_params.keys():
-			if self.es_params["endog"] is None:
+		if "endog" in self.ses_params.keys():
+			if self.ses_params["endog"] is None:
 				raise ValueError("It is impossible to forecast without data. "
 								 "Endog must be a set of points, at least 2.")

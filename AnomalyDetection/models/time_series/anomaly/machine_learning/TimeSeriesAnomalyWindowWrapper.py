@@ -3,8 +3,8 @@ from abc import ABC
 import numpy as np
 from sklearn.utils import check_array
 
-from models.time_series.anomaly.ITimeSeriesAnomalyWrapper import ITimeSeriesAnomalyWrapper
-from models.time_series.anomaly.TimeSeriesAnomalyWindow import TimeSeriesAnomalyWindow
+from models.time_series.anomaly.machine_learning.ITimeSeriesAnomalyWrapper import ITimeSeriesAnomalyWrapper
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyWindow import TimeSeriesAnomalyWindow
 
 
 class TimeSeriesAnomalyWindowWrapper(TimeSeriesAnomalyWindow, ITimeSeriesAnomalyWrapper, ABC):

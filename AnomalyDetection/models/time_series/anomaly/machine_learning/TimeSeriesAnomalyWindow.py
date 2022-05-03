@@ -8,7 +8,7 @@ from sklearn.utils import check_array
 
 from input_validation.array_checks import check_x_y_smaller_1d
 from models.BaseModel import BaseModel
-from models.time_series.anomaly.ITimeSeriesAnomalyWindow import ITimeSeriesAnomalyWindow
+from models.time_series.anomaly.machine_learning.ITimeSeriesAnomalyWindow import ITimeSeriesAnomalyWindow
 
 
 class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):

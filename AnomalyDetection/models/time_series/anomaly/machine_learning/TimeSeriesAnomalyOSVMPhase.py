@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.svm import OneClassSVM
 
-from models.time_series.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 
 
 class TimeSeriesAnomalyOSVMPhase(TimeSeriesAnomalyOSVM):

@@ -4,7 +4,7 @@ from sklearn.utils import check_array, check_X_y
 
 from input_validation.attribute_checks import check_not_default_attributes
 from models.IParametric import IParametric
-from models.time_series.anomaly.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
 
 
 class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):

@@ -6,7 +6,7 @@ from sklearn.utils import check_array
 
 from input_validation.attribute_checks import check_not_default_attributes
 from models.IParametric import IParametric
-from models.time_series.anomaly.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
 
 # FIXME: is LOF really parametric?
 class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
@@ -65,11 +65,13 @@ class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self._wrapped_model.fit(x_new)
 
 	def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
-		check_not_default_attributes(self, {"_wrapped_model": None})
+		if self.novelty:
+			check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().anomaly_score(x)
 	
 	def classify(self, X, *args, **kwargs) -> np.ndarray:
-		check_not_default_attributes(self, {"_wrapped_model": None})
+		if self.novelty:
+			check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().classify(X)
 	
 	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
