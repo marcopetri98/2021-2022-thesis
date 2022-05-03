@@ -190,6 +190,13 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		None
 		"""
 		params = self._build_input_dict(*args)
+
+		# Since tuples are saved to json arrays and json arrays are always
+		# converted to lists, I need to convert any tuple to a list to be able
+		# to check the identity since results may be loaded from a checkpoint
+		for key, item in params.items():
+			if isinstance(item, tuple):
+				params[key] = list(item)
 		
 		if self._search_history is None:
 			self._search_history = {self.__SCORE: [score]}
@@ -228,7 +235,14 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		"""
 		params = self._build_input_dict(*args)
 		found = False
-		
+
+		# Since tuples are saved to json arrays and json arrays are always
+		# converted to lists, I need to convert any tuple to a list to be able
+		# to check the identity since results may be loaded from a checkpoint
+		for key, item in params.items():
+			if isinstance(item, tuple):
+				params[key] = list(item)
+
 		if self._search_history is not None:
 			only_params_keys = set(params.keys()).difference(set(self._search_history.keys()))
 			
