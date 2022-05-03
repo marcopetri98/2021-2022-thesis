@@ -14,21 +14,12 @@ from utils.printing import print_step, print_header
 class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
 	"""ARIMA model to perform anomaly detection on time series.
 	
-	Parameters
-	----------
-	validation_split : float, default=0.1
-		It is the percentage of training set to be used to learn the threshold
-		to be able to classify points.
-		
-	distribution : str, default="gaussian"
-		It is the distribution used to compute the threshold of error over which
-		a point is considered an anomaly. EFFECTIVE ONLY BEFORE FITTING.
-	
 	Notes
 	-----
 	For all the other parameters that are not included in the documentation, see
-	the statsmodel documentation for ARIMA models:
-	https://www.statsmodels.org/stable/generated/statsmodels.tsa.arima.model.ARIMA.html
+	the `statsmodels <https://www.statsmodels.org/stable/api.html>`
+	documentation for `ARIMA models <https://www.statsmodels.org/stable/generate
+	d/statsmodels.tsa.arima.model.ARIMA.html>`.
 	"""
 	
 	def __init__(self, validation_split: float = 0.1,
@@ -82,7 +73,7 @@ class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
 		x
 			Ignored by definition since ARIMA stores endogenous variables.
 		"""
-		super().fit(self.endog, y, verbose, fit_params, *args, **kwargs)
+		return super().fit(self.endog, y, verbose, fit_params, *args, **kwargs)
 
 	def _model_predict(self, previous: np.ndarray,
 					   x: np.ndarray):

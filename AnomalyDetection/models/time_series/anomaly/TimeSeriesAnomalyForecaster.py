@@ -125,7 +125,6 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 			synthetic printing is performed.
 		"""
 		check_array(X)
-		check_array(previous)
 		X = np.array(X)
 		previous = np.array(previous)
 		
@@ -163,7 +162,6 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 			synthetic printing is performed.
 		"""
 		check_array(x)
-		check_array(previous)
 		x = np.array(x)
 		previous = np.array(previous)
 		
@@ -213,7 +211,6 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 		check_not_default_attributes(self, {"_fitted_model": None,
 											"_model": None})
 		check_array(x)
-		check_array(xp)
 		x = np.array(x)
 		xp = np.array(xp)
 		
@@ -247,7 +244,6 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 			Errors of the prediction.
 		"""
 		check_array(x)
-		check_array(previous)
 		x = np.array(x)
 		previous = np.array(previous)
 

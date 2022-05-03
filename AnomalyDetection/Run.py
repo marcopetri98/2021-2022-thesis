@@ -6,10 +6,12 @@ from get_windows_indices import get_windows_indices
 import visualizer.Viewer as vw
 from models.time_series.anomaly.TimeSeriesAnomalyARIMA import TimeSeriesAnomalyARIMA
 from models.time_series.anomaly.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
+from models.time_series.anomaly.TimeSeriesAnomalyES import TimeSeriesAnomalyES
 from models.time_series.anomaly.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
 from models.time_series.anomaly.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 from models.time_series.anomaly.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 from models.time_series.anomaly.TimeSeriesAnomalyOSVMPhase import TimeSeriesAnomalyOSVMPhase
+from models.time_series.anomaly.TimeSeriesAnomalySES import TimeSeriesAnomalySES
 from reader.NABTimeSeriesReader import NABTimeSeriesReader
 
 #################################
@@ -20,7 +22,7 @@ from reader.NABTimeSeriesReader import NABTimeSeriesReader
 #								#
 #################################
 
-ALGORITHM = "MA"
+ALGORITHM = "ES"
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
@@ -138,6 +140,17 @@ elif SELF_SUPERVISED and ALGORITHM == "MA":
 elif SELF_SUPERVISED and ALGORITHM == "ARIMA":
 	model = TimeSeriesAnomalyARIMA(endog=train, order=(1, 1, 3), perc_quantile=0.98)
 	model.fit(method="statespace", gls=True)
+elif SELF_SUPERVISED and ALGORITHM == "SES":
+	model = TimeSeriesAnomalySES(ses_params={"endog": train})
+	model.fit(fit_params={"smoothing_level": 0.4,
+						  "optimized": True})
+elif SELF_SUPERVISED and ALGORITHM == "ES":
+	model = TimeSeriesAnomalyES(es_params={"endog": train,
+										   "use_boxcox": False})
+	model.fit(fit_params={"smoothing_level": 0.4,
+						  "smoothing_trend": 0.1,
+						  "smoothing_seasonal": 0.3,
+						  "optimized": True})
 
 #################################
 #								#
@@ -158,7 +171,7 @@ if ALL_METRICS:
 	compute_metrics(true_labels, scores, labels, only_roc_auc=False)
 	make_metric_plots(dataframe, true_labels, scores, labels)
 	
-	if ALGORITHM in ["ARIMA", "AR", "MA"]:
+	if ALGORITHM in ["ARIMA", "AR", "MA", "SES", "ES"]:
 		predictions = model.predict_time_series(data,
 												data_test)
 		vw.plot_time_series_forecast(data_test, predictions, on_same_plot=True)
