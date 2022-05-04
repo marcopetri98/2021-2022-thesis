@@ -4,6 +4,8 @@ from sklearn.preprocessing import StandardScaler
 from Metrics import compute_metrics, make_metric_plots
 from get_windows_indices import get_windows_indices
 import visualizer.Viewer as vw
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyKMeans import \
+	TimeSeriesAnomalyKMeans
 from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import TimeSeriesAnomalyARIMA
 from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
 from models.time_series.anomaly.statistical.TimeSeriesAnomalyES import TimeSeriesAnomalyES
@@ -22,9 +24,9 @@ from reader.NABTimeSeriesReader import NABTimeSeriesReader
 #								#
 #################################
 
-ALGORITHM = "lof"
+ALGORITHM = "kmeans"
 
-# dbscan, lof, osvm, phase osvm, iforest, AR, MA, ARIMA, SES, ES
+# kmeans, dbscan, lof, osvm, phase osvm, iforest, AR, MA, ARIMA, SES, ES
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
 DATASET_PATH = "data/dataset/"
@@ -33,7 +35,7 @@ PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
 GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
 ALL_METRICS = True
 CHECK_OVERFITTING = False
-ALL_DATA = False
+ALL_DATA = True
 UNSUPERVISED = True
 SELF_SUPERVISED = False
 
@@ -93,7 +95,14 @@ elif ALL_DATA:
 #								#
 #								#
 #################################
-if UNSUPERVISED and ALGORITHM == "dbscan":
+if UNSUPERVISED and ALGORITHM == "kmeans":
+	model = TimeSeriesAnomalyKMeans(window=3,
+									classification="points_score",
+									anomaly_portion=0.0003,
+									anomaly_threshold=0.9888,
+									kmeans_params={"n_clusters": 4,
+												   "random_state": 22})
+elif UNSUPERVISED and ALGORITHM == "dbscan":
 	model = TimeSeriesAnomalyDBSCAN(window=3,
 									eps=2.75,
 									min_samples=31,
