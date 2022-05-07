@@ -31,6 +31,11 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 		the point stating that errors greater or equal to it represent an
 		anomaly in data.
 
+	Raises
+	------
+	ValueError
+		When parameters of the model are not in the correct format.
+
 	Notes
 	-----
 	Currently, this class implements logic to train a statistical model based on
@@ -39,15 +44,18 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 	__GAUSSIAN_DIST = "gaussian"
 	__TRUNC_GAUSSIAN_DIST = "truncated_gaussian"
 	ACCEPTED_DISTRIBUTIONS = [__GAUSSIAN_DIST, __TRUNC_GAUSSIAN_DIST]
+	ACCEPTED_SCORING = ["difference", "norm"]
 	
 	def __init__(self, validation_split: float = 0.1,
 				 distribution: str = "gaussian",
-				 perc_quantile: float = 0.999):
+				 perc_quantile: float = 0.999,
+				 scoring: str = "difference"):
 		super().__init__()
 
 		self.validation_split = validation_split
 		self.distribution = distribution
 		self.perc_quantile = perc_quantile
+		self.scoring = scoring
 		self._model = None
 		self._fitted_model = None
 		self._threshold = - np.inf
@@ -169,18 +177,20 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 			print_header("Start to compute anomaly score of points")
 		
 		# Input validated in compute errors
-		errors = self._compute_errors(previous, x, verbose=verbose)
+		predictions = self.predict_time_series(previous, x, verbose=verbose)
 		
 		if verbose:
 			print_step("Evaluate scores on the basis of prediction error")
 		
-		# For the moment, leaving the error as score could be ok
-		# TODO: find a good scoring method
+		if self.scoring == "difference":
+			scores = np.abs(x - predictions)
+		else:
+			scores = np.linalg.norm(x - predictions, axis=1)
 		
 		if verbose:
 			print_header("Anomaly score of points computation ended")
 		
-		return errors
+		return scores
 
 	def regress(self, x, *args, **kwargs) -> np.ndarray:
 		"""Alias for anomaly_score."""
@@ -362,3 +372,5 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 		elif not 0 < self.perc_quantile < 1:
 			raise ValueError("The percentage used to compute the quantile must "
 							 "lies in range (0,1)")
+		elif self.scoring not in self.ACCEPTED_SCORING:
+			raise ValueError("Scoring must be one of %s" % self.ACCEPTED_SCORING)

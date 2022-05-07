@@ -20,6 +20,7 @@ class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
 	def __init__(self, validation_split: float = 0.1,
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999,
+				 scoring: str = "difference",
 				 *,
 				 endog = None,
 				 exog = None,
@@ -35,7 +36,8 @@ class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
 				 missing: str = "none"):
 		super().__init__(validation_split=validation_split,
 						 distribution=distribution,
-						 perc_quantile=perc_quantile)
+						 perc_quantile=perc_quantile,
+						 scoring=scoring)
 		
 		self.endog = np.array(endog) if endog is not None else None
 		self.exog = np.array(exog) if exog is not None else None

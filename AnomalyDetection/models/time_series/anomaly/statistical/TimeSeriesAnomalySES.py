@@ -29,11 +29,15 @@ class TimeSeriesAnomalySES(TimeSeriesAnomalyForecaster):
 	def __init__(self, validation_split: float = 0.1,
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999,
+				 scoring: str = "difference",
 				 ses_params: dict = None):
 		super().__init__(validation_split=validation_split,
 						 distribution=distribution,
-						 perc_quantile=perc_quantile)
+						 perc_quantile=perc_quantile,
+						 scoring=scoring)
 		
+		self.alpha = None
+		self.l0 = None
 		self.ses_params = ses_params
 
 		self.__check_parameters()
@@ -64,16 +68,24 @@ class TimeSeriesAnomalySES(TimeSeriesAnomalyForecaster):
 	def _model_predict(self, previous: np.ndarray,
 					   x: np.ndarray):
 		if previous.shape != tuple(()):
-			previous_points = previous.shape[0]
+			all_data = np.concatenate((previous, x))
 		else:
-			previous_points = 0
-		num_to_discard = self.ses_params["endog"].shape[0] - previous_points
-		pred = self._fitted_model.forecast(num_to_discard + x.shape[0])
-		predictions = pred[num_to_discard:]
+			all_data = x
+		
+		self._model = SimpleExpSmoothing(endog=all_data,
+										 initialization_method="known",
+										 initial_level=self.l0)
+		self._fitted_model = self._model.fit(smoothing_level=self.alpha,
+											 optimized=False)
+		
+		predictions = self._fitted_model.predict(start=all_data.shape[0] - x.shape[0],
+												 end=all_data.shape[0] - 1)
 		return predictions
 	
 	def _model_fit(self, *args, **kwargs):
 		self._fitted_model = self._model.fit(**kwargs)
+		self.alpha = self._fitted_model.mle_retvals.x[0]
+		self.l0 = self._fitted_model.mle_retvals.x[1]
 	
 	def _model_build(self) -> None:
 		endog = self.ses_params["endog"]

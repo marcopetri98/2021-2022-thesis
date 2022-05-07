@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from pandas._libs.tslibs import to_offset
 
 from statsmodels.tsa.stattools import adfuller, kpss, acf, pacf
 from statsmodels.tsa.seasonal import STL
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-DATASET = "dataset/nyc_taxi.csv"
+DATASET = "data/dataset/nyc_taxi.csv"
 MATPLOT_PRINT = False
 USE_STL = True
 LAG = 1
@@ -81,9 +82,15 @@ if MATPLOT_PRINT:
 					  diff_acf_conf,
 					  diff_pacf_conf)
 
+# Try to get periodicity of the time series with pandas
+period = pd.infer_freq(timestamps)
+period = to_offset(period)
+period = period.rule_code.upper()
+print("Pandas infer a frequency of %s" % period)
+
 if USE_STL:
 	# Perform de-trending and de-seasonality
-	stl = STL(values, period=len(values), robust=True)
+	stl = STL(values, robust=True)
 	res = stl.fit()
 	
 	if MATPLOT_PRINT:

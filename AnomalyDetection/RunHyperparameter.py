@@ -10,17 +10,16 @@ from skopt.space import Categorical
 from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
 	TimeSeriesAnomalyARIMA
 from reader.NABTimeSeriesReader import NABTimeSeriesReader
+from tuning.hyperparameter.TimeSeriesGridSearch import TimeSeriesGridSearch
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
-from tuning.hyperparameter.TimeSeriesGridSearch import TimeSeriesGridSearch
-
 DATASET_PATH = "data/dataset/"
-DATASET = "ambient_temperature_system_failure.csv"
-PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"
+DATASET = "nyc_taxi.csv"
+PURE_DATA_KEY = "realKnownCause/nyc_taxi.csv"
 GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
-TRAIN = False
-LOAD_PREVIOUS = True
+TRAIN = True
+LOAD_PREVIOUS = False
 
 def preprocess(X) -> np.ndarray:
 	return StandardScaler().fit_transform(X)
@@ -60,8 +59,14 @@ def plot_AR_MA_score(order, score, fig_size: Tuple = (16, 6)):
 	plt.title("AR/MA search")
 	plt.show()
 	
-def create_ARIMA(ar: list, diff: list, ma: list) -> list:
+def create_ARIMA(ar: list | int, diff: list | int, ma: list | int) -> list:
 	configs = []
+	if isinstance(ar, int):
+		ar = list(range(ar + 1))
+	if isinstance(diff, int):
+		diff = list(range(diff + 1))
+	if isinstance(ma, int):
+		ma = list(range(ma + 1))
 	
 	for ar_o in ar:
 		for diff_o in diff:
@@ -116,12 +121,13 @@ hyper_searcher = TimeSeriesGridSearch([
 										  # Real(0.0, 1.0, name="anomaly_threshold"),
 										  # Real(0.00001, 0.5, prior="log-uniform", name="contamination"),
 										  #Integer(2, 100, name="n_estimators"),
-										  Categorical(create_ARIMA([1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-																   [1],
-																   [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]), name="order")
+										  Categorical(create_ARIMA(0, 0, 30), name="order"),
+										  Categorical(["difference"], name="scoring"),
+										  Categorical([(0, 0, 0, 0)], name="seasonal_order"),
+										  Categorical(["n"], name="trend")
 									  ],
-									  "data/searches/arima/",
-									  "temp_no_refit_gls_statespace_arima",
+									  "data/searches/ma/",
+									  "nyc_gls_mle_ma",
 									  TimeSeriesSplit(n_splits=5),
 									  load_checkpoint=LOAD_PREVIOUS)
 if TRAIN:
@@ -130,7 +136,7 @@ if TRAIN:
 results = hyper_searcher.get_results()
 results.print_search()
 
-model = 2
+model = 1
 orders = get_orders(model)
 scores = get_scores()
 if model == 1 or model == 0:
