@@ -1,8 +1,3 @@
-# Python imports
-
-# External imports
-
-# Project imports
 from typing import Union
 
 

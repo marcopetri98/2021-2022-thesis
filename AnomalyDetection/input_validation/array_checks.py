@@ -1,8 +1,3 @@
-# Python imports
-
-# External imports
-
-# Project imports
 import numpy as np
 from sklearn.utils import check_array
 

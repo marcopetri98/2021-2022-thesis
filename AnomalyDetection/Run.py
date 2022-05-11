@@ -7,7 +7,6 @@ from pandas._libs.tslibs import to_offset
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from get_windows_indices import get_windows_indices
 import visualizer.Viewer as vw
 from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyKMeans import \
 	TimeSeriesAnomalyKMeans
@@ -29,7 +28,7 @@ from reader.NABTimeSeriesReader import NABTimeSeriesReader
 #								#
 #################################
 
-ALGORITHM = "ES"
+ALGORITHM = "AR"
 
 # kmeans, dbscan, lof, osvm, phase osvm, iforest, AR, MA, ARIMA, SES, ES
 # DATASET 1: ambient_temperature_system_failure
@@ -76,15 +75,15 @@ data_labels = training["target"]
 data_test = preprocess(np.array(test["value"]).reshape((test["value"].shape[0], 1)))
 data_test_labels = test["target"]
 
-# Data used to evaluate
+# Dataframe used to evaluate
 dataframe = test.copy()
-dataframe["value"] = test["value"]
+dataframe["value"] = data_test["value"]
 
 train = data
 
 if CHECK_OVERFITTING:
-	data_test = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
-	data_test_labels = training["target"]
+	data_test = data
+	data_test_labels = data_labels
 	dataframe = training.copy()
 	dataframe["value"] = data_test
 elif ALL_DATA:
@@ -198,19 +197,14 @@ if ALL_METRICS:
 	make_metric_plots(dataframe, true_labels, scores, labels)
 	
 	if ALGORITHM in ["ARIMA", "AR", "MA", "SES", "ES"]:
-		predictions = model.predict_time_series(data,
-												data_test)
+		predictions = model.predict_time_series(data, data_test)
 		vw.plot_time_series_forecast(data_test, predictions, on_same_plot=True)
 		vw.plot_time_series_forecast(data_test, predictions, on_same_plot=False)
 	
-	bars = get_windows_indices(all_df,
-							   PURE_DATA_KEY,
-							   GROUND_WINDOWS_PATH)
-	all_timestamps = all_df["timestamp"].tolist()
-	bars = [dataframe["timestamp"].tolist().index(all_timestamps[int(bar)])
-			for bar in bars
-			if all_timestamps[int(bar)] in dataframe["timestamp"].tolist()]
-	bars = np.array(bars)
+	bars = vw.get_bars_indices_on_test_df(all_df,
+										  dataframe,
+										  PURE_DATA_KEY,
+										  GROUND_WINDOWS_PATH)
 	vw.plot_time_series_with_predicitons_bars(dataframe,
 											  labels,
 											  bars,

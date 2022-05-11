@@ -152,7 +152,7 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 				labels[true_anomalies] = 1
 
 			case "points_score":
-				# Computes the threshold using the 99 percentile
+				# Computes the threshold using the percentiles
 				if threshold is None:
 					mean = np.mean(point_scores)
 					std = np.std(point_scores)

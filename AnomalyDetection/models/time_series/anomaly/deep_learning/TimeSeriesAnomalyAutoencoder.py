@@ -7,7 +7,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from models.time_series.anomaly.deep_learning.TimeSeriesAnomalyWindowDL import TimeSeriesAnomalyWindowDL
-from print_utils.printing import print_warning
+from utils.printing import print_warning
 
 
 class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):

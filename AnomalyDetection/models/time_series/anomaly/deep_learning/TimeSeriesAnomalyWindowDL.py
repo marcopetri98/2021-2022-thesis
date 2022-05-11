@@ -5,8 +5,9 @@ from typing import Tuple
 import numpy as np
 import tensorflow as tf
 from keras.callbacks import History
-from scipy.stats import truncnorm, norm
-from sklearn.preprocessing import MinMaxScaler
+from scipy.spatial.distance import mahalanobis
+from scipy.stats import truncnorm, norm, chi2
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.utils import check_X_y
 
 
@@ -62,7 +63,10 @@ class TimeSeriesAnomalyWindowDL(ABC):
 	"""
 	__GAUSSIAN_DIST = "gaussian"
 	__TRUNC_GAUSSIAN_DIST = "truncated_gaussian"
-	ACCEPTED_DISTRIBUTIONS = [__GAUSSIAN_DIST, __TRUNC_GAUSSIAN_DIST]
+	__MAHALANOBIS = "mahalanobis"
+	ACCEPTED_DISTRIBUTIONS = [__GAUSSIAN_DIST,
+							  __TRUNC_GAUSSIAN_DIST,
+							  __MAHALANOBIS]
 	
 	def __init__(self, window: int = 200,
 				 stride: int = 1,
@@ -106,6 +110,9 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		self.filename = filename
 		self.distribution = distribution
 		self.perc_quantile = perc_quantile
+		
+		self._mean = None
+		self._cov_mat = None
 	
 	@abc.abstractmethod
 	def _build_x_y_sequences(self, x) -> Tuple[np.ndarray, np.ndarray]:
@@ -190,6 +197,15 @@ class TimeSeriesAnomalyWindowDL(ABC):
 												b,
 												loc=mean,
 												scale=std)
+			
+			case self.__MAHALANOBIS:
+				# We normalize data to find the quantile for this distribution
+				# since mahalanobis is distributed as chi-squared for normal data
+				self._mean = np.mean(x)
+				xc = x - self._mean
+				self._cov_mat = (np.transpose(xc) @ xc) / (x.shape[0] - 1)
+				self.threshold_ = chi2.ppf(self.perc_quantile,
+										   x.shape[1])
 	
 	def fit(self, x, training_idx, validation_idx, y) -> list[History]:
 		"""Train the predictor and the threshold using a simple Perceptron.
@@ -376,12 +392,14 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		# Input validated in compute errors
 		errors = self._compute_errors(xp, x)
 		
-		# TODO: maybe minmax scaling is useless
-		scores = errors.reshape((errors.shape[0], 1))
-		scores = MinMaxScaler().fit_transform(scores)
-		scores = scores.reshape(scores.shape[0])
+		if self.distribution != self.__MAHALANOBIS:
+			scores = errors
+		else:
+			cov_mat_inv = np.linalg.inv(self._cov_mat)
+			md = [mahalanobis(x, self._mean, cov_mat_inv) for x in errors]
+			scores = np.array(md)
 		
-		return errors
+		return scores
 	
 	@abc.abstractmethod
 	def predict_time_series(self, xp, x) -> np.ndarray:
@@ -422,7 +440,14 @@ class TimeSeriesAnomalyWindowDL(ABC):
 		# Input validated in compute errors
 		errors = self._compute_errors(xp, x)
 		
-		anomalies = np.argwhere(errors >= self.threshold_)
+		if self.distribution != self.__MAHALANOBIS:
+			anomalies = np.argwhere(errors >= self.threshold_)
+		else:
+			cov_mat_inv = np.linalg.inv(self._cov_mat)
+			md = [mahalanobis(x, self._mean, cov_mat_inv) for x in errors]
+			md = np.array(md)
+			anomalies = np.argwhere(md >= self.threshold_)
+			
 		pred_labels = np.zeros(x.shape[0], dtype=np.intc)
 		pred_labels[anomalies] = 1
 		
