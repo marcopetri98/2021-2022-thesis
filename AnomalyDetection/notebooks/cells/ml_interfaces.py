@@ -12,6 +12,11 @@ class IRegressor(ABC):
     @abc.abstractmethod
     def regress(self, x, *args, **kwargs) -> np.ndarray:
         pass
+
+class IParametric(ABC):
+    @abc.abstractmethod
+    def fit(self, x, y=None, *args, **kwargs) -> None:
+        pass
     
 class IAnomalyRegressor(IRegressor):
     @abc.abstractmethod

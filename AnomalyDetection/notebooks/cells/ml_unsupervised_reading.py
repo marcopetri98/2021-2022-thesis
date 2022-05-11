@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 DATASET_PATH = "../data/dataset/"
 DATASET = "nyc_taxi.csv"
 PURE_DATA_KEY = "realKnownCause/nyc_taxi.csv"
-GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
+GROUND_WINDOWS_PATH = "../data/dataset/combined_windows.json"
 
 reader = NABTimeSeriesReader(DATASET_PATH)
 all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
