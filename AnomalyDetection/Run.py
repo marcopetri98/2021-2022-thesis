@@ -77,7 +77,7 @@ data_test_labels = test["target"]
 
 # Dataframe used to evaluate
 dataframe = test.copy()
-dataframe["value"] = data_test["value"]
+dataframe["value"] = data_test
 
 train = data
 
