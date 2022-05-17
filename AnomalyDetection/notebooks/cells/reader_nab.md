@@ -1,3 +1,0 @@
-# NAB data reader
-
-NAB is a known dataset to perform anomaly detection. Datasets are not specified in a single csv file. Time series raw data are stored in a file, then, labels and windows are stored in separate files as json structure resembling that of a simple dictionary. Therefore, we need to slightly change the code of the read function of the general reader to be able to correctly read NAB datasets to be able to correctly identify the labels for the dataset.

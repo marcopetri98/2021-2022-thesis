@@ -1,3 +1,0 @@
-# Interfaces and hierarchical structure
-
-The structure of the classes has been designed to be hierarchical to follow the DRY principle. To do so, whenever some code can be reused from different classes, inheritance and appropriate design patterns are used. Interfaces are a key component definining objects in an OOP programs. Every exposed interface of an object is defined and then implemented by objects. Moreover, I use interfaces to define common behaviours more than simple exposed methods.
