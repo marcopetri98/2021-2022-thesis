@@ -7,8 +7,9 @@ import tensorflow as tf
 from keras.callbacks import History
 from scipy.spatial.distance import mahalanobis
 from scipy.stats import truncnorm, norm, chi2
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.utils import check_X_y
+
+from utils.printing import print_warning
 
 
 class TimeSeriesAnomalyWindowDL(ABC):
@@ -262,9 +263,9 @@ class TimeSeriesAnomalyWindowDL(ABC):
 			
 			if self.batch_divide_training:
 				if (data.shape[0] - self.window) % self.batch_size != 0:
-					raise ValueError("Data.shape[0] - window must be a multiple"
-									 " of batch to build the spatial data. I.e.,"
-									 "(Data.shape[0] - window)%batch_size == 0")
+					print_warning("Data.shape[0] - window must be a multiple"
+								  " of batch to build the spatial data. I.e.,"
+								  "(Data.shape[0] - window)%batch_size == 0")
 			
 			# Build the train sequences from the given input
 			x_train, y_train = self._build_x_y_sequences(data)

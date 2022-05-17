@@ -6,7 +6,6 @@ import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from get_windows_indices import get_windows_indices
 from models.time_series.anomaly.deep_learning.BraeiCNN import BraeiCNN
 from models.time_series.anomaly.deep_learning.BraeiCNNBatch import BraeiCNNBatch
 from models.time_series.anomaly.deep_learning.BraeiDenseAutoencoder import BraeiDenseAutoencoder
@@ -16,8 +15,7 @@ from models.time_series.anomaly.deep_learning.CNNAutoencoder import CNNAutoencod
 from models.time_series.anomaly.deep_learning.GRUAutoencoder import GRUAutoencoder
 from models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
 from reader.NABTimeSeriesReader import NABTimeSeriesReader
-from visualizer.Viewer import plot_time_series_forecast, \
-	plot_time_series_with_predicitons_bars, get_bars_indices_on_test_df
+from visualizer.Viewer import plot_time_series_forecast, plot_time_series_with_predicitons_bars, get_bars_indices_on_test_df
 
 ALGORITHM = "cnn"
 
@@ -28,6 +26,9 @@ DATASET_PATH = "data/dataset/"
 DATASET = "nyc_taxi.csv"
 PURE_DATA_KEY = "realKnownCause/nyc_taxi.csv"
 GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
+# The number of normal samples that must lie between a normal slice and an anomaly
+SAFETY_DIM = 50
+MINIMUM_SLICE = 100
 ALL_METRICS = True
 LOAD_MODEL = False
 CHECK_OVERFITTING = False
@@ -99,8 +100,6 @@ if CHECK_OVERFITTING:
 	dataframe["value"] = data_test
 
 # Create the slices of the trainig data
-validation_elems = data.shape[0] * VALIDATION_DIM
-
 change_idx = np.where(np.array(data_labels[:-1]) != np.array(data_labels[1:]))
 change_idx = np.array(change_idx) + 1
 change_idx = change_idx.reshape(change_idx.shape[1])
@@ -109,18 +108,89 @@ normal_slices = []
 anomaly_slices = []
 for i in range(len(change_idx)):
 	start = change_idx[i]
-	if i < len(change_idx) -1:
-		stop = change_idx[i+1]
+	if i < len(change_idx) - 1:
+		stop = change_idx[i + 1]
 	else:
 		stop = data.shape[0]
-	
+
 	if data_labels[change_idx[i]] == 1:
 		anomaly_slices.append(slice(start, stop))
 	else:
 		normal_slices.append(slice(start, stop))
 
-training_slices = [slice(0, 2878)]
-validation_slices = [slice(2878, 3582)]
+print("The slices before safety check: %s" % normal_slices)
+
+for i in range(len(normal_slices)):
+	start_first = False
+	end_last = False
+	if normal_slices[i].start == 0:
+		start_first = True
+	if normal_slices[i].stop == data.shape[0]:
+		end_last = True
+
+	if not start_first and not end_last:
+		normal_slices[i] = slice(normal_slices[i].start + SAFETY_DIM,
+								 normal_slices[i].stop - SAFETY_DIM,
+								 normal_slices[i].step)
+	elif not start_first and end_last:
+		normal_slices[i] = slice(normal_slices[i].start + SAFETY_DIM,
+								 normal_slices[i].stop,
+								 normal_slices[i].step)
+	elif start_first and not end_last:
+		normal_slices[i] = slice(normal_slices[i].start,
+								 normal_slices[i].stop - SAFETY_DIM,
+								 normal_slices[i].step)
+
+print("The slices after safety check: %s" % normal_slices)
+
+# Gets the step (equal for all slices)
+step = normal_slices[0].step if normal_slices[0].step is not None else 1
+ok_normal_slices = []
+tot_samples = 0
+for i in range(len(normal_slices)):
+	samples = int((normal_slices[i].stop - normal_slices[i].start) / step)
+	if samples > MINIMUM_SLICE:
+		tot_samples += samples
+		ok_normal_slices.append(normal_slices[i])
+
+valid_points = tot_samples * VALIDATION_DIM
+training_slices = []
+validation_slices = []
+tot_valid = 0
+for i in reversed(range(len(ok_normal_slices))):
+	if tot_valid >= valid_points:
+		training_slices.append(ok_normal_slices[i])
+	else:
+		samples = int(
+			(ok_normal_slices[i].stop - ok_normal_slices[i].start) / step)
+		needed_points = valid_points - tot_valid
+
+		if samples < needed_points:
+			validation_slices.append(ok_normal_slices[i])
+		else:
+			train_stop = int(ok_normal_slices[i].stop - needed_points * step)
+			slice_train = slice(ok_normal_slices[i].start,
+								train_stop,
+								ok_normal_slices[i].step)
+			slice_valid = slice(train_stop,
+								ok_normal_slices[i].stop,
+								ok_normal_slices[i].step)
+
+			# If points are enough, they are added to lists
+			if (slice_train.stop - slice_train.start) / step >= MINIMUM_SLICE:
+				training_slices.append(slice_train)
+			if (slice_valid.stop - slice_valid.start) / step >= MINIMUM_SLICE:
+				validation_slices.append(slice_valid)
+
+			# Since in this else we enter only at the last slice, set up to exit in case minimum
+			# slice is not reached
+			tot_valid = valid_points + 1
+
+training_slices.reverse()
+validation_slices.reverse()
+
+print("The training slices are: %s" % training_slices)
+print("The validation slices are: %s" % validation_slices)
 
 match ALGORITHM:
 	case "lstm":
