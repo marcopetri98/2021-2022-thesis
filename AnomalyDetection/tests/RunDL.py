@@ -263,13 +263,13 @@ match ALGORITHM:
 	
 	case "lstm autoencoder":
 		model = LSTMAutoencoder(window=AUTOENCODER_WINDOW,
-								max_epochs=500,
-								batch_size=32,
-								folder_save_path="data/nn_models/custom/",
-								#distribution="truncated_gaussian",
-								extend_not_multiple=True,
-								test_overlapping=True,
-								filename="autoencoder_lstm_1")
+                                max_epochs=500,
+                                batch_size=32,
+                                folder_save_path="../data/nn_models/custom/",
+                                #distribution="truncated_gaussian",
+                                extend_not_multiple=True,
+                                test_overlapping=True,
+                                filename="autoencoder_lstm_1")
 		if LOAD_MODEL:
 			model.load_model("data/nn_models/lstm_ae_ov")
 		else:

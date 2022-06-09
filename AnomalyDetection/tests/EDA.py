@@ -8,8 +8,8 @@ from statsmodels.tsa.seasonal import STL
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 DATASET = "data/dataset/nyc_taxi.csv"
-MATPLOT_PRINT = False
-USE_STL = True
+MATPLOT_PRINT = True
+USE_STL = False
 LAG = 1
 NLAGS = 20
 
