@@ -10,7 +10,13 @@ from tuning.hyperparameter.HyperparameterSearchSaver import \
 
 
 class TimeSeriesGridSearch(HyperparameterSearch):
-	"""Gird search over for time series datasets and models."""
+	"""Gird search over for time series datasets and models.
+	
+	Parameters
+	----------
+	load_checkpoint : bool, default=False
+		If `true` it loads the checkpoint and continues the search.
+	"""
 	
 	def __init__(self, parameter_space: list[Categorical | Integer],
 				 model_folder_path: str,

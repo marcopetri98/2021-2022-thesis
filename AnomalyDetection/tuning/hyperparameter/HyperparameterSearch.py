@@ -110,6 +110,10 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		objective_function : Callable
 			The objective function to minimize.
 			
+		Returns
+		-------
+		None
+			
 		Notes
 		-----
 		See :meth:`~tuning.hyperparameter.HyperparameterSearch.search` for more
@@ -162,7 +166,7 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		for train, test in self.cross_val_generator.split(self._data,
 														  self._data_labels):
 			x_train, x_test = self._data[train], self._data[test]
-			y_train, y_test = self._data[train], self._data[test]
+			y_train, y_test = self._data_labels[train], self._data_labels[test]
 			obj = objective_function(x_train, y_train, x_test, y_test, params)
 			score += obj
 		

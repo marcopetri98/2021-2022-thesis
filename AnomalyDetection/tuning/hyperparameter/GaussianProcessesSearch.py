@@ -1,145 +1,129 @@
-# Python imports
-from typing import Union, Callable
+from typing import Callable
 
+import numpy as np
 import skopt
 from scipy.optimize import OptimizeResult
-from sklearn import metrics
 from skopt.callbacks import CheckpointSaver
-from sklearn.base import BaseEstimator, clone
-from sklearn.model_selection import KFold
+from skopt.space import Categorical, Integer
 
-from utils.printing import print_header, print_step
 from tuning.hyperparameter.HyperparameterSearch import HyperparameterSearch
+from tuning.hyperparameter.IHyperparameterSearchResults import \
+	IHyperparameterSearchResults
 
 
 class GaussianProcessesSearch(HyperparameterSearch):
 	"""HyperparameterSearch is a class used to search the hyperparameters.
-
+	
 	Parameters
 	----------
-	estimator: BaseEstimator
-		The scikit-learn estimator on which to apply hyperparameter search.
-
-	calls: int, default= 10
-
-	initial_starts: int, default= 10
-
-	cross_validation: bool or Callable, default=True
-
-	train_and_test: bool default=True
-
-	load_checkpoint: bool default=False
+	load_checkpoint : bool, default=False
+		If `true` it loads the checkpoint and continues the search.
 	"""
+	__INVALID_GP_KWARGS = ["func", "dimensions", "x0", "y0"]
 
-	def __init__(self, estimator: BaseEstimator,
-				 parameter_space: list,
+	def __init__(self, parameter_space: list[Categorical | Integer],
 				 model_folder_path: str,
 				 search_filename: str,
-				 cross_val_generator: Callable,
-				 verbose: bool = True,
-				 calls: int = 10,
-				 initial_starts: int = 10,
-				 cross_validation: Union[bool, Callable] = True,
-				 train_and_test: bool = True,
-				 load_checkpoint: bool = False):
+				 cross_val_generator: object = None,
+				 load_checkpoint: bool = False,
+				 gp_kwargs: dict = None):
 		super().__init__(parameter_space=parameter_space,
 						 model_folder_path=model_folder_path,
 						 search_filename=search_filename,
-						 cross_val_generator=cross_val_generator,
-						 verbose=verbose)
+						 cross_val_generator=cross_val_generator)
+		
+		if gp_kwargs is not None and len(set(self.__INVALID_GP_KWARGS).difference(gp_kwargs.keys())) != len(self.__INVALID_GP_KWARGS):
+			raise ValueError("The following keywords of gp_minimize cannot be "
+							 "passed since are automatically managed by the "
+							 "class: {}".format(self.__INVALID_GP_KWARGS))
 
-		self.estimator = estimator
-		self.calls = calls
-		self.initial_starts = initial_starts
-		self.cross_validation = cross_validation
-		self.train_and_test = train_and_test
+		self.test = 0
 		self.load_checkpoint = load_checkpoint
-
-	def _run_optimization(self) -> OptimizeResult:
-		"""Runs the optimization search and return the results.
-
-		Returns
-		-------
-		search_results: OptimizeResult
-			The results of the hyperparameter search.
+		self.gp_kwargs = dict(gp_kwargs) if gp_kwargs is not None else {}
+		
+		self.__minimized_objective = None
+		self.__run_opt_verbose = False
+		
+	def search(self, x,
+			   y,
+			   objective_function: Callable[[np.ndarray,
+											 np.ndarray,
+											 np.ndarray,
+											 np.ndarray,
+											 dict], float],
+			   verbose: bool = False,
+			   *args,
+			   **kwargs) -> IHyperparameterSearchResults:
 		"""
+		Parameters
+		----------
+		objective_function : Callable
+			The objective function of the hyperparameter search to be minimized.
+		"""
+		return super().search(x, y, objective_function, verbose, *args, **kwargs)
+
+	def _run_optimization(self, objective_function: Callable[[np.ndarray,
+															  np.ndarray,
+															  np.ndarray,
+															  np.ndarray,
+															  dict], float],
+						  verbose: bool = False) -> OptimizeResult:
+		self.__minimized_objective = objective_function
+		self.__run_opt_verbose = verbose
+		
 		file_path = self.model_folder_path + self.search_filename
 		checkpoint_saver = CheckpointSaver(file_path + ".pkl", compress=9)
+
+		callbacks = [checkpoint_saver]
+		if "callback" in self.gp_kwargs.keys():
+			callbacks.append(self.gp_kwargs["callback"])
+			del self.gp_kwargs["callback"]
 
 		if self.load_checkpoint:
 			previous_checkpoint = skopt.load(file_path + ".pkl")
 			x0 = previous_checkpoint.x_iters
 			y0 = previous_checkpoint.func_vals
-			results = skopt.gp_minimize(self._objective_call,
+			
+			if x0[0].shape[0] != len(self.parameter_space):
+				raise ValueError("If you are continuing a search, do not change"
+								 " the parameter space.")
+			
+			for config, retval in zip(x0, y0):
+				self._search_history = None
+				self._add_search_entry(retval, *config)
+			
+			results = skopt.gp_minimize(self._gaussian_objective,
 										self.parameter_space,
 										x0=x0,
 										y0=y0,
-										n_calls=self.calls,
-										n_initial_points=self.initial_starts,
-										callback=[checkpoint_saver])
+										callback=callbacks,
+										**self.gp_kwargs)
 		else:
-			results = skopt.gp_minimize(self._objective_call,
+			results = skopt.gp_minimize(self._gaussian_objective,
 										self.parameter_space,
-										n_calls=self.calls,
-										n_initial_points=self.initial_starts,
-										callback=[checkpoint_saver])
+										callback=callbacks,
+										**self.gp_kwargs)
+
+		self.__run_opt_verbose = False
+		self.__minimized_objective = None
 
 		return results
 
-	def _objective_call(self, *args) -> float:
-		estimator: BaseEstimator = clone(self.estimator)
-		params = self._build_input_dict(*args)
-		estimator.set_params(**params)
+	def _gaussian_objective(self, args):
+		"""Respond to a call with the parameters chosen by the Gaussian Process.
+		
+		Parameters
+		----------
+		args : list
+			The space parameters chosen by the gaussian process.
 
-		if self.verbose:
-			print_step("running configuration with params: " + str(params))
-
-		if isinstance(self.cross_validation, bool):
-			if self.cross_validation:
-				k_fold_score = 0
-				cross_val_gen = KFold(n_splits=5)
-
-				for train, test in cross_val_gen.split(self.data, self.data_labels):
-					try:
-						if self.train_and_test:
-							estimator.fit(self.data[train], self.data_labels[train])
-							y_pred = estimator.predict(self.data[test])
-						else:
-							y_pred = estimator.fit_predict(self.data[test])
-
-						k_fold_score += metrics.f1_score(self.data_labels[test],
-														 y_pred,
-														 zero_division=0)
-					except ValueError:
-						pass
-				k_fold_score = k_fold_score / cross_val_gen.get_n_splits()
-
-				if self.verbose:
-					print_step("run with score: " + str(k_fold_score))
-
-				return 1 - k_fold_score
-			else:
-				test_dim = int(self.data.shape[0] * 0.2)
-
-				score = 0
-				try:
-					if self.train_and_test:
-						estimator.fit(self.data[0:-test_dim],
-									  self.data_labels[0:-test_dim])
-						y_pred = estimator.predict(self.data[-test_dim:])
-					else:
-						y_pred = estimator.fit_predict(self.data[-test_dim:])
-
-					score = metrics.f1_score(self.data_labels[-test_dim:],
-											  y_pred,
-											  zero_division=0)
-				except ValueError:
-					pass
-
-				if self.verbose:
-					print_step("run with score: " + str(score))
-
-				return 1 - score
-		else:
-			if not isinstance(self.cross_validation, bool):
-				raise NotImplementedError("Not yet implemented")
+		Returns
+		-------
+		configuration_score : float
+			The score of the configuration to be minimized.
+		"""
+		score = self._objective_call(self.__minimized_objective,
+									 self.__run_opt_verbose,
+									 *args)
+		self._add_search_entry(score, *args)
+		return score

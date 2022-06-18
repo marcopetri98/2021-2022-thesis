@@ -7,7 +7,7 @@ from statsmodels.tsa.stattools import adfuller, kpss, acf, pacf
 from statsmodels.tsa.seasonal import STL
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-DATASET = "data/dataset/nyc_taxi.csv"
+DATASET = "data/dataset/House1.csv"
 MATPLOT_PRINT = True
 USE_STL = False
 LAG = 1
@@ -43,8 +43,8 @@ def plot_acf_and_pacf(acf_values: np.ndarray,
 
 # Exploratory data analysis
 tmp_df = pd.read_csv(DATASET)
-timestamps = tmp_df["timestamp"]
-values = tmp_df["value"]
+timestamps = tmp_df["Time"]
+values = tmp_df["Appliance1"]
 
 if MATPLOT_PRINT:
 	plt.figure(figsize=(16, 5))
@@ -59,8 +59,8 @@ test, p_value, _, _ = kpss(values)
 print("Statistical test of KPSS is: ", test)
 print("Computed p-value of KPSS is: ", p_value)
 
-diff_tmp = np.array(values.diff(1))
-diff_tmp = diff_tmp[1:]
+diff_tmp = np.array(values.diff(LAG))
+diff_tmp = diff_tmp[LAG:]
 diff_acf, diff_acf_conf = acf(diff_tmp, nlags=NLAGS, alpha=0.05)
 diff_pacf, diff_pacf_conf = pacf(diff_tmp, nlags=NLAGS, alpha=0.05)
 
