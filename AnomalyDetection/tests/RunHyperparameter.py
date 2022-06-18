@@ -30,7 +30,7 @@ def preprocess(X) -> np.ndarray:
 
 reader = NABTimeSeriesReader(DATASET_PATH)
 all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
-training, test = reader.train_test_split(train_perc=0.3).get_train_test_dataframes()
+training, test = reader.train_test_split(train=0.3).get_train_test_dataframes()
 
 data = preprocess(np.array(training["value"]).reshape(training["value"].shape[0], 1))
 data_labels = training["target"]

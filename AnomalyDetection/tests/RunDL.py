@@ -53,7 +53,7 @@ model = None
 
 reader = NABTimeSeriesReader(DATASET_PATH)
 all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
-training, test = reader.train_test_split(train_perc=0.37).get_train_test_dataframes()
+training, test = reader.train_test_split(train=0.37).get_train_test_dataframes()
 
 #################################
 #								#

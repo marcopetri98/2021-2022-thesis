@@ -11,18 +11,21 @@ class IDataTrainValidTestSplitter(ABC):
     """
 	
 	@abc.abstractmethod
-	def train_valid_test_split(self, train_perc: float = 0.7,
-                               valid_perc: float = 0.1) -> IDataTrainValidTestSplitter:
+	def train_valid_test_split(self, train: float | int = 0.7,
+							   valid: float | int = 0.1) -> IDataTrainValidTestSplitter:
 		"""
 		
 		Parameters
 		----------
-		train_perc : float, default=0.7
-			The percentage of points of the dataset used to train the algorithm.
+		train : float or int, default=0.7
+			The percentage of points of the dataset used to train the algorithm
+			if `float`, the number of training data points from the start to the
+			end if `int`.
 			
-		valid_perc : float, default=0.1
+		valid : float or int, default=0.1
 			The percentage of points of the dataset used to validate the
-			algorithm.
+			algorithm if `float`, the number of validation data points from the
+			end of the training if `int`.
 
 		Returns
 		-------

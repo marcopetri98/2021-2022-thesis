@@ -19,8 +19,9 @@ model = None
 
 reader = NABTimeSeriesReader(DATASET_PATH)
 all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
+training, test = reader.train_test_split(train=0.37).get_train_test_dataframes()
 
-print(all_df.head())
+print(test.head())
 
-modified_df = all_df.drop(columns=["value"])
-modified_df.to_csv(WHERE_TO_SAVE)
+modified_df = test.drop(columns=["value"])
+modified_df.to_csv(WHERE_TO_SAVE, index=False)

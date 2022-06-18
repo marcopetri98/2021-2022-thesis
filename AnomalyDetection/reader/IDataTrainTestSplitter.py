@@ -11,13 +11,15 @@ class IDataTrainTestSplitter(ABC):
     """
 	
 	@abc.abstractmethod
-	def train_test_split(self, train_perc: float = 0.8) -> IDataTrainTestSplitter:
+	def train_test_split(self, train: float | int = 0.8) -> IDataTrainTestSplitter:
 		"""Splits the dataset in training and test.
 		
 		Parameters
 		----------
-		train_perc : float, default=0.8
-			The percentage of points of the dataset used to train the algorithm.
+		train : float or int, default=0.8
+			The percentage of points of the dataset used to train the algorithm
+			if `float`, the number of training data points from the start to the
+			end if `int`.
 
 		Returns
 		-------

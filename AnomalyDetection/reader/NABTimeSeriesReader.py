@@ -17,11 +17,15 @@ class NABTimeSeriesReader(TimeSeriesReader):
 		The path to the folder in which the combined labels and the combined
 		windows of the NAB dataset are stored.
 		
-	labels_name : str
+	labels_name : str, default="combined_labels.json"
 		The filename of the combined labels of NAB dataset.
 		
-	window_name : str
+	window_name : str, default="combined_windows.json"
 		The filename of the combined windows of NAB dataset.
+		
+	save_windows : bool, default=False
+		Whether we should save windows and not only the anomalous point in the
+		extracted dataset.
 	"""
 	
 	def __init__(self, label_path: str,
@@ -65,7 +69,8 @@ class NABTimeSeriesReader(TimeSeriesReader):
 		
 		# Generate the dataset with ground truth
 		super().read(path=path, file_format=file_format)
-		timestamps = self.dataset["timestamp"]
+		timestamps = self.dataset[self._TIMESTAMP_COL]
+		# TODO: directly create an ndarray
 		ground_truth = [0] * self.dataset.shape[0]
 		for i in range(self.dataset.shape[0]):
 			timestamp = datetime.datetime.strptime(timestamps[i],
@@ -87,7 +92,7 @@ class NABTimeSeriesReader(TimeSeriesReader):
 		# Convert into numpy array the ground truth and add it to the dataframe
 		truth = np.array(ground_truth)
 		self.dataset.insert(len(self.dataset.columns),
-							"target",
+							self._ANOMALY_COL,
 							truth)
 		
 		return self

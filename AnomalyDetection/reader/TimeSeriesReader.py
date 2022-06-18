@@ -18,6 +18,11 @@ class TimeSeriesReader(IDataReader,
 	"""A reader of time series datasets."""
 	ACCEPTED_FORMATS = ["csv"]
 	
+	# TODO: This class should be able to read both univariate and multivariate, these fields are useful only to subclasses
+	_ANOMALY_COL = "target"
+	_SERIES_COL = "value"
+	_TIMESTAMP_COL = "timestamp"
+	
 	def __init__(self):
 		super().__init__()
 		
@@ -43,34 +48,58 @@ class TimeSeriesReader(IDataReader,
 		
 		return self
 	
-	def train_test_split(self, train_perc: float = 0.8) -> TimeSeriesReader:
+	def train_test_split(self, train: float | int = 0.8) -> TimeSeriesReader:
 		check_not_default_attributes(self, {"dataset": None})
 		
-		if not 0 < train_perc < 1:
-			raise ValueError("The training percentage must lie in (0,1) range.")
+		if isinstance(train, float):
+			if not 0 < train < 1:
+				raise ValueError("The training percentage must lie in (0,1) range.")
+		elif isinstance(train, int):
+			if train >= self.dataset.shape[0]:
+				raise ValueError("The training must be less than the whole "
+								 "dataset.")
+		else:
+			raise TypeError("Argument train must be float or int")
 		
-		num_of_test = int((1 - train_perc) * self.dataset.shape[0])
-		self.train_frame = self.dataset[0:-num_of_test]
-		self.test_frame = self.dataset[-num_of_test:]
+		if isinstance(train, float):
+			num_of_test = int((1 - train) * self.dataset.shape[0])
+			self.train_frame = self.dataset[0:-num_of_test]
+			self.test_frame = self.dataset[-num_of_test:]
+		else:
+			self.train_frame = self.dataset[0:train]
+			self.test_frame = self.dataset[train:]
 		
 		return self
 	
-	def train_valid_test_split(self, train_perc: float = 0.7,
-                               valid_perc: float = 0.1) -> TimeSeriesReader:
+	def train_valid_test_split(self, train: float | int = 0.7,
+							   valid: float | int = 0.1) -> TimeSeriesReader:
 		check_not_default_attributes(self, {"dataset": None})
 		
-		if not 0 < train_perc < 1 or not 0 < valid_perc < 1:
-			raise ValueError("Training and validation percentages must lie in "
-							 "(0,1) range.")
-		elif train_perc + valid_perc >= 1:
-			raise ValueError("Training and validation must be less than all the "
-							 "dataset, i.e., their sum lies in (0,1).")
+		if isinstance(train, float) and isinstance(valid, float):
+			if not 0 < train < 1 or not 0 < valid < 1:
+				raise ValueError("Training and validation percentages must lie "
+								 "in (0,1) range.")
+			elif train + valid >= 1:
+				raise ValueError("Training and validation must be less than all"
+								 " the dataset, i.e., their sum lies in (0,1).")
+		elif isinstance(train, int) and isinstance(valid, int):
+			if train + valid >= self.dataset.shape[0]:
+				raise ValueError("Training and validation must be lower than "
+								 "the dimension of the whole dataset.")
+		else:
+			raise TypeError("Either both training and validation are float or "
+							"both are int. No other configurations are allowed")
 		
-		num_of_not_train = int((1 - train_perc) * self.dataset.shape[0])
-		num_of_test = int((1 - train_perc - valid_perc) * self.dataset.shape[0])
-		self.train_frame = self.dataset[0:-num_of_not_train]
-		self.valid_frame = self.dataset[-num_of_not_train:-num_of_test]
-		self.test_frame = self.dataset[-num_of_test:]
+		if isinstance(train, float):
+			num_of_not_train = int((1 - train) * self.dataset.shape[0])
+			num_of_test = int((1 - train - valid) * self.dataset.shape[0])
+			self.train_frame = self.dataset[0:-num_of_not_train]
+			self.valid_frame = self.dataset[-num_of_not_train:-num_of_test]
+			self.test_frame = self.dataset[-num_of_test:]
+		else:
+			self.train_frame = self.dataset[0:train]
+			self.valid_frame = self.dataset[train:valid]
+			self.test_frame = self.dataset[valid:]
 		
 		return self
 	
