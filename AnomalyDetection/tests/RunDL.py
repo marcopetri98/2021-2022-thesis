@@ -14,7 +14,7 @@ from models.time_series.anomaly.deep_learning.BraeiLSTM import BraeiLSTM
 from models.time_series.anomaly.deep_learning.CNNAutoencoder import CNNAutoencoder
 from models.time_series.anomaly.deep_learning.GRUAutoencoder import GRUAutoencoder
 from models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
-from reader.NABTimeSeriesReader import NABTimeSeriesReader
+from reader.NABReader import NABReader
 from visualizer.Viewer import plot_time_series_forecast, plot_time_series_with_predicitons_bars, get_bars_indices_on_test_df
 
 ALGORITHM = "cnn"
@@ -51,7 +51,7 @@ np.random.seed(57)
 tf.random.set_seed(57)
 model = None
 
-reader = NABTimeSeriesReader(DATASET_PATH)
+reader = NABReader(DATASET_PATH)
 all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
 training, test = reader.train_test_split(train=0.37).get_train_test_dataframes()
 

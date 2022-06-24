@@ -1,3 +1,5 @@
+import os
+
 from utils.json import save_py_json, load_py_json
 
 
@@ -53,3 +55,16 @@ class HyperparameterSearchSaver(object):
 		history = load_py_json(self.file_path + self.__HISTORY + self.__EXT)
 		
 		return history if history is not None else {}
+	
+	def history_exists(self) -> bool:
+		"""Checks if the history exists.
+		
+		Returns
+		-------
+		history_exists : bool
+			True if the history exists
+		"""
+		if os.path.exists(self.file_path + self.__HISTORY + self.__EXT):
+			return True
+		else:
+			return False

@@ -3,7 +3,7 @@ from typing import Callable
 import numpy as np
 from skopt.space import Categorical, Integer
 
-from utils.printing import print_step
+from utils.printing import print_step, print_warning
 from tuning.hyperparameter.HyperparameterSearch import HyperparameterSearch
 from tuning.hyperparameter.HyperparameterSearchSaver import \
 	HyperparameterSearchSaver
@@ -54,6 +54,13 @@ class TimeSeriesGridSearch(HyperparameterSearch):
 								  callbacks=[config_saver],
 								  verbose=verbose)
 		else:
+			if config_saver.history_exists():
+				print_warning("There exists a checkpoint file!")
+				print("Do you really want to overwrite it (you will lose it) [y/n]: ", end="")
+				response = input()
+				if response.lower() == "n" or response.lower() == "no":
+					raise StopIteration("Stop")
+			
 			self._run_grid_search(objective_function,
 								  callbacks=[config_saver],
 								  verbose=verbose)

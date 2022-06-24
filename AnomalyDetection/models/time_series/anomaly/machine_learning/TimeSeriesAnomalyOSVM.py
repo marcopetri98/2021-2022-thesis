@@ -25,7 +25,7 @@ class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
 				 anomaly_portion: float = 0.01,
 				 kernel: str = "rbf",
 				 degree: int = 3,
-				 gamma: str = "scale",
+				 gamma: str | float = "scale",
 				 coef0: float = 0.0,
 				 tol: float = 1e-3,
 				 nu: float = 0.5,

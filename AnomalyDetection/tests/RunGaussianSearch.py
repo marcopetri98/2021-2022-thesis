@@ -1,20 +1,28 @@
 import warnings
+from datetime import datetime
 from typing import Tuple
 
 import matplotlib
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
-from skopt.space import Categorical, Integer
+from skopt.space import Categorical, Integer, Real
 
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import \
+    TimeSeriesAnomalyIForest
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import \
+    TimeSeriesAnomalyLOF
+from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVM import \
+    TimeSeriesAnomalyOSVM
 from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
     TimeSeriesAnomalyARIMA
 from models.time_series.anomaly.statistical.TimeSeriesAnomalySES import \
     TimeSeriesAnomalySES
-from reader.NABTimeSeriesReader import NABTimeSeriesReader
-from reader.ODINTSTimeSeriesReader import ODINTSTimeSeriesReader
+from reader.NABReader import NABReader
+from reader.ODINTSReader import ODINTSReader
 from tuning.hyperparameter.GaussianProcessesSearch import \
     GaussianProcessesSearch
 from tuning.hyperparameter.TimeSeriesGridSearch import TimeSeriesGridSearch
@@ -33,20 +41,50 @@ GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
 
 # SCRIPT
 DATASET_PATH = "data/dataset/"
-DATASET = "badec.csv"
+DATASET_NAME = "House11"
+DATASET = DATASET_NAME + ".csv"
 TRAIN = False
 LOAD_PREVIOUS = True
-MODEL = "ARIMA"
-TRAIN_VALID_START = 8640
-TRAIN_VALID_END = 53279
-TRAIN_END = 48816
-VALID_START = 48816
+MODEL = "lof"
+TIMESTAMP_COL = "Time"
+TIMESERIES_COL = "Appliance1"
+N_CALLS = 40
+N_INITIAL_POINTS = 3
+RESAMPLE = True if DATASET_NAME in ["House1", "House11", "House20"] else False
+
+if DATASET_NAME == "bae07" or DATASET_NAME == "badef":
+    TRAIN_VALID_START = 0
+    TRAIN_END = 40174
+    VALID_START = 40174
+    TRAIN_VALID_END = 44639
+elif DATASET_NAME == "badec":
+    TRAIN_VALID_START = 8640
+    TRAIN_END = 48814
+    VALID_START = 48814
+    TRAIN_VALID_END = 53279
+elif DATASET_NAME == "House1":
+    TRAIN_VALID_START = 2054846 if not RESAMPLE else 999999999999
+    TRAIN_END = 2385131 if not RESAMPLE else 999999999999
+    VALID_START = 2385131 if not RESAMPLE else 999999999999
+    TRAIN_VALID_END = 2421830 if not RESAMPLE else 999999999999
+elif DATASET_NAME == "House11":
+    TRAIN_VALID_START = 2131071 if not RESAMPLE else 234786
+    TRAIN_END = 2463863 if not RESAMPLE else 273649
+    VALID_START = 2463863 if not RESAMPLE else 273649
+    TRAIN_VALID_END = 2500838 if not RESAMPLE else 277967
+else:
+    # House20.csv
+    TRAIN_VALID_START = 7113 if not RESAMPLE else 719
+    TRAIN_END = 368273 if not RESAMPLE else 40824
+    VALID_START = 368273 if not RESAMPLE else 40824
+    TRAIN_VALID_END = 408402 if not RESAMPLE else 45280
+
 # kmeans, dbscan, lof, osvm, phase osvm, iforest, AR, MA, ARIMA, SES, ES
 
-reader = ODINTSTimeSeriesReader(DATASET_PATH + ANOMALIES_PREFIX + DATASET,
-                                timestamp_col="ctime",
-                                univariate_col="device_consumption")
-all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
+reader = ODINTSReader(DATASET_PATH + ANOMALIES_PREFIX + DATASET,
+                      timestamp_col=TIMESTAMP_COL,
+                      univariate_col=TIMESERIES_COL)
+all_df = reader.read(DATASET_PATH + DATASET, resample=RESAMPLE).get_dataframe()
 
 training = all_df.iloc[TRAIN_VALID_START:TRAIN_END]
 training_validation = all_df.iloc[TRAIN_VALID_START:TRAIN_VALID_END]
@@ -133,41 +171,70 @@ def plot_ARMA_score(order, score, fig_ratio: float = 0.5, max_score: float = 100
     ax.set_ylabel('MA order', fontweight='bold')
     ax.set_zlabel('AUC', fontweight='bold')
     plt.show()
-
-warnings.filterwarnings("error")
+    
 
 def evaluate_time_series(train_data: np.ndarray,
                          train_labels: np.ndarray,
                          valid_data: np.ndarray,
                          valid_labels: np.ndarray,
                          parameters: dict) -> float:
-    # ARIMA models evaluation
-    model_ = TimeSeriesAnomalyARIMA(endog=train_data)
-    parameters = dict(parameters)
-    parameters["order"] = (parameters["ar_order"], parameters["diff_order"], parameters["ma_order"])
-    del parameters["ar_order"]
-    del parameters["diff_order"]
-    del parameters["ma_order"]
-    model_.set_params(**parameters)
+    normal_data = np.argwhere(train_labels == 0)
+    train_data = train_data[normal_data].reshape(-1, 1)
+    train_labels = train_labels[normal_data].reshape(-1)
     
+    warnings.filterwarnings("error")
+
     try:
-        results_ = model_.fit(verbose=False)
-        predictions = model_.anomaly_score(valid_data, train_data, verbose=False)
+        if MODEL == "ARIMA":
+            model_ = TimeSeriesAnomalyARIMA(endog=train_data)
+            parameters = dict(parameters)
+            parameters["order"] = (
+            parameters["ar_order"], parameters["diff_order"],
+            parameters["ma_order"])
+            del parameters["ar_order"]
+            del parameters["diff_order"]
+            del parameters["ma_order"]
+            model_.set_params(**parameters)
+            results_ = model_.fit(verbose=False)
+            predictions = model_.anomaly_score(valid_data, train_data, verbose=False)
+        elif MODEL == "iforest":
+            model_ = TimeSeriesAnomalyIForest(parameters["window"],
+                                              n_estimators=parameters["n_estimators"],
+                                              max_samples=parameters["max_samples"],
+                                              random_state=22)
+            model_.fit(train_data, train_labels)
+            predictions = model_.anomaly_score(valid_data)
+        elif MODEL == "lof":
+            model_ = TimeSeriesAnomalyLOF(parameters["window"],
+                                          novelty=True,
+                                          n_neighbors=parameters["n_neighbors"],
+                                          scaling="none")
+            model_.fit(train_data, train_labels)
+            predictions = model_.anomaly_score(valid_data)
+        else:
+            model_ = TimeSeriesAnomalyOSVM(parameters["window"],
+                                           gamma=parameters["gamma"],
+                                           tol=parameters["tol"],
+                                           nu=parameters["nu"])
+            model_.fit(train_data, train_labels)
+            predictions = model_.anomaly_score(valid_data)
+            
+        warnings.filterwarnings("default")
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
         return 1 - roc_auc_score(valid_labels.reshape(-1), predictions.reshape(-1))
     except Warning as w:
         print_warning("A warning ({}) has been raised from fitting or scoring."
-                      " -1 is returned as score.".format(w.__class__))
+                      " 1 is returned as score.".format(w.__class__))
+        warnings.filterwarnings("default")
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
         return 1
     except Exception as e:
         print_warning("An exception ({}) has been raised from fitting or scoring."
-                      " -2 is returned as score.".format(e.__class__))
+                      " 2 is returned as score.".format(e.__class__))
+        warnings.filterwarnings("default")
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
         return 2
-    
-    # Exponential smoothing models evaluation
-    # model_ = TimeSeriesAnomalySES(ses_params={"endog": train_data})
-    # results_ = model_.fit(fit_params={"smoothing_level": parameters["alpha"]},
-    # 					  verbose=False)
-    # return results_.sse
+
 
 class MySplit(object):
     def __init__(self):
@@ -182,16 +249,32 @@ class MySplit(object):
 
 hyper_searcher = GaussianProcessesSearch([
                                             # ARIMA parameters
-                                            Integer(0, 5, name="ar_order"),
-                                            Categorical([1], name="diff_order"),
-                                            Integer(0, 5, name="ma_order"),
-                                            Categorical(["difference"], name="scoring"),
-                                            Categorical(["n"], name="trend")
+                                            # Integer(0, 5, name="ar_order"),
+                                            # Categorical([1], name="diff_order"),
+                                            # Integer(0, 5, name="ma_order"),
+                                            # Categorical(["difference"], name="scoring"),
+                                            # Categorical(["n"], name="trend")
+    
+                                            # Isolation forest parameters
+                                            # Integer(1, 30, name="window"),
+                                            # Integer(20, 200, name="n_estimators"),
+                                            # Integer(150, 400, name="max_samples")
+    
+                                            # LOF parameters
+                                            Integer(1, 40, name="window"),
+                                            Integer(1, 300, name="n_neighbors")
+    
+                                            # OSVM parameters
+                                            # Integer(1, 40, name="window"),
+                                            # Real(0.001, 1, name="gamma"),
+                                            # Real(1e-10, 0.1, name="tol", prior="log-uniform"),
+                                            # Real(0.001, 0.5, name="nu")
                                          ],
-                                         "data/searches/arima/",
-                                         "badec",
+                                         "data/searches/{}/".format(MODEL.lower()),
+                                         DATASET_NAME + "_gp",
                                          MySplit(),
-                                         load_checkpoint=LOAD_PREVIOUS)
+                                         load_checkpoint=LOAD_PREVIOUS,
+                                         gp_kwargs={"n_calls": N_CALLS, "n_initial_points": N_INITIAL_POINTS})
 if TRAIN:
     hyper_searcher.search(data, data_labels, evaluate_time_series, verbose=True)
 
@@ -209,7 +292,7 @@ if MODEL == "ARIMA":
         plot_single_search(orders, scores, title="AR/MA search")
     else:
         plot_ARMA_score(orders, scores)
-else:
+elif MODEL == "SES":
     history = results.get_history()
     alphas = [x[1] for x in history[1::]]
     scores = get_scores()

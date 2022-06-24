@@ -1,14 +1,17 @@
+import os
 from typing import Callable
 
 import numpy as np
 import skopt
 from scipy.optimize import OptimizeResult
 from skopt.callbacks import CheckpointSaver
-from skopt.space import Categorical, Integer
+from skopt.space import Categorical, Integer, Real
 
 from tuning.hyperparameter.HyperparameterSearch import HyperparameterSearch
 from tuning.hyperparameter.IHyperparameterSearchResults import \
 	IHyperparameterSearchResults
+from utils.json import save_py_json
+from utils.printing import print_step, print_warning
 
 
 class GaussianProcessesSearch(HyperparameterSearch):
@@ -62,6 +65,23 @@ class GaussianProcessesSearch(HyperparameterSearch):
 		"""
 		return super().search(x, y, objective_function, verbose, *args, **kwargs)
 
+	def get_results(self) -> IHyperparameterSearchResults:
+		if self.load_checkpoint:
+			file_path = self.model_folder_path + self.search_filename
+			previous_checkpoint = skopt.load(file_path + ".pkl")
+			x0 = previous_checkpoint.x_iters
+			y0 = previous_checkpoint.func_vals
+			
+			self._search_history = None
+			for config, retval in zip(x0, y0):
+				converted_config = self._convert_args(config)
+				self._add_search_entry(retval, *converted_config)
+			
+			final_history = self._create_result_history()
+			save_py_json(final_history, self.model_folder_path + self.search_filename + self._EXT)
+		
+		return super().get_results()
+
 	def _run_optimization(self, objective_function: Callable[[np.ndarray,
 															  np.ndarray,
 															  np.ndarray,
@@ -84,13 +104,20 @@ class GaussianProcessesSearch(HyperparameterSearch):
 			x0 = previous_checkpoint.x_iters
 			y0 = previous_checkpoint.func_vals
 			
-			if x0[0].shape[0] != len(self.parameter_space):
+			if verbose:
+				print_step("Loading previous history of searches")
+			
+			if len(x0[0]) != len(self.parameter_space):
 				raise ValueError("If you are continuing a search, do not change"
 								 " the parameter space.")
 			
+			self._search_history = None
 			for config, retval in zip(x0, y0):
-				self._search_history = None
-				self._add_search_entry(retval, *config)
+				converted_config = self._convert_args(config)
+				self._add_search_entry(retval, *converted_config)
+				
+			if verbose:
+				print_step("Previous history has been loaded")
 			
 			results = skopt.gp_minimize(self._gaussian_objective,
 										self.parameter_space,
@@ -99,6 +126,13 @@ class GaussianProcessesSearch(HyperparameterSearch):
 										callback=callbacks,
 										**self.gp_kwargs)
 		else:
+			if os.path.exists(file_path + ".pkl"):
+				print_warning("There exists a checkpoint file!")
+				print("Do you really want to overwrite it (you will lose it) [y/n]: ", end="")
+				response = input()
+				if response.lower() == "n" or response.lower() == "no":
+					raise StopIteration("Stop")
+				
 			results = skopt.gp_minimize(self._gaussian_objective,
 										self.parameter_space,
 										callback=callbacks,
@@ -109,7 +143,7 @@ class GaussianProcessesSearch(HyperparameterSearch):
 
 		return results
 
-	def _gaussian_objective(self, args):
+	def _gaussian_objective(self, args: list):
 		"""Respond to a call with the parameters chosen by the Gaussian Process.
 		
 		Parameters
@@ -125,5 +159,29 @@ class GaussianProcessesSearch(HyperparameterSearch):
 		score = self._objective_call(self.__minimized_objective,
 									 self.__run_opt_verbose,
 									 *args)
-		self._add_search_entry(score, *args)
+		converted_args = self._convert_args(args)
+		self._add_search_entry(score, *converted_args)
 		return score
+	
+	def _convert_args(self, args: list):
+		"""Converts skopt values to standard Python.
+		
+		Parameters
+		----------
+		args : list
+			The space parameters chosen by the gaussian process.
+
+		Returns
+		-------
+		converted_args : list
+			Args in standard Python objects.
+		"""
+		converted_args = []
+		for i in range(len(args)):
+			if isinstance(self.parameter_space[i], Integer):
+				converted_args.append(int(args[i]))
+			elif isinstance(self.parameter_space[i], Real):
+				converted_args.append(float(args[i]))
+			else:
+				converted_args.append(args[i])
+		return converted_args

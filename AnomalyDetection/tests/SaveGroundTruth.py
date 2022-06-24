@@ -1,6 +1,6 @@
 import pandas as pd
 
-from reader.NABTimeSeriesReader import NABTimeSeriesReader
+from reader.NABReader import NABReader
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
@@ -17,7 +17,7 @@ WHERE_TO_SAVE = "ambient_gt_labels.csv"
 #################################
 model = None
 
-reader = NABTimeSeriesReader(DATASET_PATH)
+reader = NABReader(DATASET_PATH)
 all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
 training, test = reader.train_test_split(train=0.37).get_train_test_dataframes()
 

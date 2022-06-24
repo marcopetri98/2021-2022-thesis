@@ -11,7 +11,10 @@ class IDataReader(ABC):
 	
 	@abc.abstractmethod
 	def read(self, path: str,
-			 file_format: str = "csv") -> IDataReader:
+			 file_format: str = "csv",
+			 verbose: bool = True,
+			 *args,
+			 **kwargs) -> IDataReader:
 		"""Reads a dataset and returns its numpy version.
 		
 		Parameters
@@ -22,6 +25,9 @@ class IDataReader(ABC):
 		
 		file_format : str, default="csv"
 			It is the format in which the dataset is stored.
+			
+		verbose : bool, default=True
+			States if detailed printing must be done while reading the dataset.
 
 		Returns
 		-------

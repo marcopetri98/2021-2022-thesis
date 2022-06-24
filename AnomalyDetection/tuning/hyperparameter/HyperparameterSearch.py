@@ -38,8 +38,8 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		the cross validation generator must provide the same interface provided
 		by scikit-learn cross validation generators.
 	"""
-	__SCORE = "Score"
-	__EXT = ".search"
+	_SCORE = "Score"
+	_EXT = ".search"
 	
 	def __init__(self, parameter_space: list,
 				 model_folder_path: str,
@@ -76,12 +76,18 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		if verbose:
 			print_header("Starting the hyperparameter search")
 		
-		self._run_optimization(objective_function, verbose=verbose)
-		
-		final_history = self.__create_result_history()
-		save_py_json(final_history, self.model_folder_path + self.search_filename + self.__EXT)
-		
-		results = HyperparameterSearchResults(final_history)
+		try:
+			self._run_optimization(objective_function, verbose=verbose)
+			
+			final_history = self._create_result_history()
+			save_py_json(final_history, self.model_folder_path + self.search_filename + self._EXT)
+			
+			results = HyperparameterSearchResults(final_history)
+		except StopIteration as e:
+			if e.value != "Stop":
+				raise e
+				
+			results = HyperparameterSearchResults([])
 		
 		self._data, self._data_labels, self._search_history = None, None, None
 		if verbose:
@@ -91,7 +97,7 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		return results
 	
 	def get_results(self) -> IHyperparameterSearchResults:
-		history = load_py_json(self.model_folder_path + self.search_filename + self.__EXT)
+		history = load_py_json(self.model_folder_path + self.search_filename + self._EXT)
 		history = history if history is not None else []
 		
 		return HyperparameterSearchResults(history)
@@ -113,6 +119,11 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 		Returns
 		-------
 		None
+		
+		Raises
+		------
+		StopIteration
+			If the search must be aborted due to any problem.
 			
 		Notes
 		-----
@@ -203,15 +214,15 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 				params[key] = list(item)
 		
 		if self._search_history is None:
-			self._search_history = {self.__SCORE: [score]}
+			self._search_history = {self._SCORE: [score]}
 			
 			for key, value in params.items():
 				self._search_history[key] = [value]
 		else:
-			self._search_history[self.__SCORE].append(score)
+			self._search_history[self._SCORE].append(score)
 			
 			common_keys = set(self._search_history.keys()).intersection(set(params.keys()))
-			only_history_keys = set(self._search_history.keys()).difference(set(params.keys())).difference({self.__SCORE})
+			only_history_keys = set(self._search_history.keys()).difference(set(params.keys())).difference({self._SCORE})
 			only_params_keys = set(params.keys()).difference(set(self._search_history.keys()))
 			
 			for key in common_keys:
@@ -221,7 +232,7 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 				self._search_history[key].append(None)
 				
 			for key in only_params_keys:
-				self._search_history[key] = [None] * len(self._search_history[self.__SCORE])
+				self._search_history[key] = [None] * len(self._search_history[self._SCORE])
 				self._search_history[key][-1] = params[key]
 				
 	def _find_history_entry(self, *args) -> bool:
@@ -308,7 +319,7 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 			parameters.append(parameter.name)
 		return parameters
 
-	def __create_result_history(self) -> list:
+	def _create_result_history(self) -> list:
 		"""Creates the search result list from history.
 		
 		Returns
@@ -321,7 +332,7 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
 				for key in self._search_history.keys()]
 		tries = [[self._search_history[key][i]
 				  for key in self._search_history.keys()]
-				 for i in range(len(self._search_history[self.__SCORE]))]
+				 for i in range(len(self._search_history[self._SCORE]))]
 		final_history = [keys]
 		
 		for try_ in tries:

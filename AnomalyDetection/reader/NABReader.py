@@ -5,10 +5,11 @@ import json
 
 import numpy as np
 
-from reader.TimeSeriesReader import TimeSeriesReader
+from reader.TSReader import TSReader
+from utils.printing import print_header, print_step
 
 
-class NABTimeSeriesReader(TimeSeriesReader):
+class NABReader(TSReader):
 	"""A reader of NAB time series datasets.
 	
 	Parameters
@@ -42,22 +43,39 @@ class NABTimeSeriesReader(TimeSeriesReader):
 		self.combined_windows = {}
 
 	def read(self, path: str,
-			 file_format: str = "csv") -> NABTimeSeriesReader:
+			 file_format: str = "csv",
+			 verbose: bool = True,
+			 *args,
+			 **kwargs) -> NABReader:
 		if "/" in path:
 			sep = "/"
 		else:
 			sep = "\\"
 
+		if verbose:
+			print_header("Start reading dataset")
+
 		# Get the dataset filename
 		dataset_file = path.split(sep)[-1]
 		
 		# Gets the dictionaries of combined labels and windows
+		if verbose:
+			print_step("Start to read combined labels")
+			
 		file = open(self.label_path + self.labels_name)
 		self.combined_labels : dict = json.load(file)
 		file.close()
+		
+		if verbose:
+			print_step("Ended combined labels reading")
+			print_step("Start to read combined windows")
+		
 		file = open(self.label_path + self.window_name)
 		self.combined_windows : dict = json.load(file)
 		file.close()
+		
+		if verbose:
+			print_step("Ended combined windows reading")
 		
 		# Gets the key of the dataset
 		dataset_key = list(filter(lambda x: dataset_file in x, self.combined_labels.keys()))
@@ -67,8 +85,16 @@ class NABTimeSeriesReader(TimeSeriesReader):
 		windows = self.combined_windows[dataset_key]
 		labels = self.combined_labels[dataset_key]
 		
+		if verbose:
+			print_step("Start reading the dataset values")
+		
 		# Generate the dataset with ground truth
-		super().read(path=path, file_format=file_format)
+		super().read(path=path, file_format=file_format, verbose=False)
+		
+		if verbose:
+			print_step("Ended dataset reading")
+			print_step("Converting NAB format to classical GT format")
+		
 		timestamps = self.dataset[self._TIMESTAMP_COL]
 		# TODO: directly create an ndarray
 		ground_truth = [0] * self.dataset.shape[0]
@@ -94,5 +120,8 @@ class NABTimeSeriesReader(TimeSeriesReader):
 		self.dataset.insert(len(self.dataset.columns),
 							self._ANOMALY_COL,
 							truth)
+		
+		if verbose:
+			print_step("Ended converting NAB format to classical one")
 		
 		return self
