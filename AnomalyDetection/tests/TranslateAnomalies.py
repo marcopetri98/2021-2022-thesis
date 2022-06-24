@@ -1,8 +1,7 @@
 import numpy as np
-import pandas as pd
 
 from reader.MissingStrategy import MissingStrategy
-from reader.ODINTSReader import ODINTSReader
+from reader.time_series.ODINTSReader import ODINTSReader
 from utils.json import save_py_json
 
 DATASET = "House20"

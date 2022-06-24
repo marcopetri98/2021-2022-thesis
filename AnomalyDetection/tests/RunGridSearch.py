@@ -5,16 +5,12 @@ import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
 from skopt.space import Categorical
 
 from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
     TimeSeriesAnomalyARIMA
-from models.time_series.anomaly.statistical.TimeSeriesAnomalySES import \
-    TimeSeriesAnomalySES
-from reader.NABReader import NABReader
-from reader.ODINTSReader import ODINTSReader
+from reader.time_series.ODINTSReader import ODINTSReader
 from tuning.hyperparameter.TimeSeriesGridSearch import TimeSeriesGridSearch
 
 # DATASET 1: ambient_temperature_system_failure

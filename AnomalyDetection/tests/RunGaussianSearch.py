@@ -1,15 +1,12 @@
 import warnings
-from datetime import datetime
 from typing import Tuple
 
 import matplotlib
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
-from skopt.space import Categorical, Integer, Real
+from skopt.space import Integer
 
 from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import \
     TimeSeriesAnomalyIForest
@@ -19,13 +16,9 @@ from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVM import \
     TimeSeriesAnomalyOSVM
 from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
     TimeSeriesAnomalyARIMA
-from models.time_series.anomaly.statistical.TimeSeriesAnomalySES import \
-    TimeSeriesAnomalySES
-from reader.NABReader import NABReader
-from reader.ODINTSReader import ODINTSReader
+from reader.time_series.ODINTSReader import ODINTSReader
 from tuning.hyperparameter.GaussianProcessesSearch import \
     GaussianProcessesSearch
-from tuning.hyperparameter.TimeSeriesGridSearch import TimeSeriesGridSearch
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi

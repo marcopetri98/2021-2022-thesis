@@ -5,7 +5,7 @@ import json
 
 import numpy as np
 
-from reader.TSReader import TSReader
+from reader.time_series.TSReader import TSReader
 from utils.printing import print_header, print_step
 
 

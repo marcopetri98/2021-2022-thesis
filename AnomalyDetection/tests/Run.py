@@ -16,7 +16,6 @@ from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVM import Ti
 from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVMPhase import TimeSeriesAnomalyOSVMPhase
 from models.time_series.anomaly.statistical.TimeSeriesAnomalySES import TimeSeriesAnomalySES
 from reader.MissingStrategy import MissingStrategy
-from reader.NABReader import NABReader
 
 #################################
 #								#
@@ -25,7 +24,7 @@ from reader.NABReader import NABReader
 #								#
 #								#
 #################################
-from reader.ODINTSReader import ODINTSReader
+from reader.time_series.ODINTSReader import ODINTSReader
 
 ALGORITHM = "AR"
 

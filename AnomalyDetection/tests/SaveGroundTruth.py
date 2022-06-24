@@ -1,6 +1,4 @@
-import pandas as pd
-
-from reader.NABReader import NABReader
+from reader.time_series.NABReader import NABReader
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
