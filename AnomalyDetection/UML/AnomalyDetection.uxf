@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <diagram program="umlet" version="14.3.0">
   <help_text>// Uncomment the following line to change the fontsize and font:
-fontsize=9
+fontsize=7
 // fontfamily=SansSerif //possible: SansSerif,Serif,Monospaced
 
 
@@ -24,14 +24,14 @@ fontsize=9
 
 
 // This text will be stored with each diagram;  use it for notes.</help_text>
-  <zoom_level>12</zoom_level>
+  <zoom_level>7</zoom_level>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1908</x>
-      <y>1020</y>
-      <w>240</w>
-      <h>72</h>
+      <x>1113</x>
+      <y>728</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IAnomalyRegressor
@@ -44,10 +44,10 @@ IAnomalyRegressor
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2052</x>
-      <y>1308</y>
-      <w>240</w>
-      <h>120</h>
+      <x>1197</x>
+      <y>896</y>
+      <w>140</w>
+      <h>70</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 ITimeSeriesAnomalyWindow
@@ -62,10 +62,10 @@ ITimeSeriesAnomalyWindow
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2088</x>
-      <y>1080</y>
-      <w>36</w>
-      <h>144</h>
+      <x>1218</x>
+      <y>763</y>
+      <w>21</w>
+      <h>84</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
@@ -73,10 +73,10 @@ ITimeSeriesAnomalyWindow
   <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>1320</x>
-      <y>804</y>
-      <w>4380</w>
-      <h>1884</h>
+      <x>770</x>
+      <y>602</y>
+      <w>2555</w>
+      <h>1099</h>
     </coordinates>
     <panel_attributes>models</panel_attributes>
     <additional_attributes/>
@@ -84,10 +84,10 @@ ITimeSeriesAnomalyWindow
   <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>1344</x>
-      <y>1140</y>
-      <w>4332</w>
-      <h>1524</h>
+      <x>784</x>
+      <y>798</y>
+      <w>2527</w>
+      <h>889</h>
     </coordinates>
     <panel_attributes>anomaly</panel_attributes>
     <additional_attributes/>
@@ -95,10 +95,10 @@ ITimeSeriesAnomalyWindow
   <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>1332</x>
-      <y>1116</y>
-      <w>4356</w>
-      <h>1560</h>
+      <x>777</x>
+      <y>784</y>
+      <w>2541</w>
+      <h>910</h>
     </coordinates>
     <panel_attributes>time_series</panel_attributes>
     <additional_attributes/>
@@ -106,10 +106,10 @@ ITimeSeriesAnomalyWindow
   <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>2016</x>
-      <y>2724</y>
-      <w>300</w>
-      <h>180</h>
+      <x>1176</x>
+      <y>1722</y>
+      <w>175</w>
+      <h>105</h>
     </coordinates>
     <panel_attributes>scikit-learn</panel_attributes>
     <additional_attributes/>
@@ -117,10 +117,10 @@ ITimeSeriesAnomalyWindow
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2076</x>
-      <y>2760</y>
-      <w>180</w>
-      <h>24</h>
+      <x>1211</x>
+      <y>1743</y>
+      <w>105</w>
+      <h>14</h>
     </coordinates>
     <panel_attributes>IsolationForest</panel_attributes>
     <additional_attributes/>
@@ -128,10 +128,10 @@ ITimeSeriesAnomalyWindow
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2340</x>
-      <y>1308</y>
-      <w>240</w>
-      <h>72</h>
+      <x>1365</x>
+      <y>896</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 ITimeSeriesAnomalyWrapper
@@ -142,10 +142,10 @@ ITimeSeriesAnomalyWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2160</x>
-      <y>1416</y>
-      <w>36</w>
-      <h>84</h>
+      <x>1260</x>
+      <y>959</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
@@ -153,10 +153,10 @@ ITimeSeriesAnomalyWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2052</x>
-      <y>1200</y>
-      <w>240</w>
-      <h>48</h>
+      <x>1197</x>
+      <y>833</y>
+      <w>140</w>
+      <h>28</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 ITimeSeriesAnomaly</panel_attributes>
@@ -165,10 +165,10 @@ ITimeSeriesAnomaly</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2160</x>
-      <y>1236</y>
-      <w>36</w>
-      <h>96</h>
+      <x>1260</x>
+      <y>854</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -176,10 +176,10 @@ ITimeSeriesAnomaly</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2196</x>
-      <y>1020</y>
-      <w>240</w>
-      <h>72</h>
+      <x>1281</x>
+      <y>728</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>
 &lt;&lt;Interface&gt;&gt;
@@ -191,10 +191,10 @@ IAnomalyClassifier
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2232</x>
-      <y>1080</y>
-      <w>36</w>
-      <h>144</h>
+      <x>1302</x>
+      <y>763</y>
+      <w>21</w>
+      <h>84</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
@@ -202,10 +202,10 @@ IAnomalyClassifier
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1908</x>
-      <y>888</y>
-      <w>240</w>
-      <h>72</h>
+      <x>1113</x>
+      <y>651</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IRegressor
@@ -218,10 +218,10 @@ IRegressor
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2196</x>
-      <y>888</y>
-      <w>240</w>
-      <h>72</h>
+      <x>1281</x>
+      <y>651</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IClassifier
@@ -234,10 +234,10 @@ IClassifier
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1620</x>
-      <y>888</y>
-      <w>240</w>
-      <h>72</h>
+      <x>945</x>
+      <y>651</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 ICluster
@@ -250,10 +250,10 @@ ICluster
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1620</x>
-      <y>1020</y>
-      <w>240</w>
-      <h>72</h>
+      <x>945</x>
+      <y>728</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IParametric
@@ -266,10 +266,10 @@ IParametric
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1344</x>
-      <y>888</y>
-      <w>240</w>
-      <h>72</h>
+      <x>784</x>
+      <y>651</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IPredictor
@@ -282,10 +282,10 @@ IPredictor
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2016</x>
-      <y>948</y>
-      <w>36</w>
-      <h>96</h>
+      <x>1176</x>
+      <y>686</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -293,10 +293,10 @@ IPredictor
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2304</x>
-      <y>948</y>
-      <w>36</w>
-      <h>96</h>
+      <x>1344</x>
+      <y>686</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -304,10 +304,10 @@ IPredictor
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2052</x>
-      <y>1476</y>
-      <w>240</w>
-      <h>228</h>
+      <x>1197</x>
+      <y>994</y>
+      <w>140</w>
+      <h>133</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 TimeSeriesAnomalyWindow
@@ -330,10 +330,10 @@ TimeSeriesAnomalyWindow
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2052</x>
-      <y>1764</y>
-      <w>240</w>
-      <h>192</h>
+      <x>1197</x>
+      <y>1162</y>
+      <w>140</w>
+      <h>112</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 TimeSeriesAnomalyWindowWrapper
@@ -347,10 +347,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2112</x>
-      <y>1368</y>
-      <w>372</w>
-      <h>420</h>
+      <x>1232</x>
+      <y>931</y>
+      <w>217</w>
+      <h>245</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
     <additional_attributes>290.0;10.0;290.0;300.0;10.0;300.0;10.0;330.0</additional_attributes>
@@ -358,10 +358,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2160</x>
-      <y>1692</y>
-      <w>36</w>
-      <h>96</h>
+      <x>1260</x>
+      <y>1120</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -369,10 +369,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1788</x>
-      <y>2052</y>
-      <w>240</w>
-      <h>72</h>
+      <x>1043</x>
+      <y>1330</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>TimeSeriesAnomalyDBSCAN
 --
@@ -384,10 +384,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1524</x>
-      <y>2052</y>
-      <w>240</w>
-      <h>72</h>
+      <x>889</x>
+      <y>1330</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>TimeSeriesAnomalyLOF
 --
@@ -399,10 +399,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2052</x>
-      <y>2052</y>
-      <w>240</w>
-      <h>72</h>
+      <x>1197</x>
+      <y>1330</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>TimeSeriesAnomalyOCSVM
 --
@@ -414,10 +414,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2316</x>
-      <y>2052</y>
-      <w>240</w>
-      <h>72</h>
+      <x>1351</x>
+      <y>1330</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>TimeSeriesAnomalyIForest
 --
@@ -429,10 +429,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2052</x>
-      <y>2172</y>
-      <w>240</w>
-      <h>24</h>
+      <x>1197</x>
+      <y>1400</y>
+      <w>140</w>
+      <h>14</h>
     </coordinates>
     <panel_attributes>TimeSeriesAnomalyOCSVMPhase</panel_attributes>
     <additional_attributes/>
@@ -440,10 +440,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2160</x>
-      <y>1944</y>
-      <w>36</w>
-      <h>84</h>
+      <x>1260</x>
+      <y>1267</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
@@ -451,10 +451,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1632</x>
-      <y>1992</y>
-      <w>828</w>
-      <h>36</h>
+      <x>952</x>
+      <y>1295</y>
+      <w>483</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>670.0;10.0;10.0;10.0</additional_attributes>
@@ -462,10 +462,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2160</x>
-      <y>1992</y>
-      <w>36</w>
-      <h>84</h>
+      <x>1260</x>
+      <y>1295</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
@@ -473,10 +473,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1896</x>
-      <y>1992</y>
-      <w>36</w>
-      <h>84</h>
+      <x>1106</x>
+      <y>1295</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
@@ -484,10 +484,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2424</x>
-      <y>1992</y>
-      <w>36</w>
-      <h>84</h>
+      <x>1414</x>
+      <y>1295</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
@@ -495,10 +495,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1632</x>
-      <y>1992</y>
-      <w>36</w>
-      <h>84</h>
+      <x>952</x>
+      <y>1295</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
@@ -506,10 +506,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2076</x>
-      <y>2796</y>
-      <w>180</w>
-      <h>24</h>
+      <x>1211</x>
+      <y>1764</y>
+      <w>105</w>
+      <h>14</h>
     </coordinates>
     <panel_attributes>OneClassSVM</panel_attributes>
     <additional_attributes/>
@@ -517,10 +517,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2076</x>
-      <y>2832</y>
-      <w>180</w>
-      <h>24</h>
+      <x>1211</x>
+      <y>1785</y>
+      <w>105</w>
+      <h>14</h>
     </coordinates>
     <panel_attributes>DBSCAN</panel_attributes>
     <additional_attributes/>
@@ -528,10 +528,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2076</x>
-      <y>2868</y>
-      <w>180</w>
-      <h>24</h>
+      <x>1211</x>
+      <y>1806</y>
+      <w>105</w>
+      <h>14</h>
     </coordinates>
     <panel_attributes>LocalOutlierFactor</panel_attributes>
     <additional_attributes/>
@@ -539,10 +539,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2160</x>
-      <y>2112</y>
-      <w>36</w>
-      <h>84</h>
+      <x>1260</x>
+      <y>1365</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
@@ -550,10 +550,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1632</x>
-      <y>2112</y>
-      <w>468</w>
-      <h>792</h>
+      <x>952</x>
+      <y>1365</y>
+      <w>273</w>
+      <h>462</h>
     </coordinates>
     <panel_attributes>lt=&lt;.
 &lt;&lt;use&gt;&gt;</panel_attributes>
@@ -562,10 +562,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1896</x>
-      <y>2112</y>
-      <w>204</w>
-      <h>756</h>
+      <x>1106</x>
+      <y>1365</y>
+      <w>119</w>
+      <h>441</h>
     </coordinates>
     <panel_attributes>lt=&lt;.
 &lt;&lt;use&gt;&gt;</panel_attributes>
@@ -574,10 +574,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2244</x>
-      <y>2112</y>
-      <w>216</w>
-      <h>684</h>
+      <x>1309</x>
+      <y>1365</y>
+      <w>126</w>
+      <h>399</h>
     </coordinates>
     <panel_attributes>lt=&lt;.
 &lt;&lt;use&gt;&gt;</panel_attributes>
@@ -586,10 +586,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2220</x>
-      <y>2112</y>
-      <w>132</w>
-      <h>720</h>
+      <x>1295</x>
+      <y>1365</y>
+      <w>77</w>
+      <h>420</h>
     </coordinates>
     <panel_attributes>lt=&lt;.
 
@@ -603,10 +603,10 @@ TimeSeriesAnomalyWindowWrapper
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2484</x>
-      <y>888</y>
-      <w>240</w>
-      <h>84</h>
+      <x>1449</x>
+      <y>651</y>
+      <w>140</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 BaseModel
@@ -619,10 +619,10 @@ BaseModel
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2220</x>
-      <y>960</y>
-      <w>408</w>
-      <h>540</h>
+      <x>1295</x>
+      <y>693</y>
+      <w>238</w>
+      <h>315</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>320.0;10.0;320.0;410.0;10.0;410.0;10.0;430.0</additional_attributes>
@@ -631,9 +631,9 @@ BaseModel
     <id>UMLPackage</id>
     <coordinates>
       <x>0</x>
-      <y>804</y>
-      <w>1308</w>
-      <h>1548</h>
+      <y>602</y>
+      <w>763</w>
+      <h>903</h>
     </coordinates>
     <panel_attributes>reader</panel_attributes>
     <additional_attributes/>
@@ -641,15 +641,15 @@ BaseModel
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1032</x>
-      <y>888</y>
-      <w>240</w>
-      <h>72</h>
+      <x>546</x>
+      <y>651</y>
+      <w>196</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IDataReader
 --
-+ read(path: string, format: string): void
++ read(path: string, format: string, verbose: bool): IDataReader
 + get_dataframe(): Dataframe
 </panel_attributes>
     <additional_attributes/>
@@ -657,10 +657,10 @@ IDataReader
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1032</x>
-      <y>1008</y>
-      <w>240</w>
-      <h>72</h>
+      <x>574</x>
+      <y>721</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IDataTrainTestSplitter
@@ -674,10 +674,10 @@ IDataTrainTestSplitter
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1140</x>
-      <y>948</y>
-      <w>36</w>
-      <h>84</h>
+      <x>637</x>
+      <y>686</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
@@ -685,10 +685,10 @@ IDataTrainTestSplitter
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>672</x>
-      <y>1008</y>
-      <w>324</w>
-      <h>72</h>
+      <x>350</x>
+      <y>721</y>
+      <w>203</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IDataTrainValidTestSplitter
@@ -702,21 +702,21 @@ IDataTrainValidTestSplitter
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>228</x>
-      <y>972</y>
-      <w>948</w>
-      <h>36</h>
+      <x>91</x>
+      <y>700</y>
+      <w>567</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>770.0;10.0;10.0;10.0</additional_attributes>
+    <additional_attributes>790.0;10.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>828</x>
-      <y>972</y>
-      <w>36</w>
-      <h>60</h>
+      <x>448</x>
+      <y>700</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
@@ -724,10 +724,10 @@ IDataTrainValidTestSplitter
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>396</x>
-      <y>1008</y>
-      <w>240</w>
-      <h>72</h>
+      <x>189</x>
+      <y>721</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IDataSupervised
@@ -740,10 +740,10 @@ IDataSupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>504</x>
-      <y>972</y>
-      <w>36</w>
-      <h>60</h>
+      <x>252</x>
+      <y>700</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
@@ -751,12 +751,13 @@ IDataSupervised
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>120</x>
-      <y>1008</y>
-      <w>240</w>
-      <h>72</h>
+      <x>28</x>
+      <y>721</y>
+      <w>140</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>
+
 &lt;&lt;Interface&gt;&gt;
 IDataUnsupervised
 
@@ -766,10 +767,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>228</x>
-      <y>972</y>
-      <w>36</w>
-      <h>60</h>
+      <x>91</x>
+      <y>700</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
@@ -777,13 +778,14 @@ IDataUnsupervised
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>492</x>
-      <y>1200</y>
-      <w>312</w>
-      <h>120</h>
+      <x>259</x>
+      <y>833</y>
+      <w>182</w>
+      <h>77</h>
     </coordinates>
-    <panel_attributes>TimeSeriesReader
+    <panel_attributes>TSReader
 --
+# ACCEPTED_FORMATS: array[string]
 # path: string
 # format: string
 # dataset: Dataframe
@@ -798,10 +800,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>492</x>
-      <y>1068</y>
-      <w>36</w>
-      <h>96</h>
+      <x>245</x>
+      <y>756</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -809,10 +811,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>828</x>
-      <y>1068</y>
-      <w>36</w>
-      <h>96</h>
+      <x>448</x>
+      <y>756</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -820,10 +822,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1140</x>
-      <y>1068</y>
-      <w>36</w>
-      <h>96</h>
+      <x>637</x>
+      <y>756</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -831,21 +833,21 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>492</x>
-      <y>1128</y>
-      <w>684</w>
-      <h>36</h>
+      <x>245</x>
+      <y>791</y>
+      <w>413</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
-    <additional_attributes>10.0;10.0;550.0;10.0</additional_attributes>
+    <additional_attributes>10.0;10.0;570.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>636</x>
-      <y>1128</y>
-      <w>36</w>
-      <h>96</h>
+      <x>343</x>
+      <y>791</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -853,36 +855,42 @@ IDataUnsupervised
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>492</x>
-      <y>1380</y>
-      <w>312</w>
-      <h>120</h>
+      <x>140</x>
+      <y>1036</y>
+      <w>196</w>
+      <h>77</h>
     </coordinates>
-    <panel_attributes>NABTimeSeriesReader
+    <panel_attributes>NABReader
 --
-# label_path: string
++ label_path: string
++ labels_name: string
++ window_name: string
++ save_windows: bool
++ combined_labels: dictionary
++ combined_windows: dictionary
 --
-+ read(path: string, format: string): array</panel_attributes>
++ read(path: string, format: string, verbose: bool): NABReader
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>636</x>
-      <y>1308</y>
-      <w>36</w>
-      <h>96</h>
+      <x>343</x>
+      <y>980</y>
+      <w>21</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2640</x>
-      <y>1644</y>
-      <w>240</w>
-      <h>120</h>
+      <x>1540</x>
+      <y>1092</y>
+      <w>140</w>
+      <h>70</h>
     </coordinates>
     <panel_attributes>TimeSeriesAnomalyARIMA
 --
@@ -897,10 +905,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1764</x>
-      <y>1272</y>
-      <w>1284</w>
-      <h>36</h>
+      <x>1029</x>
+      <y>875</y>
+      <w>749</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
     <additional_attributes>1050.0;10.0;10.0;10.0</additional_attributes>
@@ -908,10 +916,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>3012</x>
-      <y>1272</y>
-      <w>36</w>
-      <h>60</h>
+      <x>1757</x>
+      <y>875</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
     <additional_attributes>10.0;30.0;10.0;10.0</additional_attributes>
@@ -919,10 +927,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2100</x>
-      <y>1236</y>
-      <w>36</w>
-      <h>72</h>
+      <x>1225</x>
+      <y>854</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=.&gt;&gt;</panel_attributes>
     <additional_attributes>10.0;40.0;10.0;10.0</additional_attributes>
@@ -930,10 +938,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1764</x>
-      <y>1080</y>
-      <w>36</w>
-      <h>228</h>
+      <x>1029</x>
+      <y>763</y>
+      <w>21</w>
+      <h>133</h>
     </coordinates>
     <panel_attributes>lt=.&gt;&gt;</panel_attributes>
     <additional_attributes>10.0;170.0;10.0;10.0</additional_attributes>
@@ -941,10 +949,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2652</x>
-      <y>960</y>
-      <w>420</w>
-      <h>372</h>
+      <x>1547</x>
+      <y>693</y>
+      <w>245</w>
+      <h>217</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;260.0;330.0;260.0;330.0;290.0</additional_attributes>
@@ -952,10 +960,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1656</x>
-      <y>1080</y>
-      <w>36</w>
-      <h>996</h>
+      <x>966</x>
+      <y>763</y>
+      <w>21</w>
+      <h>581</h>
     </coordinates>
     <panel_attributes>lt=.&gt;&gt;</panel_attributes>
     <additional_attributes>10.0;810.0;10.0;10.0</additional_attributes>
@@ -963,10 +971,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1656</x>
-      <y>2016</y>
-      <w>828</w>
-      <h>36</h>
+      <x>966</x>
+      <y>1309</y>
+      <w>483</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
     <additional_attributes>670.0;10.0;10.0;10.0</additional_attributes>
@@ -974,10 +982,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2448</x>
-      <y>2016</y>
-      <w>36</w>
-      <h>60</h>
+      <x>1428</x>
+      <y>1309</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
     <additional_attributes>10.0;30.0;10.0;10.0</additional_attributes>
@@ -985,10 +993,10 @@ IDataUnsupervised
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2184</x>
-      <y>2016</y>
-      <w>36</w>
-      <h>60</h>
+      <x>1274</x>
+      <y>1309</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
     <additional_attributes>10.0;30.0;10.0;10.0</additional_attributes>
@@ -996,10 +1004,10 @@ IDataUnsupervised
   <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>2928</x>
-      <y>1776</y>
-      <w>2736</w>
-      <h>876</h>
+      <x>1708</x>
+      <y>1169</y>
+      <w>1596</w>
+      <h>511</h>
     </coordinates>
     <panel_attributes>deep_learning</panel_attributes>
     <additional_attributes/>
@@ -1007,10 +1015,10 @@ IDataUnsupervised
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>4128</x>
-      <y>1812</y>
-      <w>312</w>
-      <h>360</h>
+      <x>2408</x>
+      <y>1190</y>
+      <w>182</w>
+      <h>210</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 TimeSeriesAnomalyWindowDL
@@ -1044,10 +1052,10 @@ TimeSeriesAnomalyWindowDL
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>4344</x>
-      <y>2232</y>
-      <w>312</w>
-      <h>84</h>
+      <x>2534</x>
+      <y>1435</y>
+      <w>182</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 TimeSeriesAnomalySequential
@@ -1060,10 +1068,10 @@ TimeSeriesAnomalySequential
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>4344</x>
-      <y>2400</y>
-      <w>312</w>
-      <h>72</h>
+      <x>2534</x>
+      <y>1533</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 TimeSeriesAnomalySliding
@@ -1076,10 +1084,10 @@ TimeSeriesAnomalySliding
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>3912</x>
-      <y>2232</y>
-      <w>312</w>
-      <h>156</h>
+      <x>2282</x>
+      <y>1435</y>
+      <w>182</w>
+      <h>91</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 TimeSeriesAnomalyAutoencoder
@@ -1097,10 +1105,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4272</x>
-      <y>2160</y>
-      <w>36</w>
-      <h>72</h>
+      <x>2492</x>
+      <y>1393</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1108,10 +1116,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4056</x>
-      <y>2196</y>
-      <w>468</w>
-      <h>36</h>
+      <x>2366</x>
+      <y>1414</y>
+      <w>273</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;370.0;10.0</additional_attributes>
@@ -1119,10 +1127,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4056</x>
-      <y>2196</y>
-      <w>36</w>
-      <h>60</h>
+      <x>2366</x>
+      <y>1414</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
@@ -1130,10 +1138,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4488</x>
-      <y>2196</y>
-      <w>36</w>
-      <h>60</h>
+      <x>2618</x>
+      <y>1414</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
@@ -1141,10 +1149,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4488</x>
-      <y>2304</y>
-      <w>36</w>
-      <h>120</h>
+      <x>2618</x>
+      <y>1477</y>
+      <w>21</w>
+      <h>70</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
@@ -1152,10 +1160,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>3288</x>
-      <y>2544</y>
-      <w>312</w>
-      <h>72</h>
+      <x>1918</x>
+      <y>1617</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>GRUAutoencoder
 --
@@ -1167,10 +1175,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2952</x>
-      <y>2544</y>
-      <w>312</w>
-      <h>72</h>
+      <x>1722</x>
+      <y>1617</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>LSTMAutoencoder
 --
@@ -1182,10 +1190,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>3624</x>
-      <y>2544</y>
-      <w>312</w>
-      <h>72</h>
+      <x>2114</x>
+      <y>1617</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>CNNAutoencoder
 --
@@ -1197,10 +1205,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>3960</x>
-      <y>2544</y>
-      <w>312</w>
-      <h>72</h>
+      <x>2310</x>
+      <y>1617</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>BraeiDenseAutoencoder
 --
@@ -1212,10 +1220,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>4296</x>
-      <y>2544</y>
-      <w>312</w>
-      <h>72</h>
+      <x>2506</x>
+      <y>1617</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>BraeiLSTM
 --
@@ -1227,10 +1235,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>4632</x>
-      <y>2544</y>
-      <w>312</w>
-      <h>72</h>
+      <x>2702</x>
+      <y>1617</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>BraeiGRU
 --
@@ -1242,10 +1250,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>4968</x>
-      <y>2544</y>
-      <w>312</w>
-      <h>72</h>
+      <x>2898</x>
+      <y>1617</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>BraeiCNN
 --
@@ -1257,10 +1265,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>5304</x>
-      <y>2544</y>
-      <w>312</w>
-      <h>72</h>
+      <x>3094</x>
+      <y>1617</y>
+      <w>182</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>BraeiCNNBatch
 --
@@ -1272,10 +1280,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>3108</x>
-      <y>2496</y>
-      <w>1056</w>
-      <h>36</h>
+      <x>1813</x>
+      <y>1589</y>
+      <w>616</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;860.0;10.0</additional_attributes>
@@ -1283,10 +1291,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4128</x>
-      <y>2496</y>
-      <w>36</w>
-      <h>72</h>
+      <x>2408</x>
+      <y>1589</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1294,10 +1302,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4440</x>
-      <y>2496</y>
-      <w>1056</w>
-      <h>36</h>
+      <x>2590</x>
+      <y>1589</y>
+      <w>616</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;860.0;10.0</additional_attributes>
@@ -1305,10 +1313,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>3768</x>
-      <y>2496</y>
-      <w>36</w>
-      <h>72</h>
+      <x>2198</x>
+      <y>1589</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1316,10 +1324,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>3432</x>
-      <y>2496</y>
-      <w>36</w>
-      <h>72</h>
+      <x>2002</x>
+      <y>1589</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1327,10 +1335,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>3108</x>
-      <y>2496</y>
-      <w>36</w>
-      <h>72</h>
+      <x>1813</x>
+      <y>1589</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1338,10 +1346,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4440</x>
-      <y>2496</y>
-      <w>36</w>
-      <h>72</h>
+      <x>2590</x>
+      <y>1589</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1349,10 +1357,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4056</x>
-      <y>2376</y>
-      <w>36</w>
-      <h>156</h>
+      <x>2366</x>
+      <y>1519</y>
+      <w>21</w>
+      <h>91</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;110.0</additional_attributes>
@@ -1360,10 +1368,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4488</x>
-      <y>2460</y>
-      <w>36</w>
-      <h>72</h>
+      <x>2618</x>
+      <y>1568</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1371,10 +1379,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>4776</x>
-      <y>2496</y>
-      <w>36</w>
-      <h>72</h>
+      <x>2786</x>
+      <y>1589</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1382,10 +1390,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>5112</x>
-      <y>2496</y>
-      <w>36</w>
-      <h>72</h>
+      <x>2982</x>
+      <y>1589</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1393,10 +1401,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>5460</x>
-      <y>2496</y>
-      <w>36</w>
-      <h>72</h>
+      <x>3185</x>
+      <y>1589</y>
+      <w>21</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
@@ -1404,10 +1412,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>1320</x>
-      <y>0</y>
-      <w>1752</w>
-      <h>780</h>
+      <x>770</x>
+      <y>133</y>
+      <w>1022</w>
+      <h>455</h>
     </coordinates>
     <panel_attributes>tuning</panel_attributes>
     <additional_attributes/>
@@ -1415,10 +1423,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>1332</x>
-      <y>24</y>
-      <w>1728</w>
-      <h>744</h>
+      <x>777</x>
+      <y>147</y>
+      <w>1008</w>
+      <h>434</h>
     </coordinates>
     <panel_attributes>hyperparameter</panel_attributes>
     <additional_attributes/>
@@ -1426,10 +1434,10 @@ TimeSeriesAnomalyAutoencoder
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2040</x>
-      <y>72</y>
-      <w>312</w>
-      <h>84</h>
+      <x>1190</x>
+      <y>175</y>
+      <w>182</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IHyperparameterSearch
@@ -1443,10 +1451,10 @@ IHyperparameterSearch
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2040</x>
-      <y>216</y>
-      <w>312</w>
-      <h>240</h>
+      <x>1190</x>
+      <y>259</y>
+      <w>182</w>
+      <h>140</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 HyperparameterSearch
@@ -1470,10 +1478,10 @@ HyperparameterSearch
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2184</x>
-      <y>144</y>
-      <w>36</w>
-      <h>96</h>
+      <x>1274</x>
+      <y>217</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -1481,10 +1489,10 @@ HyperparameterSearch
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2472</x>
-      <y>72</y>
-      <w>312</w>
-      <h>84</h>
+      <x>1442</x>
+      <y>175</y>
+      <w>182</w>
+      <h>49</h>
     </coordinates>
     <panel_attributes>&lt;&lt;Interface&gt;&gt;
 IHyperparameterSearchResults
@@ -1497,22 +1505,22 @@ IHyperparameterSearchResults
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2340</x>
-      <y>96</y>
-      <w>156</w>
-      <h>48</h>
+      <x>1365</x>
+      <y>196</y>
+      <w>91</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=&lt;.
 &lt;&lt;use&gt;&gt;</panel_attributes>
-    <additional_attributes>110.0;20.0;10.0;20.0</additional_attributes>
+    <additional_attributes>110.0;10.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2472</x>
-      <y>216</y>
-      <w>312</w>
-      <h>96</h>
+      <x>1442</x>
+      <y>259</y>
+      <w>182</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>HyperparameterSearchResults
 --
@@ -1526,10 +1534,10 @@ IHyperparameterSearchResults
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2616</x>
-      <y>144</y>
-      <w>36</w>
-      <h>96</h>
+      <x>1526</x>
+      <y>217</y>
+      <w>21</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
@@ -1537,10 +1545,10 @@ IHyperparameterSearchResults
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2916</x>
-      <y>1644</y>
-      <w>240</w>
-      <h>120</h>
+      <x>1701</x>
+      <y>1092</y>
+      <w>140</w>
+      <h>70</h>
     </coordinates>
     <panel_attributes>TimeSeriesAnomalySES
 --
@@ -1555,10 +1563,10 @@ IHyperparameterSearchResults
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>3192</x>
-      <y>1644</y>
-      <w>240</w>
-      <h>120</h>
+      <x>1862</x>
+      <y>1092</y>
+      <w>140</w>
+      <h>70</h>
     </coordinates>
     <panel_attributes>TimeSeriesAnomalyES
 --
@@ -1573,10 +1581,10 @@ IHyperparameterSearchResults
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>2856</x>
-      <y>1308</y>
-      <w>360</w>
-      <h>288</h>
+      <x>1666</x>
+      <y>896</y>
+      <w>210</w>
+      <h>168</h>
     </coordinates>
     <panel_attributes>&lt;&lt;abstract&gt;&gt;
 TimeSeriesAnomalyForecaster
@@ -1604,10 +1612,10 @@ TimeSeriesAnomalyForecaster
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2748</x>
-      <y>1608</y>
-      <w>588</w>
-      <h>36</h>
+      <x>1603</x>
+      <y>1071</y>
+      <w>343</w>
+      <h>21</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>470.0;10.0;10.0;10.0</additional_attributes>
@@ -1615,10 +1623,10 @@ TimeSeriesAnomalyForecaster
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>3024</x>
-      <y>1584</y>
-      <w>36</w>
-      <h>60</h>
+      <x>1764</x>
+      <y>1057</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
@@ -1626,10 +1634,10 @@ TimeSeriesAnomalyForecaster
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>3024</x>
-      <y>1608</y>
-      <w>36</w>
-      <h>60</h>
+      <x>1764</x>
+      <y>1071</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
@@ -1637,10 +1645,10 @@ TimeSeriesAnomalyForecaster
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>3300</x>
-      <y>1608</y>
-      <w>36</w>
-      <h>60</h>
+      <x>1925</x>
+      <y>1071</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
@@ -1648,12 +1656,103 @@ TimeSeriesAnomalyForecaster
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>2748</x>
-      <y>1608</y>
-      <w>36</w>
-      <h>60</h>
+      <x>1603</x>
+      <y>1071</y>
+      <w>21</w>
+      <h>35</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>364</x>
+      <y>1036</y>
+      <w>196</w>
+      <h>126</h>
+    </coordinates>
+    <panel_attributes>ODINTSReader
+--
+# DAY_COL: string
+# ANOMALY_TYPE: string
+# unmodified_dataset: DataFrame
++ anomalies_path: string
++ timestamp_col: string
++ univariate_col: string
++ start_col: string
++ end_col: string
++ anomaly_type_col: string
+--
++ read(path: string, format: string, verbose: bool): ODINTSReader
++ read(path: string, format: string, verbose: bool,
+       resample: bool, resample_granularity: string,
+       missing_strategy: MissingStrategy,
+       missing_fixed_value: float): ODINTSReader
++ get_complete_dataframe(): DataFrame
+# add_information(complete: bool, verbose: bool): DataFrame</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>455</x>
+      <y>1008</y>
+      <w>21</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>231</x>
+      <y>1008</y>
+      <w>21</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>231</x>
+      <y>1008</y>
+      <w>245</w>
+      <h>21</h>
+    </coordinates>
+    <panel_attributes>lt=-</panel_attributes>
+    <additional_attributes>10.0;10.0;330.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>259</x>
+      <y>938</y>
+      <w>182</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>UTSReader
+--
+# ANOMALY_COL: string
+# SERIES_COL: string
+# TIMESTAMP_COL: string
+--
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>343</x>
+      <y>903</y>
+      <w>21</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
   </element>
 </diagram>

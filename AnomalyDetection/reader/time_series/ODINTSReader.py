@@ -6,11 +6,11 @@ import numpy as np
 import pandas as pd
 
 from reader.MissingStrategy import MissingStrategy
-from reader.time_series.TSReader import TSReader
+from reader.time_series.UTSReader import UTSReader
 from utils.printing import print_header, print_step
 
 
-class ODINTSReader(TSReader):
+class ODINTSReader(UTSReader):
     """A reader for ODIN TS annotated datasets.
     
     Parameters

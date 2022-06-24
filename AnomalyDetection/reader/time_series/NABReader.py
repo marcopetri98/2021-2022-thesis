@@ -5,11 +5,11 @@ import json
 
 import numpy as np
 
-from reader.time_series.TSReader import TSReader
+from reader.time_series.UTSReader import UTSReader
 from utils.printing import print_header, print_step
 
 
-class NABReader(TSReader):
+class NABReader(UTSReader):
 	"""A reader of NAB time series datasets.
 	
 	Parameters

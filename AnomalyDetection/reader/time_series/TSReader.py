@@ -19,11 +19,6 @@ class TSReader(IDataReader,
     """A reader of time series datasets."""
     ACCEPTED_FORMATS = ["csv"]
     
-    # TODO: This class should be able to read both univariate and multivariate, these fields are useful only to subclasses
-    _ANOMALY_COL = "target"
-    _SERIES_COL = "value"
-    _TIMESTAMP_COL = "timestamp"
-    
     def __init__(self):
         super().__init__()
         
