@@ -10,7 +10,7 @@ def plot_correlation_functions(func_values: dict,
     """Plots the ACF, PACF or both functions.
     
     Both dictionaries are meant to have string keys ("ACF" or "PACF") and the
-    values for the keys must be numpy ndarrays.
+    values for the keys must be array-like objects.
     
     Parameters
     ----------
@@ -35,13 +35,11 @@ def plot_correlation_functions(func_values: dict,
     if len(set(func_values.keys()).difference(func_conf.keys())) != 0:
         raise ValueError("Keys of the dictionaries must exactly match")
     
-    for item in func_values.items():
-        if not isinstance(item, np.ndarray):
-            raise TypeError("Values of the dictionaries must be ndarray")
+    for key in func_values.keys():
+        func_values[key] = np.array(func_values[key])
         
-    for item in func_conf.items():
-        if not isinstance(item, np.ndarray):
-            raise TypeError("Values of the dictionaries must be ndarray")
+    for key in func_conf.keys():
+        func_values[key] = np.array(func_values[key])
     
     # plot correlation values
     if len(func_values.keys()) == 1:
@@ -61,7 +59,7 @@ def plot_correlation_functions(func_values: dict,
         plt.plot([0, lags], [0, 0], linewidth=0.5)
         plt.vlines(range(lags + 1), [0] * (lags + 1), values)
         plt.scatter(range(lags + 1), values)
-        plt.fill_between(range(lags + 1),
+        plt.fill_between(np.linspace(1, lags, lags),
                          conf[1:, 0] - values[1:],
                          conf[1:, 1] - values[1:],
                          alpha=0.25,
@@ -80,7 +78,7 @@ def plot_correlation_functions(func_values: dict,
         axs[0].plot([0, lags], [0, 0], linewidth=0.5)
         axs[0].vlines(range(lags + 1), [0] * (lags + 1), acf_values)
         axs[0].scatter(range(lags + 1), acf_values)
-        axs[0].fill_between(range(lags + 1),
+        axs[0].fill_between(np.linspace(1, lags, lags),
                             acf_conf[1:, 0] - acf_values[1:],
                             acf_conf[1:, 1] - acf_values[1:],
                             alpha=0.25,
@@ -91,7 +89,7 @@ def plot_correlation_functions(func_values: dict,
         axs[1].plot([0, lags], [0, 0], linewidth=0.5)
         axs[1].vlines(range(lags + 1), [0] * (lags + 1), pacf_values)
         axs[1].scatter(range(lags + 1), pacf_values)
-        axs[1].fill_between(range(lags + 1),
+        axs[1].fill_between(np.linspace(1, lags, lags),
                             pacf_conf[1:, 0] - pacf_values[1:],
                             pacf_conf[1:, 1] - pacf_values[1:],
                             alpha=0.25,

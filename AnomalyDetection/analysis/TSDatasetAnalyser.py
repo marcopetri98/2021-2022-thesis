@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import Tuple
 
 import numpy as np
 from statsmodels.tsa.seasonal import STL, DecomposeResult
@@ -72,6 +73,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
     def show_acf_function(self, acf_params: dict = None,
                           difference_series: bool = False,
                           difference_value: int = 1,
+                          fig_size: Tuple = (6, 6),
                           verbose: bool = True,
                           *args,
                           **kwargs) -> None:
@@ -88,13 +90,14 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         series_acf, series_conf = acf(analysed_series, **acf_params)
         plot_correlation_functions({"PACF": series_acf},
                                    {"PACF": series_conf},
-                                   fig_size=(6, 6))
+                                   fig_size=fig_size)
         
         print_header("ACF computation ended")
     
     def show_pacf_function(self, pacf_params: dict = None,
                            difference_series: bool = False,
                            difference_value: int = 1,
+                           fig_size: Tuple = (6, 6),
                            verbose: bool = True,
                            *args,
                            **kwargs) -> None:
@@ -111,7 +114,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         series_pacf, series_conf = pacf(analysed_series, **pacf_params)
         plot_correlation_functions({"PACF": series_pacf},
                                    {"PACF": series_conf},
-                                   fig_size=(6,6))
+                                   fig_size=fig_size)
     
         print_header("PACF computation ended")
     
@@ -119,6 +122,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
                                 pacf_params: dict,
                                 difference_series: bool = False,
                                 difference_value: int = 1,
+                                fig_size: Tuple = (12, 12),
                                 verbose: bool = True,
                                 *args,
                                 **kwargs) -> None:
@@ -137,7 +141,8 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         series_acf, series_acf_conf = acf(analysed_series, **acf_params)
         series_pacf, series_pacf_conf = pacf(analysed_series, **pacf_params)
         plot_correlation_functions({"ACF": series_acf, "PACF": series_pacf},
-                                   {"ACF": series_acf_conf, "PACF": series_pacf_conf})
+                                   {"ACF": series_acf_conf, "PACF": series_pacf_conf},
+                                   fig_size=fig_size)
     
         print_header("ACF and PACF computation ended")
     

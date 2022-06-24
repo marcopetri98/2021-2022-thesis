@@ -1,5 +1,6 @@
 import abc
 from abc import ABC
+from typing import Tuple
 
 from analysis import IDatasetAnalyser, StationarityTest, DecompositionMethod
 
@@ -53,6 +54,7 @@ class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
     def show_acf_function(self, acf_params: dict = None,
                           difference_series: bool = False,
                           difference_value: int = 1,
+                          fig_size: Tuple = (6, 6),
                           verbose: bool = True,
                           *args,
                           **kwargs) -> None:
@@ -70,6 +72,9 @@ class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
         difference_value : int, default=1
             It is the value defining how many times the time series must be
             differenced.
+            
+        fig_size : Tuple, default=(12,12)
+            The dimension of the figure to be shown.
         
         verbose : bool, default=True
             If `True` detailed printing will be shown.
@@ -90,6 +95,7 @@ class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
     def show_pacf_function(self, pacf_params: dict = None,
                            difference_series: bool = False,
                            difference_value: int = 1,
+                           fig_size: Tuple = (6, 6),
                            verbose: bool = True,
                            *args,
                            **kwargs) -> None:
@@ -107,6 +113,9 @@ class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
         difference_value : int, default=1
             It is the value defining how many times the time series must be
             differenced.
+            
+        fig_size : Tuple, default=(12,12)
+            The dimension of the figure to be shown.
         
         verbose : bool, default=True
             If `True` detailed printing will be shown.
@@ -127,6 +136,7 @@ class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
                                 pacf_params: dict,
                                 difference_series: bool = False,
                                 difference_value: int = 1,
+                                fig_size: Tuple = (12, 12),
                                 verbose: bool = True,
                                 *args,
                                 **kwargs) -> None:
@@ -147,6 +157,9 @@ class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
         difference_value : int, default=1
             It is the value defining how many times the time series must be
             differenced.
+            
+        fig_size : Tuple, default=(12,12)
+            The dimension of the figure to be shown.
         
         verbose : bool, default=True
             If `True` detailed printing will be shown.
