@@ -2,10 +2,7 @@ import glob
 import os
 from datetime import datetime, timedelta
 
-import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-from statsmodels.graphics.tsaplots import plot_acf
 
 from analysis import TSDatasetAnalyser, StationarityTest
 
