@@ -9,11 +9,10 @@ from statsmodels.graphics.tsaplots import plot_acf
 
 from analysis import TSDatasetAnalyser, StationarityTest
 
-DATASET = "data/dataset/badec.csv"
 MATPLOT_PRINT = True
 USE_STL = False
 LAG = 1
-NLAGS = 90
+NLAGS = 100
 
 #
 # Thanks for the support to
@@ -35,15 +34,13 @@ def keep_cycles(df, threshold=50):
             return df[first_beginning:last_beginning]
 
 
-dataset_name = "bae07"
+dataset_name = "badef"
 
 dfs = [None] * len(glob.glob("data/CERTH/" + dataset_name + "/train/clean_data/*.csv"))
 
-for filename in glob.glob(
-        "data/CERTH/" + dataset_name + "/train/clean_data/*.csv"):
+for filename in glob.glob("data/CERTH/" + dataset_name + "/train/clean_data/*.csv"):
     with open(os.path.join(os.getcwd(), filename), 'r') as f:
-        file_number = int(
-            filename.split("clean_" + dataset_name + "_")[1].split(".csv")[0])
+        file_number = int(filename.split("clean_" + dataset_name + "_")[1].split(".csv")[0])
         df = pd.read_csv(f)
         df = keep_cycles(df)
         dfs[file_number] = df

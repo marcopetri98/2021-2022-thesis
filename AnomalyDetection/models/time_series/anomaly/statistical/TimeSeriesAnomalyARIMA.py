@@ -4,6 +4,7 @@ import numpy as np
 from statsmodels.tsa.arima.model import ARIMA, ARIMAResults
 
 from models.time_series.anomaly.statistical.TimeSeriesAnomalyForecaster import TimeSeriesAnomalyForecaster
+from utils.printing import print_step
 
 
 class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
@@ -21,6 +22,7 @@ class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
 				 distribution: str = "gaussian",
 				 perc_quantile: float = 0.999,
 				 scoring: str = "difference",
+				 forecasting_steps: int = 1,
 				 *,
 				 endog = None,
 				 exog = None,
@@ -38,6 +40,8 @@ class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
 						 distribution=distribution,
 						 perc_quantile=perc_quantile,
 						 scoring=scoring)
+		
+		self.forecasting_steps = forecasting_steps
 		
 		self.endog = np.array(endog) if endog is not None else None
 		self.exog = np.array(exog) if exog is not None else None
@@ -74,17 +78,31 @@ class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
 
 	def _model_predict(self, previous: np.ndarray,
 					   x: np.ndarray):
-		all_data = np.concatenate((previous, x))
-		pred_model: ARIMAResults = self._fitted_model.apply(all_data,
-															refit=False)
-		prediction_results = pred_model.get_prediction(previous.shape[0])
-		predictions = prediction_results.predicted_mean
+		if self.forecasting_steps == 1:
+			# forecast a single prediction
+			all_data = np.concatenate((previous, x))
+			pred_model: ARIMAResults = self._fitted_model.apply(all_data, refit=False)
+			prediction_results = pred_model.get_prediction(previous.shape[0])
+			predictions = prediction_results.predicted_mean
+		else:
+			# perform multiple-step-ahead forecasts and average
+			number_of_forecasts = np.zeros(x.shape[0])
+			forecasted_values = np.zeros(x.shape[0])
+			
+			for i in range(x.shape[0] - self.forecasting_steps + 1):
+				data = np.concatenate((previous, x[:i]))
+				pred_model: ARIMAResults = self._fitted_model.apply(data, refit=False)
+				prediction_results = pred_model.forecast(self.forecasting_steps)
+				number_of_forecasts[i:i + self.forecasting_steps] += 1
+				forecasted_values[i:i + self.forecasting_steps] += np.array(prediction_results).squeeze()
+			predictions = forecasted_values / number_of_forecasts
+			
 		return predictions
 
 	def _model_fit(self, *args, **kwargs):
 		self._fitted_model = self._model.fit(**kwargs)
 
-	def _model_build(self) -> None:
+	def _model_build(self, inplace: bool=True) -> None | object:
 		num_validation = int(self.endog.shape[0] * self.validation_split)
 		endog_training_data = self.endog[:-num_validation]
 		
@@ -93,18 +111,32 @@ class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
 		else:
 			exog_training_data = None
 		
-		self._model = ARIMA(endog=endog_training_data,
-					  exog=exog_training_data,
-					  order=self.order,
-					  seasonal_order=self.seasonal_order,
-					  trend=self.trend,
-					  enforce_stationarity=self.enforce_stationarity,
-					  enforce_invertibility=self.enforce_invertibility,
-					  concentrate_scale=self.concentrate_scale,
-					  trend_offset=self.trend_offset,
-					  dates=self.dates,
-					  freq=self.freq,
-					  missing=self.missing)
+		if inplace:
+			self._model = ARIMA(endog=endog_training_data,
+								exog=exog_training_data,
+								order=self.order,
+								seasonal_order=self.seasonal_order,
+								trend=self.trend,
+								enforce_stationarity=self.enforce_stationarity,
+								enforce_invertibility=self.enforce_invertibility,
+								concentrate_scale=self.concentrate_scale,
+								trend_offset=self.trend_offset,
+								dates=self.dates,
+								freq=self.freq,
+								missing=self.missing)
+		else:
+			return ARIMA(endog=endog_training_data,
+						 exog=exog_training_data,
+						 order=self.order,
+						 seasonal_order=self.seasonal_order,
+						 trend=self.trend,
+						 enforce_stationarity=self.enforce_stationarity,
+						 enforce_invertibility=self.enforce_invertibility,
+						 concentrate_scale=self.concentrate_scale,
+						 trend_offset=self.trend_offset,
+						 dates=self.dates,
+						 freq=self.freq,
+						 missing=self.missing)
 
 	def __check_parameters(self):
 		"""Checks that the class parameters are correct.

@@ -120,23 +120,26 @@ class TimeSeriesAnomalyES(TimeSeriesAnomalyForecaster):
 		self.alpha = learnt_params.loc["smoothing_level"]["param"]
 		self.l0 = learnt_params.loc["initial_level"]["param"]
 	
-	def _model_build(self) -> None:
+	def _model_build(self, inplace: bool=True) -> None | object:
 		endog = self.es_params["endog"]
 		num_validation = int(endog.shape[0] * self.validation_split)
 		endog_training_data = endog[:-num_validation]
 		new_params = copy(self.es_params)
 		new_params["endog"] = endog_training_data
 		
-		if "trend" in self.es_params.keys():
-			self.trend = self.es_params["trend"]
-		if "damped_trend" in self.es_params.keys():
-			self.damped_trend = self.es_params["damped_trend"]
-		if "seasonal" in self.es_params.keys():
-			self.seasonal = self.es_params["seasonal"]
-		if "seasonal_periods" in self.es_params.keys():
-			self.seasonal_periods = self.es_params["seasonal_periods"]
-		
-		self._model = ExponentialSmoothing(**new_params)
+		if inplace:
+			if "trend" in self.es_params.keys():
+				self.trend = self.es_params["trend"]
+			if "damped_trend" in self.es_params.keys():
+				self.damped_trend = self.es_params["damped_trend"]
+			if "seasonal" in self.es_params.keys():
+				self.seasonal = self.es_params["seasonal"]
+			if "seasonal_periods" in self.es_params.keys():
+				self.seasonal_periods = self.es_params["seasonal_periods"]
+			
+			self._model = ExponentialSmoothing(**new_params)
+		else:
+			return ExponentialSmoothing(**new_params)
 	
 	def __check_parameters(self):
 		"""Checks that the class parameters are correct.

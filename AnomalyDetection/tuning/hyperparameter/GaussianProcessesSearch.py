@@ -183,5 +183,10 @@ class GaussianProcessesSearch(HyperparameterSearch):
 			elif isinstance(self.parameter_space[i], Real):
 				converted_args.append(float(args[i]))
 			else:
-				converted_args.append(args[i])
+				if isinstance(args[i], str):
+					converted_args.append(args[i])
+				elif np.issubdtype(args[i], np.integer):
+					converted_args.append(int(args[i]))
+				elif np.issubdtype(args[i], np.floating):
+					converted_args.append(float(args[i]))
 		return converted_args

@@ -4,9 +4,9 @@ from typing import Tuple
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, f1_score
 from sklearn.preprocessing import StandardScaler
-from skopt.space import Integer
+from skopt.space import Integer, Categorical
 
 from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import \
     TimeSeriesAnomalyIForest
@@ -24,7 +24,7 @@ from tuning.hyperparameter.GaussianProcessesSearch import \
 # DATASET 2: nyc_taxi
 
 # ODIN TS
-from utils.printing import print_warning
+from utils.printing import print_warning, print_step
 
 ANOMALIES_PREFIX = "anomalies_"
 
@@ -34,43 +34,18 @@ GROUND_WINDOWS_PATH = "data/dataset/combined_windows.json"
 
 # SCRIPT
 DATASET_PATH = "data/dataset/"
-DATASET_NAME = "House11"
+DATASET_NAME = "badec"
 DATASET = DATASET_NAME + ".csv"
-TRAIN = False
-LOAD_PREVIOUS = True
-MODEL = "lof"
-TIMESTAMP_COL = "Time"
-TIMESERIES_COL = "Appliance1"
+TRAIN = True
+LOAD_PREVIOUS = False
+MODEL = "ARIMA"
+TIMESTAMP_COL = "ctime"
+TIMESERIES_COL = "device_consumption"
 N_CALLS = 40
 N_INITIAL_POINTS = 3
+WEEKS = 4
+PREDICTED_STEPS = 3
 RESAMPLE = True if DATASET_NAME in ["House1", "House11", "House20"] else False
-
-if DATASET_NAME == "bae07" or DATASET_NAME == "badef":
-    TRAIN_VALID_START = 0
-    TRAIN_END = 40174
-    VALID_START = 40174
-    TRAIN_VALID_END = 44639
-elif DATASET_NAME == "badec":
-    TRAIN_VALID_START = 8640
-    TRAIN_END = 48814
-    VALID_START = 48814
-    TRAIN_VALID_END = 53279
-elif DATASET_NAME == "House1":
-    TRAIN_VALID_START = 2054846 if not RESAMPLE else 999999999999
-    TRAIN_END = 2385131 if not RESAMPLE else 999999999999
-    VALID_START = 2385131 if not RESAMPLE else 999999999999
-    TRAIN_VALID_END = 2421830 if not RESAMPLE else 999999999999
-elif DATASET_NAME == "House11":
-    TRAIN_VALID_START = 2131071 if not RESAMPLE else 234786
-    TRAIN_END = 2463863 if not RESAMPLE else 273649
-    VALID_START = 2463863 if not RESAMPLE else 273649
-    TRAIN_VALID_END = 2500838 if not RESAMPLE else 277967
-else:
-    # House20.csv
-    TRAIN_VALID_START = 7113 if not RESAMPLE else 719
-    TRAIN_END = 368273 if not RESAMPLE else 40824
-    VALID_START = 368273 if not RESAMPLE else 40824
-    TRAIN_VALID_END = 408402 if not RESAMPLE else 45280
 
 # kmeans, dbscan, lof, osvm, phase osvm, iforest, AR, MA, ARIMA, SES, ES
 
@@ -78,6 +53,20 @@ reader = ODINTSReader(DATASET_PATH + ANOMALIES_PREFIX + DATASET,
                       timestamp_col=TIMESTAMP_COL,
                       univariate_col=TIMESERIES_COL)
 all_df = reader.read(DATASET_PATH + DATASET, resample=RESAMPLE).get_dataframe()
+
+if DATASET_NAME == "bae07" or DATASET_NAME == "badef" or DATASET_NAME == "badec":
+    if WEEKS == 4:
+        TRAIN_END = np.argwhere(all_df["timestamp"].values == "2020-02-20 23:59:00")[0,0]
+    elif WEEKS == 3:
+        TRAIN_END = np.argwhere(all_df["timestamp"].values == "2020-02-10 23:59:00")[0,0]
+    else:
+        TRAIN_END = np.argwhere(all_df["timestamp"].values == "2020-02-03 23:59:00")[0,0]
+
+    TRAIN_VALID_START = np.argwhere(all_df["timestamp"].values == "2020-01-21 00:00:00")[0, 0]
+    VALID_START = np.argwhere(all_df["timestamp"].values == "2020-02-21 00:00:00")[0,0]
+    TRAIN_VALID_END = np.argwhere(all_df["timestamp"].values == "2020-02-23 23:59:00")[0,0]
+else:
+    raise ValueError("Not implemented other datasets")
 
 training = all_df.iloc[TRAIN_VALID_START:TRAIN_END]
 training_validation = all_df.iloc[TRAIN_VALID_START:TRAIN_VALID_END]
@@ -179,17 +168,26 @@ def evaluate_time_series(train_data: np.ndarray,
 
     try:
         if MODEL == "ARIMA":
-            model_ = TimeSeriesAnomalyARIMA(endog=train_data)
+            model_ = TimeSeriesAnomalyARIMA(endog=train_data, forecasting_steps=PREDICTED_STEPS)
             parameters = dict(parameters)
-            parameters["order"] = (
-            parameters["ar_order"], parameters["diff_order"],
-            parameters["ma_order"])
+            parameters["order"] = (parameters["ar_order"], parameters["diff_order"], parameters["ma_order"])
             del parameters["ar_order"]
             del parameters["diff_order"]
             del parameters["ma_order"]
             model_.set_params(**parameters)
-            results_ = model_.fit(verbose=False)
-            predictions = model_.anomaly_score(valid_data, train_data, verbose=False)
+            results_ = model_.fit(verbose=False,
+                                  fit_params={"gls": True,
+                                              "gls_kwargs": {
+                                                  "max_iter": 500,
+                                                  "tolerance": 1e-8
+                                              }})
+            
+            predictions = model_.predict_time_series(data[:VALID_START], valid_data)
+            mae = np.mean((predictions - valid_data) ** 2)
+            
+            warnings.filterwarnings("default")
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return mae
         elif MODEL == "iforest":
             model_ = TimeSeriesAnomalyIForest(parameters["window"],
                                               n_estimators=parameters["n_estimators"],
@@ -197,6 +195,17 @@ def evaluate_time_series(train_data: np.ndarray,
                                               random_state=22)
             model_.fit(train_data, train_labels)
             predictions = model_.anomaly_score(valid_data)
+            
+            best_f1 = -1
+            for threshold in np.linspace(0, 1, 21):
+                pred_labels = predictions > threshold
+                f1 = f1_score(valid_labels, pred_labels)
+                if f1 > best_f1:
+                    best_f1 = f1
+            
+            warnings.filterwarnings("default")
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return 1 - best_f1
         elif MODEL == "lof":
             model_ = TimeSeriesAnomalyLOF(parameters["window"],
                                           novelty=True,
@@ -204,6 +213,34 @@ def evaluate_time_series(train_data: np.ndarray,
                                           scaling="none")
             model_.fit(train_data, train_labels)
             predictions = model_.anomaly_score(valid_data)
+            
+            low_min = np.min(predictions[np.argwhere(predictions < 200).squeeze()])
+            low_max = int(np.max(predictions[np.argwhere(predictions < 200).squeeze()]))
+            
+            best_f1 = -1
+            previous_f1 = -1
+            decreasing_f1 = 0
+            for threshold in np.linspace(low_min, low_max, low_max * 20 + 1 + 21):
+                pred_labels = predictions > threshold
+                f1 = f1_score(valid_labels, pred_labels)
+                
+                # update best f1
+                if f1 > best_f1:
+                    best_threshold = threshold
+                    best_f1 = f1
+                    
+                # sort of early stopping on decreasing f1
+                if f1 <= previous_f1:
+                    decreasing_f1 += 1
+                    if decreasing_f1 >= 41:
+                        print_step("stop at {}".format(threshold))
+                        break
+                else:
+                    decreasing_f1 = 0
+            
+            warnings.filterwarnings("default")
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return 1 - best_f1
         else:
             model_ = TimeSeriesAnomalyOSVM(parameters["window"],
                                            gamma=parameters["gamma"],
@@ -212,9 +249,17 @@ def evaluate_time_series(train_data: np.ndarray,
             model_.fit(train_data, train_labels)
             predictions = model_.anomaly_score(valid_data)
             
-        warnings.filterwarnings("default")
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-        return 1 - roc_auc_score(valid_labels.reshape(-1), predictions.reshape(-1))
+            best_f1 = -1
+            for threshold in np.linspace(0, 1, 21):
+                pred_labels = predictions > threshold
+                f1 = f1_score(valid_labels, pred_labels)
+                if f1 > best_f1:
+                    best_f1 = f1
+            
+            warnings.filterwarnings("default")
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            return 1 - best_f1
+        
     except Warning as w:
         print_warning("A warning ({}) has been raised from fitting or scoring."
                       " 1 is returned as score.".format(w.__class__))
@@ -242,29 +287,29 @@ class MySplit(object):
 
 hyper_searcher = GaussianProcessesSearch([
                                             # ARIMA parameters
-                                            # Integer(0, 5, name="ar_order"),
-                                            # Categorical([1], name="diff_order"),
-                                            # Integer(0, 5, name="ma_order"),
-                                            # Categorical(["difference"], name="scoring"),
-                                            # Categorical(["n"], name="trend")
+                                            Categorical([3], name="ar_order"),
+                                            Categorical([1], name="diff_order"),
+                                            Categorical([2], name="ma_order"),
+                                            Categorical(["difference"], name="scoring"),
+                                            Categorical(["n"], name="trend")
     
                                             # Isolation forest parameters
-                                            # Integer(1, 30, name="window"),
+                                            # Categorical([10], name="window"),
                                             # Integer(20, 200, name="n_estimators"),
                                             # Integer(150, 400, name="max_samples")
     
                                             # LOF parameters
-                                            Integer(1, 40, name="window"),
-                                            Integer(1, 300, name="n_neighbors")
+                                            # Categorical([5], name="window"),
+                                            # Integer(1, 50, name="n_neighbors")
     
                                             # OSVM parameters
-                                            # Integer(1, 40, name="window"),
+                                            # Categorical([305], name="window"),
                                             # Real(0.001, 1, name="gamma"),
                                             # Real(1e-10, 0.1, name="tol", prior="log-uniform"),
                                             # Real(0.001, 0.5, name="nu")
                                          ],
                                          "data/searches/{}/".format(MODEL.lower()),
-                                         DATASET_NAME + "_gp",
+                                         str(WEEKS) + "w_3p_" + DATASET_NAME + "_gp",
                                          MySplit(),
                                          load_checkpoint=LOAD_PREVIOUS,
                                          gp_kwargs={"n_calls": N_CALLS, "n_initial_points": N_INITIAL_POINTS})

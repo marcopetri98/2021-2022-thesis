@@ -349,12 +349,18 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 		"""
 	
 	@abc.abstractmethod
-	def _model_build(self) -> None:
+	def _model_build(self, inplace: bool=True) -> None | object:
 		"""Builds the model.
+		
+		Parameters
+		----------
+		inplace : bool, default=True
+			States if the model must be saved in object attributes or not.
 
 		Returns
 		-------
-		None
+		model : object
+			The model if `inplace` is False.
 		"""
 
 	def __check_parameters(self):
