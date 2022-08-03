@@ -3,13 +3,11 @@ from typing import Union
 import numpy as np
 from numpy.random import RandomState
 from sklearn.ensemble import IsolationForest
-from sklearn.utils import check_array
 
-from models.IParametric import IParametric
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
+from models.time_series.anomaly.machine_learning import TSAMultipleParametric
 
 
-class TimeSeriesAnomalyIForest(TimeSeriesAnomalyWindowWrapper, IParametric):
+class TimeSeriesAnomalyIForest(TSAMultipleParametric):
 	"""Isolation Forest adaptation to time series
         
     See Also
@@ -51,14 +49,6 @@ class TimeSeriesAnomalyIForest(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.random_state = random_state
 		self.verbose = verbose
 		self.warm_start = warm_start
-	
-	def fit(self, x, y=None, *args, **kwargs) -> None:
-		check_array(x)
-		x = np.array(x)
-		
-		x_new, windows_per_point = self._project_time_series(x)
-		self._build_wrapped()
-		self._wrapped_model.fit(x_new)
 	
 	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		window_anomalies = self._wrapped_model.predict(vector_data) * -1

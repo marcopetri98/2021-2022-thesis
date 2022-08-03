@@ -53,6 +53,10 @@ class ITimeSeriesAnomalyWindow(ITimeSeriesAnomaly):
 							  windows_per_point,
 							  point_scores=None) -> np.ndarray:
 		"""Computes the scoring of the points for the time series.
+		
+		Receives as input the labels of the windows and an array with the
+		dimension of the time series from which windows have been obtained with
+		the number of windows for each point that contains it.
 
 		Parameters
 		----------

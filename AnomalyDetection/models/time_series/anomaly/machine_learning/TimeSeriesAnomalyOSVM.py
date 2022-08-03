@@ -1,13 +1,11 @@
 import numpy as np
 from sklearn.svm import OneClassSVM
-from sklearn.utils import check_array, check_X_y
 
 from input_validation.attribute_checks import check_not_default_attributes
-from models.IParametric import IParametric
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
+from models.time_series.anomaly.machine_learning import TSAMultipleParametric
 
 
-class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
+class TimeSeriesAnomalyOSVM(TSAMultipleParametric):
 	"""OSVM adaptation to time series using scikit-learn.
         
     See Also
@@ -51,28 +49,6 @@ class TimeSeriesAnomalyOSVM(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.cache_size = cache_size
 		self.verbose = verbose
 		self.max_iter = max_iter
-
-	def fit(self, x, y=None, *args, **kwargs) -> None:
-		check_array(x)
-		if y is not None:
-			check_X_y(x, y)
-			y = np.array(y)
-		
-		x = np.array(x)
-		
-		# Project time series onto vector space using only the normal data for
-		# training since the One-class SVM requires to learn a boundary of
-		# normal data.
-		if y is not None:
-			normal_data = np.argwhere(y == 0)
-			normal_data = normal_data.reshape(normal_data.shape[0])
-			normal_data = x[normal_data]
-		else:
-			normal_data = x
-			
-		x_new, windows_per_point = self._project_time_series(normal_data)
-		self._build_wrapped()
-		self._wrapped_model.fit(x_new)
 
 	def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
 		check_not_default_attributes(self, {"_wrapped_model": None})

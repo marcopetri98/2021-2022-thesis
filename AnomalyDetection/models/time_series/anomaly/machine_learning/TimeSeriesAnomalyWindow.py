@@ -30,14 +30,13 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 
 	classification: {"voting", "points_score"}, default="voting"
 		It defines the way in which a point is declared as anomaly. With voting,
-		a point is an anomaly if at least anomaly_threshold percentage of
+		a point is an anomaly if at least `anomaly_threshold` percentage of
 		windows containing the point agree in saying it is an anomaly. With
-		points_score, the points are considered anomalies if they're score is
+		points_score, the points are considered anomalies if their score is
 		above anomaly_threshold.
 
 	threshold: float, default=None
-		The threshold used to compute if a point is an anomaly or not. It will
-		be passed to TimeSeriesAnomalyLabeller, see it for more details.
+		The threshold used to compute if a point is an anomaly or not.
 
 	anomaly_portion: float, default=0.01
 		The percentage of anomaly points in the dataset.
@@ -135,6 +134,7 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 
 		threshold = self.threshold
 		labels = np.zeros(windows_per_point.shape[0])
+		
 		match self.classification:
 			case "voting":
 				# Anomalies are computed by voting of window anomalies
@@ -152,16 +152,8 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 				labels[true_anomalies] = 1
 
 			case "points_score":
-				# Computes the threshold using the percentiles
 				if threshold is None:
-					mean = np.mean(point_scores)
-					std = np.std(point_scores)
-					a, b = (0 - mean) / std, (1 - mean) / std
-					threshold = truncnorm.ppf(1 - self.anomaly_portion,
-											  a,
-											  b,
-											  loc=mean,
-											  scale=std)
+					threshold = 0.5
 
 				labels[np.argwhere(point_scores > threshold)] = 1
 

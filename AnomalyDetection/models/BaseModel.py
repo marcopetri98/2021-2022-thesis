@@ -28,6 +28,7 @@ class BaseModel(object):
 			else:
 				self.__dict__[key] = value
 				
+	# TODO: implement deep get params function
 	def get_params(self, deep=True) -> dict:
 		"""Gets all the parameters of the model defined in init.
 		

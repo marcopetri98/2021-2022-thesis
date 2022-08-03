@@ -8,3 +8,4 @@ from .TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 from .TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
 from .TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
 from .TimeSeriesAnomalyOSVMPhase import TimeSeriesAnomalyOSVMPhase
+from .TSAMultipleParametric import TSAMultipleParametric

@@ -2,14 +2,12 @@ from typing import Union, Callable
 
 import numpy as np
 from sklearn.neighbors import LocalOutlierFactor
-from sklearn.utils import check_array
 
 from input_validation.attribute_checks import check_not_default_attributes
-from models.IParametric import IParametric
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyWindowWrapper import TimeSeriesAnomalyWindowWrapper
+from models.time_series.anomaly.machine_learning import TSAMultipleParametric
 
 # FIXME: is LOF really parametric?
-class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
+class TimeSeriesAnomalyLOF(TSAMultipleParametric):
 	"""LOF adapter for time series.
 
 	It is a wrapper of the scikit-learn LOF approach. It uses LOF to find
@@ -55,14 +53,6 @@ class TimeSeriesAnomalyLOF(TimeSeriesAnomalyWindowWrapper, IParametric):
 		self.contamination = contamination
 		self.novelty = novelty
 		self.n_jobs = n_jobs
-
-	def fit(self, x, y=None, *args, **kwargs) -> None:
-		check_array(x)
-		x = np.array(x)
-		
-		x_new, windows_per_point = self._project_time_series(x)
-		self._build_wrapped()
-		self._wrapped_model.fit(x_new)
 
 	def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
 		if self.novelty:
