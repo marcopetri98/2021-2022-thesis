@@ -34,9 +34,12 @@ class TSAMultipleParametric(TimeSeriesAnomalyWindowWrapper, IMultipleParametric,
         self._build_wrapped()
         self._wrapped_model.fit(x_new)
 
-    def fit_multiple(self, x, y=None, *args, **kwargs) -> None:
-        check_array_general(x, 3, (1, 1, 1))
-        x = np.array(x)
+    def fit_multiple(self, x: list, y: list = None, *args, **kwargs) -> None:
+        if len(x) == 0:
+            raise ValueError("x must have at least one element!")
+        else:
+            for l in x:
+                check_array(l)
     
         x_total = None
         x_new = list()
@@ -47,9 +50,9 @@ class TSAMultipleParametric(TimeSeriesAnomalyWindowWrapper, IMultipleParametric,
             windows_per_point.append(ser_windows_per_point)
         
             if x_total is None:
-                x_total = x_new
+                x_total = ser_new
             else:
-                x_total = np.append(x_total, x_new)
+                x_total = np.append(x_total, ser_new, axis=0)
     
         self._build_wrapped()
-        self._wrapped_model.fit(x_new)
+        self._wrapped_model.fit(x_total)

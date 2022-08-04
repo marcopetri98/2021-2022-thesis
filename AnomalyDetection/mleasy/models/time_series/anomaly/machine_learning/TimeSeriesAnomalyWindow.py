@@ -90,7 +90,7 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 		for i in range(0, data.shape[0] - self.window + 1, self.stride):
 			num_windows[i:i + self.window] += 1
 			current_data: np.ndarray = data[i:i + self.window]
-			current_data = current_data.reshape(current_data.shape[0])
+			current_data = current_data.reshape(-1)
 			x_new.append(current_data.tolist())
 
 		x_new = np.array(x_new)

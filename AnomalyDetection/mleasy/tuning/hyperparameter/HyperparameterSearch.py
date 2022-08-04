@@ -64,8 +64,8 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
     
     def search(self, x,
                y,
-               objective_function: Callable[[np.ndarray,
-                                             np.ndarray,
+               objective_function: Callable[[object | np.ndarray,
+                                             object | np.ndarray,
                                              np.ndarray,
                                              np.ndarray,
                                              dict], float],
@@ -75,11 +75,20 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
         if not self.train_validation_couples:
             check_X_y(x, y)
         else:
-            check_array_general(x, 3)
-            check_array_general(y, 3)
+            if not isinstance(x, list) or not isinstance(y, list):
+                raise TypeError("x and y must be lists of the same length")
+            else:
+                for el1, el2 in zip(x, y):
+                    if not isinstance(el1, tuple) or not isinstance(el2, tuple):
+                        raise TypeError("x and y must contain tuples of "
+                                        "dimension 2")
+                    elif len(el1) != 2 or len(el2) != 2:
+                        raise ValueError("tuples must have dimension 2, please "
+                                         "read the docs")
         
-        x = np.array(x)
-        y = np.array(y)
+        if not self.train_validation_couples:
+            x = np.array(x)
+            y = np.array(y)
         
         start_time = time.time()
         self._data, self._data_labels = x, y
@@ -250,7 +259,7 @@ class HyperparameterSearch(IHyperparameterSearch, ABC):
             self._search_history[self._DURATION].append(duration)
             
             common_keys = set(self._search_history.keys()).intersection(set(params.keys()))
-            only_history_keys = set(self._search_history.keys()).difference(set(params.keys())).difference({self._SCORE})
+            only_history_keys = set(self._search_history.keys()).difference(set(params.keys())).difference({self._SCORE, self._DURATION})
             only_params_keys = set(params.keys()).difference(set(self._search_history.keys()))
             
             for key in common_keys:

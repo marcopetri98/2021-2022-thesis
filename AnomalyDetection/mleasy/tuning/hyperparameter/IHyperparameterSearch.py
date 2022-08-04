@@ -14,8 +14,8 @@ class IHyperparameterSearch(ABC):
 	@abc.abstractmethod
 	def search(self, x,
 			   y,
-			   objective_function: Callable[[np.ndarray,
-											 np.ndarray,
+			   objective_function: Callable[[object | np.ndarray,
+											 object | np.ndarray,
 											 np.ndarray,
 											 np.ndarray,
 											 dict], float],

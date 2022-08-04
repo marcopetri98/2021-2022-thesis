@@ -63,7 +63,7 @@ class GaussianProcessesSearch(HyperparameterSearch):
 		
 		checkpoint_saver = CheckpointSaver(file_path + ".pkl", compress=9)
 
-		callbacks = [checkpoint_saver, self._gaussian_history_callback]
+		callbacks = [checkpoint_saver]
 		if "callback" in self.gp_kwargs.keys():
 			callbacks.append(self.gp_kwargs["callback"])
 			del self.gp_kwargs["callback"]
@@ -97,6 +97,9 @@ class GaussianProcessesSearch(HyperparameterSearch):
 				print("Do you really want to overwrite it (you will lose it)? [y/n]: ", end="")
 				response = input()
 				if response.lower() == "n" or response.lower() == "no":
+					self.__run_opt_verbose = False
+					self.__minimized_objective = None
+					self.__config_saver = None
 					raise StopIteration("Stop")
 				
 			results = skopt.gp_minimize(self._gaussian_objective,
@@ -109,20 +112,6 @@ class GaussianProcessesSearch(HyperparameterSearch):
 		self.__config_saver = None
 
 		return results
-
-	def _gaussian_history_callback(self, res: OptimizeResult) -> None:
-		"""Saves the history after the evaluation of the objective.
-		
-		Parameters
-		----------
-		res : OptimizeResult
-			The current results of the search passed by skopt.
-
-		Returns
-		-------
-		None
-		"""
-		self.__config_saver(search_history=self._search_history)
 
 	def _gaussian_objective(self, args: list) -> float:
 		"""Respond to a call with the parameters chosen by the Gaussian Process.
@@ -144,6 +133,7 @@ class GaussianProcessesSearch(HyperparameterSearch):
 		duration = time.time() - start_time
 		converted_args = self._convert_args(args)
 		self._add_search_entry(score, duration, *converted_args)
+		self.__config_saver(search_history=self._search_history)
 		return score
 	
 	def _convert_args(self, args: list) -> list:

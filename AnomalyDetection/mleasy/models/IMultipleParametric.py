@@ -14,17 +14,21 @@ class IMultipleParametric(IParametric):
     """
     
     @abc.abstractmethod
-    def fit_multiple(self, x, y = None, *args, **kwargs) -> None:
+    def fit_multiple(self, x: list, y: list = None, *args, **kwargs) -> None:
         """Fits the model to the given training data.
 		
 		Parameters
 		----------
-		x : array-like of shape (n_sets, n_samples, n_features)
-			The training data representing containing the features.
+		x : list
+			The training data representing containing the features. It must be
+			a list of array-like objects with shape (n_samples, n_features).
+			Otherwise an exception will be triggered.
 
-		y : array-like of shape (n_sets, n_samples, n_label_features), default=None
+		y : list, default=None
 			The target for the training data which may be used by either
-			classification or regression models.
+			classification or regression models. It must be a list of array-like
+			objects with shape (n_samples, n_features). Otherwise an exception
+			will be triggered.
 			
 		args
 			Not used, present to allow multiple inheritance and signature change.
