@@ -265,7 +265,7 @@ match ALGORITHM:
 		model = LSTMAutoencoder(window=AUTOENCODER_WINDOW,
                                 max_epochs=500,
                                 batch_size=32,
-                                folder_save_path="../data/nn_models/custom/",
+                                folder_save_path="data/nn_models/custom/",
                                 #distribution="truncated_gaussian",
                                 extend_not_multiple=True,
                                 test_overlapping=True,
