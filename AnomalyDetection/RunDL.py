@@ -6,16 +6,16 @@ import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from models.time_series.anomaly.deep_learning.BraeiCNN import BraeiCNN
-from models.time_series.anomaly.deep_learning.BraeiCNNBatch import BraeiCNNBatch
-from models.time_series.anomaly.deep_learning.BraeiDenseAutoencoder import BraeiDenseAutoencoder
-from models.time_series.anomaly.deep_learning.BraeiGRU import BraeiGRU
-from models.time_series.anomaly.deep_learning.BraeiLSTM import BraeiLSTM
-from models.time_series.anomaly.deep_learning.CNNAutoencoder import CNNAutoencoder
-from models.time_series.anomaly.deep_learning.GRUAutoencoder import GRUAutoencoder
-from models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
-from reader.time_series.NABReader import NABReader
-from visualizer.Viewer import plot_time_series_forecast, plot_time_series_with_predicitons_bars, get_bars_indices_on_test_df
+from mleasy.models.time_series.anomaly import BraeiCNN
+from mleasy.models.time_series.anomaly import BraeiCNNBatch
+from mleasy.models.time_series.anomaly.deep_learning.BraeiDenseAutoencoder import BraeiDenseAutoencoder
+from mleasy.models.time_series.anomaly import BraeiGRU
+from mleasy.models.time_series.anomaly.deep_learning.BraeiLSTM import BraeiLSTM
+from mleasy.models.time_series.anomaly import CNNAutoencoder
+from mleasy.models.time_series.anomaly.deep_learning.GRUAutoencoder import GRUAutoencoder
+from mleasy.models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
+from mleasy.reader.time_series.NABReader import NABReader
+from mleasy.visualizer.Viewer import plot_time_series_forecast, plot_time_series_with_predicitons_bars, get_bars_indices_on_test_df
 
 ALGORITHM = "cnn"
 

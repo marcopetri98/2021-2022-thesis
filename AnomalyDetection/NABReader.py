@@ -1,4 +1,4 @@
-from reader.time_series.NABReader import NABReader
+from mleasy.reader.time_series.NABReader import NABReader
 
 DATASET_PATH = "data/dataset/"
 DATASET = "ambient_temperature_system_failure.csv"

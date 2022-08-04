@@ -4,18 +4,18 @@ from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-import visualizer.Viewer as vw
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyKMeans import \
+from mleasy import visualizer as vw
+from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyKMeans import \
 	TimeSeriesAnomalyKMeans
-from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import TimeSeriesAnomalyARIMA
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyDBSCAN import TimeSeriesAnomalyDBSCAN
-from models.time_series.anomaly.statistical.TimeSeriesAnomalyES import TimeSeriesAnomalyES
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVM import TimeSeriesAnomalyOSVM
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVMPhase import TimeSeriesAnomalyOSVMPhase
-from models.time_series.anomaly.statistical.TimeSeriesAnomalySES import TimeSeriesAnomalySES
-from reader.MissingStrategy import MissingStrategy
+from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import TimeSeriesAnomalyARIMA
+from mleasy.models.time_series.anomaly import TimeSeriesAnomalyDBSCAN
+from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyES import TimeSeriesAnomalyES
+from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
+from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
+from mleasy.models.time_series.anomaly import TimeSeriesAnomalyOSVM
+from mleasy.models.time_series.anomaly import TimeSeriesAnomalyOSVMPhase
+from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalySES import TimeSeriesAnomalySES
+from mleasy.reader.MissingStrategy import MissingStrategy
 
 #################################
 #								#
@@ -24,7 +24,7 @@ from reader.MissingStrategy import MissingStrategy
 #								#
 #								#
 #################################
-from reader.time_series.ODINTSReader import ODINTSReader
+from mleasy.reader.time_series.ODINTSReader import ODINTSReader
 
 ALGORITHM = "AR"
 

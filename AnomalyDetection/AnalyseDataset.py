@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from analysis import TSDatasetAnalyser, StationarityTest
+from mleasy.analysis import TSDatasetAnalyser, StationarityTest
 
 MATPLOT_PRINT = True
 USE_STL = False

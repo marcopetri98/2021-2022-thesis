@@ -8,16 +8,16 @@ from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
 from skopt.space import Categorical
 
-from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
+from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
     TimeSeriesAnomalyARIMA
-from reader.time_series.ODINTSReader import ODINTSReader
-from tuning.hyperparameter.TimeSeriesGridSearch import TimeSeriesGridSearch
+from mleasy.reader.time_series.ODINTSReader import ODINTSReader
+from mleasy.tuning.hyperparameter.TimeSeriesGridSearch import TimeSeriesGridSearch
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
 
 # ODIN TS
-from utils.printing import print_warning
+from mleasy.utils import print_warning
 
 ANOMALIES_PREFIX = "anomalies_"
 

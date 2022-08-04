@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn import metrics
 from sklearn.metrics import precision_recall_curve, roc_auc_score
 
-import visualizer.Viewer as vw
+from mleasy import visualizer as vw
 
 
 def compute_metrics(true_labels: np.ndarray,

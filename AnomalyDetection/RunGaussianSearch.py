@@ -4,27 +4,27 @@ from typing import Tuple
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
-from sklearn.metrics import roc_auc_score, f1_score
+from sklearn.metrics import f1_score
 from sklearn.preprocessing import StandardScaler
-from skopt.space import Integer, Categorical
+from skopt.space import Categorical
 
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import \
+from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import \
     TimeSeriesAnomalyIForest
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import \
+from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import \
     TimeSeriesAnomalyLOF
-from models.time_series.anomaly.machine_learning.TimeSeriesAnomalyOSVM import \
+from mleasy.models.time_series.anomaly import \
     TimeSeriesAnomalyOSVM
-from models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
+from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
     TimeSeriesAnomalyARIMA
-from reader.time_series.ODINTSReader import ODINTSReader
-from tuning.hyperparameter.GaussianProcessesSearch import \
+from mleasy.reader.time_series.ODINTSReader import ODINTSReader
+from mleasy.tuning import \
     GaussianProcessesSearch
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
 
 # ODIN TS
-from utils.printing import print_warning, print_step
+from mleasy.utils import print_warning, print_step
 
 ANOMALIES_PREFIX = "anomalies_"
 
