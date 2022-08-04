@@ -1,3 +1,4 @@
+import time
 from typing import Callable
 
 import numpy as np
@@ -5,8 +6,7 @@ from skopt.space import Categorical, Integer
 
 from mleasy.utils.printing import print_step, print_warning
 from mleasy.tuning.hyperparameter.HyperparameterSearch import HyperparameterSearch
-from mleasy.tuning.hyperparameter.HyperparameterSearchSaver import \
-	HyperparameterSearchSaver
+from mleasy.tuning.hyperparameter.HyperparameterSearchSaver import HyperparameterSearchSaver
 
 
 class TimeSeriesGridSearch(HyperparameterSearch):
@@ -22,11 +22,13 @@ class TimeSeriesGridSearch(HyperparameterSearch):
 				 model_folder_path: str,
 				 search_filename: str,
 				 cross_val_generator: object = None,
+                 train_validation_couples: bool = False,
 				 load_checkpoint: bool = False):
 		super().__init__(parameter_space=parameter_space,
 						 model_folder_path=model_folder_path,
 						 search_filename=search_filename,
-						 cross_val_generator=cross_val_generator)
+						 cross_val_generator=cross_val_generator,
+						 train_validation_couples=train_validation_couples)
 		
 		self.load_checkpoint = load_checkpoint
 		self.tried_configs = {}
@@ -123,10 +125,12 @@ class TimeSeriesGridSearch(HyperparameterSearch):
 			
 			# If the configuration has not been tried yet, objective is called
 			if not self._find_history_entry(*config):
+				start_time = time.time()
 				score = self._objective_call(objective_function,
 											 verbose,
 											 *config)
-				self._add_search_entry(score, *config)
+				duration = time.time() - start_time
+				self._add_search_entry(score, duration, *config)
 				
 				if callbacks is not None:
 					for callback in callbacks:

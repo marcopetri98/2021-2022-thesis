@@ -12,12 +12,12 @@ from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest
     TimeSeriesAnomalyIForest
 from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import \
     TimeSeriesAnomalyLOF
-from mleasy.models.time_series.anomaly import \
+from mleasy.models.time_series.anomaly.machine_learning import \
     TimeSeriesAnomalyOSVM
 from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
     TimeSeriesAnomalyARIMA
 from mleasy.reader.time_series.ODINTSReader import ODINTSReader
-from mleasy.tuning import \
+from mleasy.tuning.hyperparameter import \
     GaussianProcessesSearch
 
 # DATASET 1: ambient_temperature_system_failure

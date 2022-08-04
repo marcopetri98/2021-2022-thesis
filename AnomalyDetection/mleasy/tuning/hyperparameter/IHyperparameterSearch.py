@@ -34,13 +34,22 @@ class IHyperparameterSearch(ABC):
 		
 		Parameters
 		----------
-		x : array-like of shape (n_samples, n_features)
+		x : array-like of shape (n_samples, n_features) or list
 			Array-like containing data over which to perform the search of the
-			hyperparameters.
+			hyperparameters. If it is expressed as `list` it represents the
+			values of the training to pass to the objective function. In that
+			case, it must have the same length of y. Each element of the list
+			must be an iterable (such as `Tuple`) in which the first element is
+			the training x and the second element is the testing x.
 		
-		y : array-like of shape (n_samples, n_target)
+		y : array-like of shape (n_samples, n_target) or list
 			Array-like containing targets of the data on which to perform the
-			search of the hyperparameters.
+			search of the hyperparameters. If it is expressed as `list` it
+			represents the values of the training to pass to the objective
+			function. In that case, it must have the same length of y. Each
+			element of the list must be an iterable (such as `Tuple`) in which
+			the first element are the training labels and the second element are
+			the testing labels.
 		
 		objective_function : Callable
 			It is a function training the model and evaluating its performances.

@@ -1,4 +1,5 @@
 from .IDataReader import IDataReader
+from .IDataMultipleReader import IDataMultipleReader
 from .IDataSupervised import IDataSupervised
 from .IDataUnsupervised import IDataUnsupervised
 from .IDataTrainTestSplitter import IDataTrainTestSplitter

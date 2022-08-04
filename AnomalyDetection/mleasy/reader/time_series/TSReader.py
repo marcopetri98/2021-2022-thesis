@@ -22,8 +22,6 @@ class TSReader(IDataReader,
     def __init__(self):
         super().__init__()
         
-        self.path : str = ""
-        self.format : str = ""
         self.dataset : pd.DataFrame = None
         self.train_frame : pd.DataFrame = None
         self.valid_frame : pd.DataFrame = None
@@ -42,14 +40,9 @@ class TSReader(IDataReader,
         
         if verbose:
             print_header("Start reading dataset")
-        
-        self.path = path
-        self.format = file_format
-        
-        if verbose:
             print_step("Start to read csv using pandas")
         
-        self.dataset = pd.read_csv(self.path)
+        self.dataset = pd.read_csv(path)
         
         if verbose:
             print_step("Ended pandas reading")
