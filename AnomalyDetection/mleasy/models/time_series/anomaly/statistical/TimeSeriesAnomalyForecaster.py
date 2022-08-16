@@ -117,7 +117,7 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 		
 		return copy(self._fitted_model)
 	
-	def classify(self, X,
+	def classify(self, x,
 				 previous=None,
 				 verbose: bool = True,
 				 *args,

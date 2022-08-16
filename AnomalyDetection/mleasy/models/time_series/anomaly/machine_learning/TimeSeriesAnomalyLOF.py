@@ -59,10 +59,10 @@ class TimeSeriesAnomalyLOF(TSAMultipleParametric):
 			check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().anomaly_score(x)
 	
-	def classify(self, X, *args, **kwargs) -> np.ndarray:
+	def classify(self, x, *args, **kwargs) -> np.ndarray:
 		if self.novelty:
 			check_not_default_attributes(self, {"_wrapped_model": None})
-		return super().classify(X)
+		return super().classify(x)
 	
 	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		# If the model is used as novelty it directly predicts

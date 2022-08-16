@@ -54,9 +54,9 @@ class TimeSeriesAnomalyOSVM(TSAMultipleParametric):
 		check_not_default_attributes(self, {"_wrapped_model": None})
 		return super().anomaly_score(x)
 	
-	def classify(self, X, *args, **kwargs) -> np.ndarray:
+	def classify(self, x, *args, **kwargs) -> np.ndarray:
 		check_not_default_attributes(self, {"_wrapped_model": None})
-		return super().classify(X)
+		return super().classify(x)
 
 	def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
 		window_anomalies = self._wrapped_model.predict(vector_data) * -1

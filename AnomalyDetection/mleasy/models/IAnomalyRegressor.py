@@ -34,3 +34,7 @@ class IAnomalyRegressor(IRegressor):
 			The scores of the points.
 		"""
 		pass
+	
+	def regress(self, x, *args, **kwargs) -> np.ndarray:
+		"""Proxy for anomaly_score"""
+		return self.anomaly_score(x, *args, **kwargs)

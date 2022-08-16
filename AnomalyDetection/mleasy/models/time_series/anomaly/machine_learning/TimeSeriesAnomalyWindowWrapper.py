@@ -52,10 +52,10 @@ class TimeSeriesAnomalyWindowWrapper(TimeSeriesAnomalyWindow, ITimeSeriesAnomaly
 												   windows_per_point)
 		return anomaly_scores
 	
-	def classify(self, X, *args, **kwargs) -> np.ndarray:
+	def classify(self, x, *args, **kwargs) -> np.ndarray:
 		# Input validation
-		check_array(X)
-		X = np.array(X)
+		check_array(x)
+		X = np.array(x)
 		
 		# Projects the time series onto a vector space
 		x_new, windows_per_point = self._project_time_series(X)

@@ -78,8 +78,8 @@ class TimeSeriesAnomalyOSVMPhase(TimeSeriesAnomalyOSVM):
 			super().fit(x, y)
 			self.models.append(self._wrapped_model)
 	
-	def classify(self, X, *args, **kwargs) -> np.ndarray:
-		anomaly_votes = np.zeros(X.shape[0])
+	def classify(self, x, *args, **kwargs) -> np.ndarray:
+		anomaly_votes = np.zeros(x.shape[0])
 		for i in range(len(self.windows)):
 			self.window = self.windows[i]
 			self._wrapped_model = self.models[i]

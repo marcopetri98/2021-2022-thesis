@@ -24,8 +24,14 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 	scaling: {"none", "minmax"}, default="minmax"
 		The scaling method to scale the anomaly scores.
 
-	scoring: {"average"}, default="average"
-		The scoring method used compute the anomaly scores.
+	scoring: {"centre", "min", "max", "average"}, default="average"
+		The scoring method used compute the anomaly scores. When "centre" the
+		score of a point is computed as the score of the window centred on that
+		point (i.e., windows must be odd), if there is no window centred on the
+		point the score is NaN. If "min" the score is the minimum anomaly score
+		of the window that contains the point. If "max" the score is the maximum
+		anomaly score of the window that contains the point. If "average" the
+		score is the average score of all windows containing the point.
 
 	classification: {"voting", "points_score"}, default="voting"
 		It defines the way in which a point is declared as anomaly. With voting,
@@ -40,9 +46,9 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 	anomaly_portion: float, default=0.01
 		The percentage of anomaly points in the dataset.
 	"""
-	ACCEPTED_SCORING_METHODS = ["average"]
+	ACCEPTED_SCORING_METHODS = ["left", "centre", "right", "min", "max", "average"]
 	ACCEPTED_SCALING_METHODS = ["none", "minmax"]
-	ACCEPTED_LABELLING_METHODS = ["voting", "points_score"]
+	ACCEPTED_LABELLING_METHODS = ["left", "centre", "right", "voting", "majority_voting", "points_score"]
 	
 	def __init__(self, window: int = 5,
 				 stride: int = 1,
@@ -58,7 +64,7 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 		self.scaling = scaling
 		self.scoring = scoring
 		self.classification = classification
-		self.threshold = threshold
+		self.threshold = threshold if threshold is not None else 0.5
 		self.anomaly_portion = anomaly_portion
 		
 		self.__check_parameters()
@@ -103,17 +109,49 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 
 		window_scores = np.array(window_scores)
 		windows_per_point = np.array(windows_per_point)
-
-		# Compute score of each point
+		
 		scores = np.zeros(windows_per_point.shape[0])
-		for i in range(window_scores.shape[0]):
-			idx = i * self.stride
-			scores[idx:idx + self.window] += window_scores[i]
+		
+		# Compute score of each point
+		if self.scoring in ["min", "max"]:
+			scores_list = [[]] * scores.shape[0]
+			for i in range(window_scores.shape[0]):
+				idx = i * self.stride
+				for j in range(idx, idx + self.window):
+					scores_list[idx].append(window_scores[i])
+					
+			for i in range(scores.shape[0]):
+				if self.scoring == "min":
+					scores[i] = min(scores_list[i])
+				else:
+					scores[i] = max(scores_list[i])
+		
+		elif self.scoring == "average":
+			for i in range(window_scores.shape[0]):
+				idx = i * self.stride
+				scores[idx:idx + self.window] += window_scores[i]
+			scores = scores / windows_per_point
+		
+		elif self.scoring == "left":
+			scores[:] = np.nan
+			for i in range(window_scores.shape[0]):
+				idx = i * self.stride
+				scores[idx] = window_scores[i]
+				
+		elif self.scoring == "right":
+			scores[:] = np.nan
+			for i in range(window_scores.shape[0]):
+				idx = i * self.stride
+				scores[idx + self.window - 1] = window_scores[i]
+				
+		elif self.scoring == "centre":
+			scores[:] = np.nan
+			half_window = (self.window - 1) / 2
+			for i in range(window_scores.shape[0]):
+				idx = i * self.stride
+				scores[idx + half_window] = window_scores[i]
 
-		match self.scoring:
-			case "average":
-				scores = scores / windows_per_point
-
+		# Scale the scores if requested
 		match self.scaling:
 			case "minmax":
 				# Min-max normalization
@@ -134,27 +172,40 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 		threshold = self.threshold
 		labels = np.zeros(windows_per_point.shape[0])
 		
-		match self.classification:
-			case "voting":
-				# Anomalies are computed by voting of window anomalies
-				for i in range(window_labels.shape[0]):
-					if window_labels[i] == 1:
-						idx = i * self.stride
-						labels[idx:idx + self.window] += 1
-				labels = labels / windows_per_point
+		if self.classification in ["voting", "majority_voting"]:
+			# Anomalies are computed by voting of window anomalies
+			for i in range(window_labels.shape[0]):
+				if window_labels[i] == 1:
+					idx = i * self.stride
+					labels[idx:idx + self.window] += 1
+			labels = labels / windows_per_point
 
-				if threshold is None:
-					threshold = 0.5
+			tau = 0.5 if self.classification == "majority_voting" else threshold
+			true_anomalies = np.argwhere(labels > tau)
+			labels = np.zeros(labels.shape)
+			labels[true_anomalies] = 1
 
-				true_anomalies = np.argwhere(labels > threshold)
-				labels = np.zeros(labels.shape)
-				labels[true_anomalies] = 1
-
-			case "points_score":
-				if threshold is None:
-					threshold = 0.5
-
-				labels[np.argwhere(point_scores > threshold)] = 1
+		elif self.classification == "points_score":
+			labels[np.argwhere(point_scores > threshold)] = 1
+		
+		elif self.classification == "left":
+			labels[:] = np.nan
+			for i in range(window_labels.shape[0]):
+				idx = i * self.stride
+				labels[idx] = window_labels[i]
+				
+		elif self.classification == "right":
+			labels[:] = np.nan
+			for i in range(window_labels.shape[0]):
+				idx = i * self.stride
+				labels[idx + self.window - 1] = window_labels[i]
+				
+		elif self.classification == "centre":
+			labels[:] = np.nan
+			half_window = (self.window - 1) / 2
+			for i in range(window_labels.shape[0]):
+				idx = i * self.stride
+				labels[idx + half_window] = window_labels[i]
 
 		return labels, threshold
 
@@ -180,3 +231,13 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 			raise ValueError("Threshold must be None or 0 <= threshold <= 1")
 		elif not 0 < self.anomaly_portion <= 0.5:
 			raise ValueError("The contamination must be inside (0,0.5]")
+		
+		if self.scoring in ["left", "centre", "right"] and self.window % 2 == 0:
+			raise ValueError("If scoring is {}, the window must be odd".format(self.scoring))
+		elif self.scoring in ["left", "centre", "right"] and self.stride != 1:
+			raise ValueError("If scoring is {}, the stride must be 1, otherwise points will be missed".format(self.scoring))
+		
+		if self.classification in ["left", "centre", "right"] and self.window % 2 == 0:
+			raise ValueError("If classification is {}, the window must be odd".format(self.classification))
+		elif self.classification in ["left", "centre", "right"] and self.stride != 1:
+			raise ValueError("If classification is {}, the stride must be 1, otherwise points will be missed".format(self.classification))
