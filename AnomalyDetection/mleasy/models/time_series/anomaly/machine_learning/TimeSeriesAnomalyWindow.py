@@ -8,6 +8,7 @@ from sklearn.utils import check_array
 from mleasy.input_validation.array_checks import check_x_y_smaller_1d
 from mleasy.models.BaseModel import BaseModel
 from mleasy.models.time_series.anomaly.machine_learning.ITimeSeriesAnomalyWindow import ITimeSeriesAnomalyWindow
+from mleasy.utils import print_warning
 
 
 class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
@@ -24,7 +25,7 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 	scaling: {"none", "minmax"}, default="minmax"
 		The scaling method to scale the anomaly scores.
 
-	scoring: {"centre", "min", "max", "average"}, default="average"
+	scoring: {"left", "centre", "right", "min", "max", "average"}, default="average"
 		The scoring method used compute the anomaly scores. When "centre" the
 		score of a point is computed as the score of the window centred on that
 		point (i.e., windows must be odd), if there is no window centred on the
@@ -33,15 +34,16 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 		anomaly score of the window that contains the point. If "average" the
 		score is the average score of all windows containing the point.
 
-	classification: {"voting", "points_score"}, default="voting"
+	classification: {"left", "centre", "right", "voting", "majority_voting", "points_score"}, default="voting"
 		It defines the way in which a point is declared as anomaly. With voting,
-		a point is an anomaly if at least `anomaly_threshold` percentage of
-		windows containing the point agree in saying it is an anomaly. With
+		a point is an anomaly if at least `threshold` percentage of windows
+		containing the point agree in saying it is an anomaly. With
 		points_score, the points are considered anomalies if their score is
 		above anomaly_threshold.
 
 	threshold: float, default=None
-		The threshold used to compute if a point is an anomaly or not.
+		The threshold used to compute if a point is an anomaly or not. In case
+		classification is majority_voting, left, centre or right it is ignored.
 
 	anomaly_portion: float, default=0.01
 		The percentage of anomaly points in the dataset.
@@ -70,7 +72,7 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 		self.__check_parameters()
 	
 	def set_params(self, **params) -> None:
-		super().set_params()
+		super().set_params(**params)
 		self.__check_parameters()
 	
 	def _project_time_series(self, time_series: np.ndarray) -> Tuple[np.ndarray,
@@ -85,8 +87,8 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 			raise ValueError("Only univariate time series is currently "
 							 "supported.")
 		elif (data.shape[0] - self.window) % self.stride != 0:
-			raise ValueError("Data.shape[0] - window must be a multiple of "
-							 "stride to build the spatial data.")
+			print_warning("Stride does not divide data.shape[0] - window, "
+						  "points not included at the end will be discarded.")
 
 		# Number of times a point is considered in a window
 		num_windows = np.zeros(data.shape[0])
@@ -114,11 +116,14 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 		
 		# Compute score of each point
 		if self.scoring in ["min", "max"]:
-			scores_list = [[]] * scores.shape[0]
+			scores_list = []
 			for i in range(window_scores.shape[0]):
 				idx = i * self.stride
 				for j in range(idx, idx + self.window):
-					scores_list[idx].append(window_scores[i])
+					try:
+						scores_list[j].append(window_scores[i])
+					except IndexError:
+						scores_list.append([window_scores[i]])
 					
 			for i in range(scores.shape[0]):
 				if self.scoring == "min":
@@ -146,7 +151,7 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 				
 		elif self.scoring == "centre":
 			scores[:] = np.nan
-			half_window = (self.window - 1) / 2
+			half_window = int((self.window - 1) / 2)
 			for i in range(window_scores.shape[0]):
 				idx = i * self.stride
 				scores[idx + half_window] = window_scores[i]
@@ -202,7 +207,7 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 				
 		elif self.classification == "centre":
 			labels[:] = np.nan
-			half_window = (self.window - 1) / 2
+			half_window = int((self.window - 1) / 2)
 			for i in range(window_labels.shape[0]):
 				idx = i * self.stride
 				labels[idx + half_window] = window_labels[i]
@@ -227,17 +232,17 @@ class TimeSeriesAnomalyWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 							 str(self.ACCEPTED_LABELLING_METHODS))
 		elif self.window <= 0 or self.stride <= 0:
 			raise ValueError("Stride and window must be positive.")
-		elif self.threshold is not None and not 0 <= self.threshold <= 1:
+		elif self.threshold is not None and self.classification == "voting" and not 0 <= self.threshold <= 1:
 			raise ValueError("Threshold must be None or 0 <= threshold <= 1")
 		elif not 0 < self.anomaly_portion <= 0.5:
 			raise ValueError("The contamination must be inside (0,0.5]")
 		
-		if self.scoring in ["left", "centre", "right"] and self.window % 2 == 0:
+		if self.scoring in ["centre"] and self.window % 2 == 0:
 			raise ValueError("If scoring is {}, the window must be odd".format(self.scoring))
 		elif self.scoring in ["left", "centre", "right"] and self.stride != 1:
 			raise ValueError("If scoring is {}, the stride must be 1, otherwise points will be missed".format(self.scoring))
 		
-		if self.classification in ["left", "centre", "right"] and self.window % 2 == 0:
+		if self.classification in ["centre"] and self.window % 2 == 0:
 			raise ValueError("If classification is {}, the window must be odd".format(self.classification))
 		elif self.classification in ["left", "centre", "right"] and self.stride != 1:
 			raise ValueError("If classification is {}, the stride must be 1, otherwise points will be missed".format(self.classification))

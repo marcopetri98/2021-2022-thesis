@@ -12,7 +12,7 @@ class BaseModel(object):
 
 		Parameters
 		----------
-		params : dict
+		params
 			The dictionary of the parameters to modify.
 
 		Returns
