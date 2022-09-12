@@ -132,21 +132,21 @@ class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 			If True, detailed printing of the process is performed. Otherwise,
 			synthetic printing is performed.
 		"""
-		check_array(X)
-		X = np.array(X)
+		check_array(x)
+		x = np.array(x)
 		previous = np.array(previous)
 		
 		if verbose:
 			print_header("Start to classify points")
 		
 		# Input validated in compute errors
-		errors = self._compute_errors(previous, X, verbose=verbose)
+		errors = self._compute_errors(previous, x, verbose=verbose)
 		
 		if verbose:
 			print_step("Evaluate point on their prediction error")
 		
 		anomalies = np.argwhere(errors >= self._threshold)
-		pred_labels = np.zeros(X.shape[0], dtype=np.intc)
+		pred_labels = np.zeros(x.shape[0], dtype=np.intc)
 		pred_labels[anomalies] = 1
 		
 		if verbose:
