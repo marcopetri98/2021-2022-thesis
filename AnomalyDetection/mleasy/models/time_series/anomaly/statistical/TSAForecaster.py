@@ -12,7 +12,7 @@ from mleasy.models.time_series.anomaly.ITimeSeriesAnomaly import ITimeSeriesAnom
 from mleasy.utils.printing import print_step, print_header
 
 
-class TimeSeriesAnomalyForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
+class TSAForecaster(ITimeSeriesAnomaly, IParametric, BaseModel):
 	"""Abstract class implementing an anomaly detector based on forecasting.
 
 	Parameters

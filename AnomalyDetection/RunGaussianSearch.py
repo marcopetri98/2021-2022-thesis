@@ -14,8 +14,8 @@ from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF imp
     TimeSeriesAnomalyLOF
 from mleasy.models.time_series.anomaly.machine_learning import \
     TimeSeriesAnomalyOSVM
-from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
-    TimeSeriesAnomalyARIMA
+from mleasy.models.time_series.anomaly.statistical.TSAARIMA import \
+    TSAARIMA
 from mleasy.reader.time_series.ODINTSReader import ODINTSReader
 from mleasy.tuning.hyperparameter import \
     GaussianProcessesSearch
@@ -168,7 +168,7 @@ def evaluate_time_series(train_data: np.ndarray,
 
     try:
         if MODEL == "ARIMA":
-            model_ = TimeSeriesAnomalyARIMA(endog=train_data, forecasting_steps=PREDICTED_STEPS)
+            model_ = TSAARIMA(endog=train_data, forecasting_steps=PREDICTED_STEPS)
             parameters = dict(parameters)
             parameters["order"] = (parameters["ar_order"], parameters["diff_order"], parameters["ma_order"])
             del parameters["ar_order"]

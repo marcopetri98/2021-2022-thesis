@@ -7,14 +7,14 @@ from Metrics import compute_metrics, make_metric_plots
 from mleasy import visualizer as vw
 from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyKMeans import \
 	TimeSeriesAnomalyKMeans
-from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import TimeSeriesAnomalyARIMA
+from mleasy.models.time_series.anomaly.statistical.TSAARIMA import TSAARIMA
 from mleasy.models.time_series.anomaly import TimeSeriesAnomalyDBSCAN
-from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyES import TimeSeriesAnomalyES
+from mleasy.models.time_series.anomaly.statistical.TSAES import TSAES
 from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
 from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
 from mleasy.models.time_series.anomaly import TimeSeriesAnomalyOSVM
 from mleasy.models.time_series.anomaly import TimeSeriesAnomalyOSVMPhase
-from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalySES import TimeSeriesAnomalySES
+from mleasy.models.time_series.anomaly.statistical.TSASES import TSASES
 from mleasy.reader.MissingStrategy import MissingStrategy
 
 #################################
@@ -231,34 +231,34 @@ elif SELF_SUPERVISED and ALGORITHM == "iforest":
 	model.fit(train)
 	model.threshold = THRESHOLD
 elif SELF_SUPERVISED and ALGORITHM == "AR":
-	model = TimeSeriesAnomalyARIMA(scoring="difference",
-								   endog=train,
-								   order=(1, 0, 0),
-								   seasonal_order=(0, 0, 0, 0),
-								   trend="n")
+	model = TSAARIMA(scoring="difference",
+                     endog=train,
+                     order=(1, 0, 0),
+                     seasonal_order=(0, 0, 0, 0),
+                     trend="n")
 	model.fit()
 	model._threshold = THRESHOLD
 elif SELF_SUPERVISED and ALGORITHM == "MA":
-	model = TimeSeriesAnomalyARIMA(scoring="difference",
-								   endog=train,
-								   order=(0, 0, 8),
-								   seasonal_order=(0, 0, 0, 0),
-								   trend="n")
+	model = TSAARIMA(scoring="difference",
+                     endog=train,
+                     order=(0, 0, 8),
+                     seasonal_order=(0, 0, 0, 0),
+                     trend="n")
 	model.fit(fit_params={"method":"innovations_mle",
 						  "gls":True})
 elif SELF_SUPERVISED and ALGORITHM == "ARIMA":
-	model = TimeSeriesAnomalyARIMA(endog=train,
-								   order=(1, 1, 5),
-								   seasonal_order=(0, 0, 0, 0),
-								   perc_quantile=0.98)
+	model = TSAARIMA(endog=train,
+                     order=(1, 1, 5),
+                     seasonal_order=(0, 0, 0, 0),
+                     perc_quantile=0.98)
 	model.fit()
 	model._threshold = THRESHOLD
 elif SELF_SUPERVISED and ALGORITHM == "SES":
-	model = TimeSeriesAnomalySES(ses_params={"endog": train})
+	model = TSASES(ses_params={"endog": train})
 	model.fit(fit_params={"optimized": True,
 						  "use_brute": True})
 elif SELF_SUPERVISED and ALGORITHM == "ES":
-	model = TimeSeriesAnomalyES(es_params={"endog": train,
+	model = TSAES(es_params={"endog": train,
 										   "trend": "add",
 										   "damped_trend": True,
 										   "seasonal": "add",

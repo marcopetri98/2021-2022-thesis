@@ -1,7 +1,7 @@
-from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyES import TimeSeriesAnomalyES
+from mleasy.models.time_series.anomaly.statistical.TSAES import TSAES
 
 
-class TimeSeriesAnomalySES(TimeSeriesAnomalyES):
+class TSASES(TSAES):
 	"""SES model to perform anomaly detection on time series.
 	
 	The SES implemented by statsmodels is the Holt-Winters definition of Simple

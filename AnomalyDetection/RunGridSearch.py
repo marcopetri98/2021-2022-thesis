@@ -8,8 +8,8 @@ from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import StandardScaler
 from skopt.space import Categorical
 
-from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyARIMA import \
-    TimeSeriesAnomalyARIMA
+from mleasy.models.time_series.anomaly.statistical.TSAARIMA import \
+    TSAARIMA
 from mleasy.reader.time_series.ODINTSReader import ODINTSReader
 from mleasy.tuning.hyperparameter.TimeSeriesGridSearch import TimeSeriesGridSearch
 
@@ -169,7 +169,7 @@ def evaluate_time_series(train_data: np.ndarray,
     train_data = train_data[normal_data].reshape(-1, 1)
     
     # ARIMA models evaluation
-    model_ = TimeSeriesAnomalyARIMA(endog=train_data)
+    model_ = TSAARIMA(endog=train_data)
     model_.set_params(**parameters)
     
     try:

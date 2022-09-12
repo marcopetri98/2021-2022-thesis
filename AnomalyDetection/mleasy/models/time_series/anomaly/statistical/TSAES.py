@@ -3,10 +3,10 @@ from copy import copy
 import numpy as np
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyForecaster import TimeSeriesAnomalyForecaster
+from mleasy.models.time_series.anomaly.statistical.TSAForecaster import TSAForecaster
 
 
-class TimeSeriesAnomalyES(TimeSeriesAnomalyForecaster):
+class TSAES(TSAForecaster):
 	"""ES model to perform anomaly detection on time series.
 	
 	When points are predicted using SES, it is important to know that the points

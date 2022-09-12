@@ -3,10 +3,10 @@ from typing import Tuple, Optional, Iterable
 import numpy as np
 from statsmodels.tsa.arima.model import ARIMA, ARIMAResults
 
-from mleasy.models.time_series.anomaly.statistical.TimeSeriesAnomalyForecaster import TimeSeriesAnomalyForecaster
+from mleasy.models.time_series.anomaly.statistical.TSAForecaster import TSAForecaster
 
 
-class TimeSeriesAnomalyARIMA(TimeSeriesAnomalyForecaster):
+class TSAARIMA(TSAForecaster):
 	"""ARIMA model to perform anomaly detection on time series.
 	
 	Notes
