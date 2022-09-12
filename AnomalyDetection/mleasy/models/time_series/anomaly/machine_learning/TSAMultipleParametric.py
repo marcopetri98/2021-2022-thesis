@@ -5,19 +5,19 @@ from sklearn.utils import check_array
 
 from mleasy.input_validation import check_array_general
 from mleasy.models import IMultipleParametric
-from mleasy.models.time_series.anomaly.machine_learning import TimeSeriesAnomalyWindowWrapper
+from mleasy.models.time_series.anomaly.machine_learning import TSAWindowWrapper
 
 
-class TSAMultipleParametric(TimeSeriesAnomalyWindowWrapper, IMultipleParametric, ABC):
+class TSAMultipleParametric(TSAWindowWrapper, IMultipleParametric, ABC):
     """A machine learning AD multiple parametric model."""
-    
+
     def __init__(self, window: int = 5,
-				 stride: int = 1,
-				 scaling: str = "minmax",
-				 scoring: str = "average",
-				 classification: str = "voting",
-				 threshold: float = None,
-				 anomaly_portion: float = 0.01):
+                 stride: int = 1,
+                 scaling: str = "minmax",
+                 scoring: str = "average",
+                 classification: str = "voting",
+                 threshold: float = None,
+                 anomaly_portion: float = 0.01):
         super().__init__(window=window,
                          stride=stride,
                          scaling=scaling,
@@ -29,7 +29,7 @@ class TSAMultipleParametric(TimeSeriesAnomalyWindowWrapper, IMultipleParametric,
     def fit(self, x, y=None, *args, **kwargs) -> None:
         check_array(x)
         x = np.array(x)
-    
+
         x_new, windows_per_point = self._project_time_series(x)
         self._build_wrapped()
         self._wrapped_model.fit(x_new)
@@ -40,7 +40,7 @@ class TSAMultipleParametric(TimeSeriesAnomalyWindowWrapper, IMultipleParametric,
         else:
             for l in x:
                 check_array(l)
-    
+
         x_total = None
         x_new = list()
         windows_per_point = list()
@@ -48,11 +48,11 @@ class TSAMultipleParametric(TimeSeriesAnomalyWindowWrapper, IMultipleParametric,
             ser_new, ser_windows_per_point = self._project_time_series(series)
             x_new.append(ser_new)
             windows_per_point.append(ser_windows_per_point)
-        
+
             if x_total is None:
                 x_total = ser_new
             else:
                 x_total = np.append(x_total, ser_new, axis=0)
-    
+
         self._build_wrapped()
         self._wrapped_model.fit(x_total)

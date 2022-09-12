@@ -5,13 +5,13 @@ from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
 from mleasy import visualizer as vw
-from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyKMeans import \
-	TimeSeriesAnomalyKMeans
+from mleasy.models.time_series.anomaly.machine_learning.TSAKMeans import \
+	TSAKMeans
 from mleasy.models.time_series.anomaly.statistical.TSAARIMA import TSAARIMA
 from mleasy.models.time_series.anomaly import TimeSeriesAnomalyDBSCAN
 from mleasy.models.time_series.anomaly.statistical.TSAES import TSAES
-from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import TimeSeriesAnomalyIForest
-from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import TimeSeriesAnomalyLOF
+from mleasy.models.time_series.anomaly.machine_learning.TSAIsolationForest import TSAIsolationForest
+from mleasy.models.time_series.anomaly.machine_learning.TSALOF import TSALOF
 from mleasy.models.time_series.anomaly import TimeSeriesAnomalyOSVM
 from mleasy.models.time_series.anomaly import TimeSeriesAnomalyOSVMPhase
 from mleasy.models.time_series.anomaly.statistical.TSASES import TSASES
@@ -178,11 +178,11 @@ elif ALL_DATA:
 #								#
 #################################
 if UNSUPERVISED and ALGORITHM == "kmeans":
-	model = TimeSeriesAnomalyKMeans(window=3,
-									classification="points_score",
-									anomaly_portion=0.0003,
-									anomaly_threshold=0.9888,
-									kmeans_params={"n_clusters": 4,
+	model = TSAKMeans(window=3,
+					  classification="points_score",
+					  anomaly_portion=0.0003,
+					  anomaly_threshold=0.9888,
+					  kmeans_params={"n_clusters": 4,
 												   "random_state": 22})
 elif UNSUPERVISED and ALGORITHM == "dbscan":
 	model = TimeSeriesAnomalyDBSCAN(window=3,
@@ -193,17 +193,17 @@ elif UNSUPERVISED and ALGORITHM == "dbscan":
 									classification="voting")
 elif UNSUPERVISED and ALGORITHM == "lof":
 	# Better window=3, neighbors=40
-	model = TimeSeriesAnomalyLOF(window=3,
-								 classification="points_score",
-								 anomaly_portion=0.01,
-								 n_neighbors=100)
+	model = TSALOF(window=3,
+				   classification="points_score",
+				   anomaly_portion=0.01,
+				   n_neighbors=100)
 elif SELF_SUPERVISED and ALGORITHM == "lof":
 	# Better window=3, neighbors=40
-	model = TimeSeriesAnomalyLOF(window=17,
-								 classification="points_score",
-								 scaling="none",
-								 n_neighbors=21,
-								 novelty=True)
+	model = TSALOF(window=17,
+				   classification="points_score",
+				   scaling="none",
+				   n_neighbors=21,
+				   novelty=True)
 	model.fit(train)
 	model.threshold = THRESHOLD
 elif SELF_SUPERVISED and ALGORITHM == "osvm":
@@ -222,12 +222,12 @@ elif SELF_SUPERVISED and ALGORITHM == "phase osvm":
 									   anomaly_portion=0.0015)
 	model.fit(train)
 elif SELF_SUPERVISED and ALGORITHM == "iforest":
-	model = TimeSeriesAnomalyIForest(window=29,
-									 n_estimators=20,
-									 max_samples=210,
-									 #contamination=0.0004,
-									 classification="points_score",
-									 random_state=22)
+	model = TSAIsolationForest(window=29,
+                               n_estimators=20,
+                               max_samples=210,
+                               #contamination=0.0004,
+                               classification="points_score",
+                               random_state=22)
 	model.fit(train)
 	model.threshold = THRESHOLD
 elif SELF_SUPERVISED and ALGORITHM == "AR":

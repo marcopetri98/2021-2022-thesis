@@ -8,12 +8,12 @@ from sklearn.metrics import f1_score
 from sklearn.preprocessing import StandardScaler
 from skopt.space import Categorical
 
-from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyIForest import \
-    TimeSeriesAnomalyIForest
-from mleasy.models.time_series.anomaly.machine_learning.TimeSeriesAnomalyLOF import \
-    TimeSeriesAnomalyLOF
+from mleasy.models.time_series.anomaly.machine_learning.TSAIsolationForest import \
+    TSAIsolationForest
+from mleasy.models.time_series.anomaly.machine_learning.TSALOF import \
+    TSALOF
 from mleasy.models.time_series.anomaly.machine_learning import \
-    TimeSeriesAnomalyOSVM
+    TSAOCSVM
 from mleasy.models.time_series.anomaly.statistical.TSAARIMA import \
     TSAARIMA
 from mleasy.reader.time_series.ODINTSReader import ODINTSReader
@@ -189,10 +189,10 @@ def evaluate_time_series(train_data: np.ndarray,
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             return mae
         elif MODEL == "iforest":
-            model_ = TimeSeriesAnomalyIForest(parameters["window"],
-                                              n_estimators=parameters["n_estimators"],
-                                              max_samples=parameters["max_samples"],
-                                              random_state=22)
+            model_ = TSAIsolationForest(parameters["window"],
+                                        n_estimators=parameters["n_estimators"],
+                                        max_samples=parameters["max_samples"],
+                                        random_state=22)
             model_.fit(train_data, train_labels)
             predictions = model_.anomaly_score(valid_data)
             
@@ -207,10 +207,10 @@ def evaluate_time_series(train_data: np.ndarray,
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             return 1 - best_f1
         elif MODEL == "lof":
-            model_ = TimeSeriesAnomalyLOF(parameters["window"],
-                                          novelty=True,
-                                          n_neighbors=parameters["n_neighbors"],
-                                          scaling="none")
+            model_ = TSALOF(parameters["window"],
+                            novelty=True,
+                            n_neighbors=parameters["n_neighbors"],
+                            scaling="none")
             model_.fit(train_data, train_labels)
             predictions = model_.anomaly_score(valid_data)
             
@@ -242,10 +242,10 @@ def evaluate_time_series(train_data: np.ndarray,
             warnings.filterwarnings("ignore", category=DeprecationWarning)
             return 1 - best_f1
         else:
-            model_ = TimeSeriesAnomalyOSVM(parameters["window"],
-                                           gamma=parameters["gamma"],
-                                           tol=parameters["tol"],
-                                           nu=parameters["nu"])
+            model_ = TSAOCSVM(parameters["window"],
+                              gamma=parameters["gamma"],
+                              tol=parameters["tol"],
+                              nu=parameters["nu"])
             model_.fit(train_data, train_labels)
             predictions = model_.anomaly_score(valid_data)
             
