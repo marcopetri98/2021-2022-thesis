@@ -8,3 +8,9 @@ from .Viewer import plot_confusion_matrix
 from .Viewer import plot_precision_recall_curve
 from .Viewer import plot_univariate_time_series_predictions
 from .Viewer import plot_time_series_with_predicitons_bars
+
+from .bar_plots import bar_plot
+from .bar_plots import bar_class_distribution
+
+from .pie_plots import pie_plot
+from .pie_plots import pie_class_distribution
