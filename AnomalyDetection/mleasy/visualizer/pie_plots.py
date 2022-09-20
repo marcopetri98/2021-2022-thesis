@@ -3,6 +3,7 @@ from typing import Tuple, Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 
 from mleasy.input_validation import check_argument_types
 from mleasy.input_validation import is_matplotlib_color
@@ -15,7 +16,8 @@ def pie_plot(wedges,
              percentage_fmt: str = None,
              percentage_dst: float = 0.6,
              title: str = "",
-             fig_size: Tuple = (8, 8)) -> None:
+             fig_size: Tuple = (8, 8),
+             ax: Axes = None) -> None:
     """Draws a pie plot with the specified parameters.
     
     Parameters
@@ -45,6 +47,10 @@ def pie_plot(wedges,
     
     fig_size : tuple, default=(8,8)
         The dimension of the figure to prompt.
+        
+    ax : Axes, default=None
+        The axis on which to add the plot. If this is not None, the plot will be
+        added to the axes, no new figure will be created and printed.
 
     Returns
     -------
@@ -52,9 +58,9 @@ def pie_plot(wedges,
     """
     wedges = np.array(wedges)
     
-    check_argument_types([labels, colors, radius, percentage_fmt, percentage_dst, title, fig_size],
-                         [[list, None], [list, None], Number, [str, Callable, None], float, str, tuple],
-                         ["labels", "colors", "radius", "percentage_fmt", "percentage_dst", "title", "fig_size"])
+    check_argument_types([labels, colors, radius, percentage_fmt, percentage_dst, title, fig_size, ax],
+                         [[list, None], [list, None], Number, [str, Callable, None], float, str, tuple, [Axes, None]],
+                         ["labels", "colors", "radius", "percentage_fmt", "percentage_dst", "title", "fig_size", "ax"])
 
     # check variable types
     if colors is not None and not is_matplotlib_color(colors):
@@ -69,17 +75,26 @@ def pie_plot(wedges,
         raise ValueError("colors must have the same length of wedges")
     
     # implementation
-    fig = plt.Figure(figsize=fig_size, tight_layout=True)
-    
-    plt.pie(wedges,
-            labels=labels,
-            colors=colors,
-            radius=radius,
-            autopct=percentage_fmt,
-            pctdistance=percentage_dst)
-    plt.title(title)
-    
-    plt.show()
+    if ax is None:
+        fig = plt.figure(figsize=fig_size, tight_layout=True)
+        
+        plt.pie(wedges,
+                labels=labels,
+                colors=colors,
+                radius=radius,
+                autopct=percentage_fmt,
+                pctdistance=percentage_dst)
+        plt.title(title)
+        
+        plt.show()
+    else:
+        ax.pie(wedges,
+               labels=labels,
+               colors=colors,
+               radius=radius,
+               autopct=percentage_fmt,
+               pctdistance=percentage_dst)
+        ax.set_title(title)
 
 # FIXME: too similar to pie_plot, evaluate its removal
 def pie_class_distribution(classes,
@@ -89,7 +104,8 @@ def pie_class_distribution(classes,
                            percentage_fmt: str = None,
                            percentage_dst: float = 0.6,
                            title: str = "",
-                           fig_size: Tuple = (8, 8)) -> None:
+                           fig_size: Tuple = (8, 8),
+                           ax: Axes = None) -> None:
     """Draws a pie plot from the frequencies of classes.
     
     Parameters
@@ -120,6 +136,10 @@ def pie_class_distribution(classes,
     
     fig_size : tuple, default=(8,8)
         The dimension of the figure to prompt.
+        
+    ax : Axes, default=None
+        The axis on which to add the plot. If this is not None, the plot will be
+        added to the axes, no new figure will be created and printed.
 
     Returns
     -------
@@ -127,9 +147,9 @@ def pie_class_distribution(classes,
     """
     classes = np.array(classes)
     
-    check_argument_types([labels, colors, radius, percentage_fmt, percentage_dst, title, fig_size],
-                         [[list, None], [list, None], Number, [str, Callable, None], float, str, tuple],
-                         ["labels", "colors", "radius", "percentage_fmt", "percentage_dst", "title", "fig_size"])
+    check_argument_types([labels, colors, radius, percentage_fmt, percentage_dst, title, fig_size, ax],
+                         [[list, None], [list, None], Number, [str, Callable, None], float, str, tuple, [Axes, None]],
+                         ["labels", "colors", "radius", "percentage_fmt", "percentage_dst", "title", "fig_size", "ax"])
 
     # check variable types
     if colors is not None and not is_matplotlib_color(colors):
@@ -154,4 +174,5 @@ def pie_class_distribution(classes,
              percentage_fmt=percentage_fmt,
              percentage_dst=percentage_dst,
              title=title,
-             fig_size=fig_size)
+             fig_size=fig_size,
+             ax=ax)

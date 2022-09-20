@@ -3,6 +3,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 
 from mleasy.input_validation import check_argument_types
 from mleasy.input_validation import is_matplotlib_color
@@ -18,7 +19,8 @@ def line_plot(x,
               title: str = "",
               y_axis_label: str = "",
               x_axis_label: str = "",
-              fig_size: Tuple = (8, 8)) -> None:
+              fig_size: Tuple = (8, 8),
+              ax: Axes = None) -> None:
     """Creates a line plot from data.
 
     Parameters
@@ -66,6 +68,10 @@ def line_plot(x,
 
     fig_size : tuple, default=(8,8)
         The dimension of the matplotlib figure to be drawn.
+        
+    ax : Axes, default=None
+        The axis on which to add the plot. If this is not None, the plot will be
+        added to the axes, no new figure will be created and printed.
 
     Returns
     -------
@@ -107,9 +113,9 @@ def line_plot(x,
     if x_ticks_labels is not None:
         x_ticks_labels = np.array(x_ticks_labels)
 
-    check_argument_types([x_ticks_rotation, formats, colors, title, y_axis_label, x_axis_label, fig_size],
-                         [Number, [str, list, None], [list, None], str, str, str, tuple],
-                         ["x_ticks_rotation", "formats", "colors", "title", "y_axis_label", "x_axis_label", "fig_size"])
+    check_argument_types([x_ticks_rotation, formats, colors, title, y_axis_label, x_axis_label, fig_size, ax],
+                         [Number, [str, list, None], [list, None], str, str, str, tuple, [Axes, None]],
+                         ["x_ticks_rotation", "formats", "colors", "title", "y_axis_label", "x_axis_label", "fig_size", "ax"])
 
     # check type
     if colors is not None and is_matplotlib_color(colors):
@@ -142,7 +148,28 @@ def line_plot(x,
         raise ValueError("x_ticks_labels must have at most 1 dimension")
 
     # implementation
-    fig = plt.Figure(figsize=fig_size)
+    if ax is None:
+        fig = plt.figure(figsize=fig_size)
+
+    # TODO: evaluate if this can be made top-level
+    def add_line(ind, dep, line_color, line_format, axes):
+        if axes is None:
+            if line_format is not None:
+                plt.plot(ind, dep, line_format, color=line_color)
+            else:
+                plt.plot(ind, dep, color=line_color)
+        else:
+            if line_format is not None:
+                axes.plot(ind, dep, line_format, color=line_color)
+            else:
+                axes.plot(ind, dep, color=line_color)
+
+    # TODO: evaluate if this can be made top-level
+    def add_ticks(loc, label, rotation, axes):
+        if axes is None:
+            plt.xticks(loc, label, rotation=rotation)
+        else:
+            axes.set_xticks(loc, label, rotation=rotation)
 
     # plots all the lines
     if isinstance(x, list):
@@ -155,24 +182,18 @@ def line_plot(x,
             if colors is not None and i < len(colors):
                 line_col = colors[i]
     
-            if line_fmt is not None:
-                plt.plot(var_ind, var_dep, line_fmt, color=line_col)
-            else:
-                plt.plot(var_ind, var_dep, color=line_col)
+            add_line(var_ind, var_dep, line_col, line_fmt, ax)
     else:
-        if formats is not None:
-            plt.plot(x, y, formats, color=colors)
-        else:
-            plt.plot(x, y, color=colors)
+        add_line(x, y, colors, formats, ax)
 
     # put ticks on the x if they are passed to the function
     if x_ticks_loc is not None or x_ticks_labels is not None:
         if x_ticks_loc is not None and x_ticks_labels is not None:
             # both are specified
-            plt.xticks(x_ticks_loc, x_ticks_labels, rotation=x_ticks_rotation)
+            add_ticks(x_ticks_loc, x_ticks_labels, x_ticks_rotation, ax)
         elif x_ticks_loc is not None:
             # loc will also serve as label
-            plt.xticks(x_ticks_loc, x_ticks_loc, rotation=x_ticks_rotation)
+            add_ticks(x_ticks_loc, x_ticks_loc, x_ticks_rotation, ax)
         else:
             # labels must go from the start to the end
             if isinstance(x, list):
@@ -187,11 +208,16 @@ def line_plot(x,
                 start = np.min(x)
                 end = np.max(x)
             x_ticks_loc = np.linspace(start, end, x_ticks_labels.shape[0])
-            plt.xticks(x_ticks_loc, x_ticks_labels, rotation=x_ticks_rotation)
+            add_ticks(x_ticks_loc, x_ticks_labels, x_ticks_rotation, ax)
 
-    plt.title(title)
-    plt.xlabel(x_axis_label)
-    plt.ylabel(y_axis_label)
-    plt.tight_layout()
-
-    plt.show()
+    if ax is None:
+        plt.title(title)
+        plt.xlabel(x_axis_label)
+        plt.ylabel(y_axis_label)
+        plt.tight_layout()
+    
+        plt.show()
+    else:
+        ax.set_title(title)
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)

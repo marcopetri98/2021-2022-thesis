@@ -3,6 +3,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 
 from mleasy.input_validation import check_argument_types
 from mleasy.input_validation import is_matplotlib_color
@@ -16,7 +17,8 @@ def bar_plot(x_pos,
              title: str = "",
              y_axis_label: str = "",
              x_axis_label: str = "",
-             fig_size: Tuple = (8, 8)) -> None:
+             fig_size: Tuple = (8, 8),
+             ax: Axes = None) -> None:
     """Makes a bar plot with the given parameters.
     
     Parameters
@@ -47,6 +49,10 @@ def bar_plot(x_pos,
     
     fig_size : tuple, default=(8,8)
         The dimension of the figure to prompt.
+        
+    ax : Axes, default=None
+        The axis on which to add the plot. If this is not None, the plot will be
+        added to the axes, no new figure will be created and printed.
 
     Returns
     -------
@@ -63,9 +69,9 @@ def bar_plot(x_pos,
     x_pos = np.array(x_pos)
     bars_height = np.array(bars_height)
 
-    check_argument_types([tick_labels, bars_width, title, y_axis_label, x_axis_label, fig_size],
-                         [[list, None], Number, str, str, str, tuple],
-                         ["tick_labels", "bars_width", "title", "y_axis_label", "x_axis_label", "fig_size"])
+    check_argument_types([tick_labels, bars_width, title, y_axis_label, x_axis_label, fig_size, ax],
+                         [[list, None], Number, str, str, str, tuple, [Axes, None]],
+                         ["tick_labels", "bars_width", "title", "y_axis_label", "x_axis_label", "fig_size", "ax"])
     
     # check variable types
     if bars_colors is not None and not is_matplotlib_color(bars_colors):
@@ -83,18 +89,28 @@ def bar_plot(x_pos,
         raise ValueError("tick_labels must be of the same dimensions as x_pos")
     
     # implementation
-    fig = plt.Figure(figsize=fig_size, tight_layout=True)
-    
-    plt.bar(x_pos,
-            bars_height,
-            bars_width,
-            color=bars_colors,
-            tick_label=tick_labels)
-    plt.title(title)
-    plt.ylabel(y_axis_label)
-    plt.xlabel(x_axis_label)
-    
-    plt.show()
+    if ax is None:
+        fig = plt.figure(figsize=fig_size, tight_layout=True)
+        
+        plt.bar(x_pos,
+                bars_height,
+                bars_width,
+                color=bars_colors,
+                tick_label=tick_labels)
+        plt.title(title)
+        plt.ylabel(y_axis_label)
+        plt.xlabel(x_axis_label)
+        
+        plt.show()
+    else:
+        ax.bar(x_pos,
+               bars_height,
+               bars_width,
+               color=bars_colors,
+               tick_label=tick_labels)
+        ax.set_title(title)
+        ax.set_ylabel(y_axis_label)
+        ax.set_xlabel(x_axis_label)
 
 
 def bar_class_distribution(classes,
@@ -105,7 +121,8 @@ def bar_class_distribution(classes,
                            title: str = "",
                            y_axis_label: str = "",
                            x_axis_label: str = "",
-                           fig_size: Tuple = (8, 8)) -> None:
+                           fig_size: Tuple = (8, 8),
+                           ax: Axes = None) -> None:
     """Plots the class distribution using a bar plot.
     
     This function is a wrapper for the more generic bar_plot function which
@@ -145,6 +162,10 @@ def bar_class_distribution(classes,
     
     fig_size : tuple, default=(8,8)
         The dimension of the figure to prompt.
+        
+    ax : Axes, default=None
+        The axis on which to add the plot. If this is not None, the plot will be
+        added to the axes, no new figure will be created and printed.
 
     Returns
     -------
@@ -160,9 +181,9 @@ def bar_class_distribution(classes,
     """
     classes = np.array(classes)
 
-    check_argument_types([labels, bars_width, bars_width_step_fraction, title, y_axis_label, x_axis_label, fig_size],
-                         [[list, None], Number, Number, str, str, str, tuple],
-                         ["labels", "bars_width", "bars_width_step_fraction", "title", "y_axis_label", "x_axis_label", "fig_size"])
+    check_argument_types([labels, bars_width, bars_width_step_fraction, title, y_axis_label, x_axis_label, fig_size, ax],
+                         [[list, None], Number, Number, str, str, str, tuple, [Axes, None]],
+                         ["labels", "bars_width", "bars_width_step_fraction", "title", "y_axis_label", "x_axis_label", "fig_size", "ax"])
     
     # check types
     if bars_colors is not None and not is_matplotlib_color(bars_colors):
@@ -191,4 +212,5 @@ def bar_class_distribution(classes,
              title=title,
              y_axis_label=y_axis_label,
              x_axis_label=x_axis_label,
-             fig_size=fig_size)
+             fig_size=fig_size,
+             ax=ax)
