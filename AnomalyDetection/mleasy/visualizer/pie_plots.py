@@ -4,7 +4,8 @@ from typing import Tuple, Callable
 import matplotlib.pyplot as plt
 import numpy as np
 
-from input_validation.attribute_checks import check_argument_types
+from mleasy.input_validation import check_argument_types
+from mleasy.input_validation import is_matplotlib_color
 
 
 def pie_plot(wedges,
@@ -25,7 +26,7 @@ def pie_plot(wedges,
     labels : list[str], default=None
         The labels of the classes.
     
-    colors : color | list, default=None
+    colors : list, default=None
         The color of the classes. The colors are the colors accepted by
         matplotlib.
         
@@ -54,6 +55,10 @@ def pie_plot(wedges,
     check_argument_types([labels, colors, radius, percentage_fmt, percentage_dst, title, fig_size],
                          [[list, None], [list, None], Number, [str, Callable, None], float, str, tuple],
                          ["labels", "colors", "radius", "percentage_fmt", "percentage_dst", "title", "fig_size"])
+
+    # check variable types
+    if colors is not None and not is_matplotlib_color(colors):
+        raise TypeError("colors must be a valid matplotlib color")
         
     # check values
     if wedges.ndim != 1:
@@ -64,7 +69,6 @@ def pie_plot(wedges,
         raise ValueError("colors must have the same length of wedges")
     
     # implementation
-    
     fig = plt.Figure(figsize=fig_size, tight_layout=True)
     
     plt.pie(wedges,
@@ -77,6 +81,7 @@ def pie_plot(wedges,
     
     plt.show()
 
+# FIXME: too similar to pie_plot, evaluate its removal
 def pie_class_distribution(classes,
                            labels: list[str] = None,
                            colors: list = None,
@@ -96,7 +101,7 @@ def pie_class_distribution(classes,
     labels : list[str], default=None
         The labels of the classes.
     
-    colors : color | list, default=None
+    colors : list, default=None
         The color of the classes. The colors are the colors accepted by
         matplotlib.
         
@@ -125,6 +130,10 @@ def pie_class_distribution(classes,
     check_argument_types([labels, colors, radius, percentage_fmt, percentage_dst, title, fig_size],
                          [[list, None], [list, None], Number, [str, Callable, None], float, str, tuple],
                          ["labels", "colors", "radius", "percentage_fmt", "percentage_dst", "title", "fig_size"])
+
+    # check variable types
+    if colors is not None and not is_matplotlib_color(colors):
+        raise TypeError("colors must be a valid matplotlib color")
     
     # check values
     if classes.ndim != 1:

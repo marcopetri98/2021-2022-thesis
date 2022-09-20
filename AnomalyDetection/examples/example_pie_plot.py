@@ -6,7 +6,7 @@ import pandas as pd
 from mleasy.visualizer import pie_class_distribution
 
 this_folder = os.path.dirname(__file__)
-iris_dataset_path = "./../data/classification/iris.csv"
+iris_dataset_path = "./../data/classification/iris/iris.csv"
 iris_dataset_path = os.path.join(this_folder, iris_dataset_path)
 
 iris_dataset = pd.read_csv(iris_dataset_path)

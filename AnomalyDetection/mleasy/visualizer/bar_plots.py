@@ -3,9 +3,9 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import is_color_like
 
-from input_validation.attribute_checks import check_argument_types
+from mleasy.input_validation import check_argument_types
+from mleasy.input_validation import is_matplotlib_color
 
 
 def bar_plot(x_pos,
@@ -16,7 +16,7 @@ def bar_plot(x_pos,
              title: str = "",
              y_axis_label: str = "",
              x_axis_label: str = "",
-             fig_size: Tuple = (8,8)) -> None:
+             fig_size: Tuple = (8, 8)) -> None:
     """Makes a bar plot with the given parameters.
     
     Parameters
@@ -68,9 +68,8 @@ def bar_plot(x_pos,
                          ["tick_labels", "bars_width", "title", "y_axis_label", "x_axis_label", "fig_size"])
     
     # check variable types
-    if bars_colors is not None:
-        if not isinstance(bars_colors, list) and not is_color_like(bars_colors):
-            raise TypeError("bars_colors must be a valid matplotlib color")
+    if bars_colors is not None and not is_matplotlib_color(bars_colors):
+        raise TypeError("bars_colors must be a valid matplotlib color")
     
     # check variable values
     if x_pos.ndim != 1 or bars_height.ndim != 1:
@@ -96,6 +95,7 @@ def bar_plot(x_pos,
     plt.xlabel(x_axis_label)
     
     plt.show()
+
 
 def bar_class_distribution(classes,
                            labels: list[str] = None,
@@ -165,9 +165,8 @@ def bar_class_distribution(classes,
                          ["labels", "bars_width", "bars_width_step_fraction", "title", "y_axis_label", "x_axis_label", "fig_size"])
     
     # check types
-    if bars_colors is not None:
-        if not isinstance(bars_colors, list) and not is_color_like(bars_colors):
-            raise TypeError("bars_colors must be a valid matplotlib color")
+    if bars_colors is not None and not is_matplotlib_color(bars_colors):
+        raise TypeError("bars_colors must be a valid matplotlib color")
     
     # check values
     if classes.ndim != 1:

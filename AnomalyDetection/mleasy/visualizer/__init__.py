@@ -14,3 +14,5 @@ from .bar_plots import bar_class_distribution
 
 from .pie_plots import pie_plot
 from .pie_plots import pie_class_distribution
+
+from .line_plots import line_plot
