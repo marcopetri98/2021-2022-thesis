@@ -76,6 +76,14 @@ def line_plot(x,
     Returns
     -------
     None
+
+    Raises
+    ------
+    TypeError
+        At least one of the arguments has been passed with the wrong type.
+
+    ValueError
+        At least one variable has unacceptable value or inconsistent value.
     """
     if isinstance(x, list):
         check_argument_types([y], [list], ["y"])
@@ -113,9 +121,12 @@ def line_plot(x,
     if x_ticks_labels is not None:
         x_ticks_labels = np.array(x_ticks_labels)
 
-    check_argument_types([x_ticks_rotation, formats, colors, title, y_axis_label, x_axis_label, fig_size, ax],
-                         [Number, [str, list, None], [list, None], str, str, str, tuple, [Axes, None]],
-                         ["x_ticks_rotation", "formats", "colors", "title", "y_axis_label", "x_axis_label", "fig_size", "ax"])
+    check_argument_types([x_ticks_rotation, formats, title, y_axis_label, x_axis_label, fig_size, ax],
+                         [Number, [str, list, None], str, str, str, tuple, [Axes, None]],
+                         ["x_ticks_rotation", "formats", "title", "y_axis_label", "x_axis_label", "fig_size", "ax"])
+
+    if colors is not None and not isinstance(colors, list):
+        colors = [colors] * (len(x) if isinstance(x, list) else x.shape[0])
 
     # check type
     if colors is not None and is_matplotlib_color(colors):

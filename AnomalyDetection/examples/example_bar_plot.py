@@ -25,4 +25,4 @@ bar_class_distribution(classes_frequencies,
                        bars_colors=["orchid", "lightblue", "lightgreen"],
                        y_axis_label="Percentage",
                        x_axis_label="Class",
-                       title="Iris dataset class distribution")
+                       title="Iris data set class distribution")

@@ -55,6 +55,14 @@ def pie_plot(wedges,
     Returns
     -------
     None
+
+    Raises
+    ------
+    TypeError
+        At least one of the arguments has been passed with the wrong type.
+
+    ValueError
+        At least one variable has unacceptable value or inconsistent value.
     """
     wedges = np.array(wedges)
     
@@ -144,6 +152,14 @@ def pie_class_distribution(classes,
     Returns
     -------
     None
+
+    Raises
+    ------
+    TypeError
+        At least one of the arguments has been passed with the wrong type.
+
+    ValueError
+        At least one variable has unacceptable value or inconsistent value.
     """
     classes = np.array(classes)
     

@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib import gridspec
-from matplotlib.axes import Axes
 
 from mleasy.visualizer import line_plot, bar_class_distribution, pie_class_distribution
 
@@ -41,6 +40,7 @@ classes_frequencies = np.zeros(num_classes)
 for i, class_name in enumerate(classes):
     classes_frequencies[i] = np.count_nonzero(classes_col == class_name)
     
+plt.rcParams.update({"font.size": 16, "font.family": "serif"})
 fig = plt.figure(figsize=(16, 16), tight_layout=True)
 gs = gridspec.GridSpec(2, 4)
 
@@ -51,7 +51,7 @@ bar_class_distribution(classes_frequencies,
                        bars_colors=["orchid", "lightblue", "lightgreen"],
                        y_axis_label="Percentage",
                        x_axis_label="Class",
-                       title="Iris dataset class distribution",
+                       title="Iris data set class distribution",
                        ax=ax_bar)
 
 ax_pie = fig.add_subplot(gs[0, 2:4])
@@ -59,7 +59,7 @@ ax_pie = fig.add_subplot(gs[0, 2:4])
 pie_class_distribution(classes_frequencies,
                        classes.tolist(),
                        colors=["orchid", "lightblue", "lightgreen"],
-                       title="Iris dataset class distribution",
+                       title="Iris data set class distribution",
                        percentage_fmt="%.2f %%",
                        ax=ax_pie)
 

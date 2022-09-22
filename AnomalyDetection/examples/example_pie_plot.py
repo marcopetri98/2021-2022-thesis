@@ -23,5 +23,5 @@ for i, class_name in enumerate(classes):
 pie_class_distribution(classes_frequencies,
                        classes.tolist(),
                        colors=["orchid", "lightblue", "lightgreen"],
-                       title="Iris dataset class distribution",
+                       title="Iris data set class distribution",
                        percentage_fmt="%.2f %%")
