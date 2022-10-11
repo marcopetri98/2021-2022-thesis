@@ -2,13 +2,12 @@ from copy import deepcopy
 from typing import Tuple
 
 import numpy as np
-from statsmodels.tsa.seasonal import STL, DecomposeResult
+from statsmodels.tsa.seasonal import STL, DecomposeResult, seasonal_decompose
 from statsmodels.tsa.stattools import adfuller, kpss, acf, pacf
 
 from mleasy.analysis import ITSDatasetAnalyser, StationarityTest, DecompositionMethod
 from mleasy.utils.printing import print_header, print_step
-from mleasy.visualizer.time_series import plot_correlation_functions, \
-    plot_time_series_decomposition
+from mleasy.visualizer.time_series import plot_correlation_functions, plot_time_series_decomposition
 
 
 class TSDatasetAnalyser(ITSDatasetAnalyser):
@@ -19,7 +18,6 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
     time_series : ndarray
         It is the time series over which the methods can be performed.
     """
-    
     def __init__(self, time_series: np.ndarray):
         super().__init__()
         
@@ -30,8 +28,10 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         
         self.time_series = deepcopy(time_series)
         
+        
     def num_samples(self) -> int:
         return  self.time_series.shape[0]
+        
         
     def analyse_stationarity(self, method: StationarityTest,
                              method_params: dict = None,
@@ -70,6 +70,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
             
         print_header("Stationarity analysis ended")
 
+
     def show_acf_function(self, acf_params: dict = None,
                           difference_series: bool = False,
                           difference_value: int = 1,
@@ -94,6 +95,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         
         print_header("ACF computation ended")
     
+    
     def show_pacf_function(self, pacf_params: dict = None,
                            difference_series: bool = False,
                            difference_value: int = 1,
@@ -117,6 +119,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
                                    fig_size=fig_size)
     
         print_header("PACF computation ended")
+    
     
     def show_acf_pacf_functions(self, acf_params: dict,
                                 pacf_params: dict,
@@ -146,13 +149,33 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
     
         print_header("ACF and PACF computation ended")
     
+    
     def decompose_time_series(self, method: DecompositionMethod,
                               method_params: dict = None,
                               difference_series: bool = False,
                               difference_value: int = 1,
                               verbose: bool = True,
+                              x_ticks_loc=None,
+                              x_ticks_labels=None,
+                              x_ticks_rotation: float = 0,
                               *args,
-                              **kwargs) -> None:
+                              **kwargs) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Parameters
+        ----------
+        x_ticks_loc : array-like, default=None
+        The location at which printing the ticks labels. These will be also the
+        labels in case the argument `x_ticks_labels` is None.
+
+        x_ticks_labels : array-like, default=None
+            The labels of the ticks on the x to be printed on the plot, they start
+            at the first sample and end at the last sample if `x_ticks_loc` is None.
+            Otherwise, they will be printed exactly at the position specified by the
+            other argument.
+            
+        x_ticks_rotation : float, default=0.0
+            The rotation of the ticks on the x-axis.
+        """
         print_header("Series decomposition")
         
         if method_params is None:
@@ -167,14 +190,27 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
             case DecompositionMethod.STL:
                 stl = STL(analysed_series, **method_params)
                 res: DecomposeResult = stl.fit()
-                original, seasonal, trend, residual = res.observed, res.seasonal, res.trend, res.resid
+                original, seasonal, trend_cycle, residual = res.observed, res.seasonal, res.trend, res.resid
+                
+            case DecompositionMethod.MOVING_AVERAGE:
+                res: DecomposeResult = seasonal_decompose(analysed_series, **method_params)
+                original, seasonal, trend_cycle, residual = res.observed, res.seasonal, res.trend, res.resid
                 
             case _:
                 raise NotImplementedError("{} not supported".format(method))
 
-        plot_time_series_decomposition(original, seasonal, trend, residual)
+        plot_time_series_decomposition(original,
+                                       seasonal,
+                                       trend_cycle,
+                                       residual,
+                                       x_ticks_loc=x_ticks_loc,
+                                       x_ticks_labels=x_ticks_labels,
+                                       x_ticks_rotation=x_ticks_rotation)
         
         print_header("Decomposition ended")
+        
+        return trend_cycle, seasonal, residual
+    
     
     def _difference_series(self, difference_value: int,
                            verbose: bool = True) -> np.ndarray:

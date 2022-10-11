@@ -1,64 +1,34 @@
-import glob
-import os
-from datetime import datetime, timedelta
+import numpy as np
 
-import pandas as pd
-
-from mleasy.analysis import TSDatasetAnalyser, StationarityTest
+from mleasy.analysis import TSDatasetAnalyser, StationarityTest, DecompositionMethod
+from mleasy.reader.time_series import ODINTSReader
+from mleasy.reader import MissingStrategy
 
 MATPLOT_PRINT = True
 USE_STL = False
 LAG = 1
-NLAGS = 100
+NLAGS = 10
 
-#
-# Thanks for the support to
-# Start Author: Nicolò Oreste Pinciroli Vago
-# Politecnico di Milano: https://www.deib.polimi.it/eng/people/details/1116006
-#
-def keep_cycles(df, threshold=50):
-    df["variation"] = df["device_consumption"].diff()
-    # see where there is the beginning of a new cycle
-    mask = df["variation"] > threshold
-    beginnings = df[mask].index.values
-    if len(beginnings) > 0:
-        # index at which the first cycle begins
-        first_beginning = beginnings[0]
-        # index at which the last cycle ends
-        last_beginning = beginnings[-1] - 1
-        
-        if first_beginning < last_beginning:
-            return df[first_beginning:last_beginning]
+DATASET_PATH = "data/anomaly_detection/private_fridge/fridge1/"
+DATASET = "fridge1.csv"
+ANOMALIES_PREFIX = "anomalies_"
+RESAMPLE = False
+START = 38
+INCREMENT = 4000
 
+reader = ODINTSReader(DATASET_PATH + ANOMALIES_PREFIX + DATASET,
+					  timestamp_col="ctime",
+					  univariate_col="device_consumption")
+all_df = reader.read(DATASET_PATH + "all_" + DATASET,
+					 resample=RESAMPLE,
+					 missing_strategy=MissingStrategy.FIXED_VALUE).get_dataframe()
+values = all_df["value"].values
+values = values[START:START + INCREMENT]
+ticks_labels_idx = np.linspace(START, START + INCREMENT - 1, 10, dtype=np.int64)
+ticks_labels = all_df["timestamp"].values
+ticks_labels = ticks_labels[ticks_labels_idx]
 
-dataset_name = "badef"
-
-dfs = [None] * len(glob.glob("data/CERTH/" + dataset_name + "/train/clean_data/*.csv"))
-
-for filename in glob.glob("data/CERTH/" + dataset_name + "/train/clean_data/*.csv"):
-    with open(os.path.join(os.getcwd(), filename), 'r') as f:
-        file_number = int(filename.split("clean_" + dataset_name + "_")[1].split(".csv")[0])
-        df = pd.read_csv(f)
-        df = keep_cycles(df)
-        dfs[file_number] = df
-
-periodic_timeseries = pd.concat(dfs)
-
-start_datetime = datetime(2020, 1, 1, 0, 0)
-end_datetime = start_datetime + timedelta(minutes=len(periodic_timeseries) - 1)
-
-timerange = pd.date_range(start=start_datetime, end=end_datetime, freq="1min")
-periodic_timeseries["ctime"] = timerange
-periodic_timeseries.reset_index(inplace=True)
-#
-# Thanks for the support to
-# End Author: Nicolò Oreste Pinciroli Vago
-# Politecnico di Milano: https://www.deib.polimi.it/eng/people/details/1116006
-#
-
-values = periodic_timeseries["device_consumption"]
-
-dataset_analyser = TSDatasetAnalyser(values.values)
+dataset_analyser = TSDatasetAnalyser(values)
 
 dataset_analyser.analyse_stationarity(StationarityTest.ADFULLER)
 
@@ -77,3 +47,13 @@ dataset_analyser.show_acf_pacf_functions({"nlags": NLAGS, "alpha": 0.0001},
                                          difference_series=True,
                                          difference_value=1,
                                          fig_size=(21,12))
+
+dataset_analyser.decompose_time_series(DecompositionMethod.STL,
+									   # STL PARAMS
+                                        method_params={"period": 115,
+													   "seasonal": 21,
+													   "robust": True},
+                                       # MOVING AVERAGE PARAMS
+                                       # method_params={"period": 115, "model": "additive"},
+									   #x_ticks_labels=ticks_labels,
+									   x_ticks_rotation=15)

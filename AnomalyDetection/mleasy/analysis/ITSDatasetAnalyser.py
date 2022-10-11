@@ -2,6 +2,8 @@ import abc
 from abc import ABC
 from typing import Tuple
 
+import numpy as np
+
 from mleasy.analysis import IDatasetAnalyser, StationarityTest, DecompositionMethod
 
 
@@ -182,7 +184,7 @@ class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
                               difference_value: int = 1,
                               verbose: bool = True,
                               *args,
-                              **kwargs) -> None:
+                              **kwargs) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Decompose and show the decomposition results of the time series.
         
         Parameters
@@ -212,6 +214,9 @@ class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
 
         Returns
         -------
-        None
+        components : tuple
+            Components of the decomposition. The first component is the
+            trend-cycle component, the second is the seasonal component, and the
+            third is the residual component.
         """
         pass

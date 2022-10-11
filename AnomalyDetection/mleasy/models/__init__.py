@@ -6,3 +6,4 @@ from .ICluster import ICluster
 from .IAnomalyRegressor import IAnomalyRegressor
 from .IAnomalyClassifier import IAnomalyClassifier
 from .IMultipleParametric import IMultipleParametric
+from .BaseModel import BaseModel

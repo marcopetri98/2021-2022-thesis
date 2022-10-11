@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import os.path
 from typing import Tuple
 
 import numpy as np
@@ -33,14 +35,17 @@ class TSReader(IDataReader,
              *args,
              **kwargs) -> TSReader:
         if file_format not in self.ACCEPTED_FORMATS:
-            raise ValueError("The file format must be one of %s" %
-                             self.ACCEPTED_FORMATS)
+            raise ValueError("The file format must be one of %s" % self.ACCEPTED_FORMATS)
         elif path == "":
             raise ValueError("The path cannot be empty")
+        
+        if not os.path.isfile(path):
+            raise ValueError("The file path \"{}\" you are trying to read does not exists.".format(path))
         
         if verbose:
             print_header("Start reading dataset")
             print_step("Start to read csv using pandas")
+        
         
         self.dataset = pd.read_csv(path)
         
