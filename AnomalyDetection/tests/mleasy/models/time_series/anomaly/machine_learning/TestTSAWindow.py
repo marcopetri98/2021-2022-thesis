@@ -16,7 +16,7 @@ class TestTSAWindow(unittest.TestCase):
         dir_path = pathlib.Path(__file__).parent.resolve()
         
         cls.square_wave_path = os.path.join(dir_path, square_wave_path)
-        cls.square_wave_df = pd.read_csv(os.path.join(dir_path, square_wave_path))
+        cls.square_wave_df = pd.read_csv(cls.square_wave_path)
         
     def setUp(self) -> None:
         self.time_series = self.square_wave_df["value"].copy()
@@ -274,38 +274,24 @@ class TestTSAWindow(unittest.TestCase):
             tsa_window_stub = TSAWindowChild(stride=-10)
             
         with self.assertRaises(ValueError):
-            tsa_window_stub = TSAWindowChild(classification="voting",
-                                             threshold=55)
+            tsa_window_stub = TSAWindowChild(classification="voting", threshold=55)
         
         with self.assertRaises(ValueError):
-            tsa_window_stub = TSAWindowChild(scoring="centre",
-                                             window=2)
+            tsa_window_stub = TSAWindowChild(scoring="centre", window=2)
         
         with self.assertRaises(ValueError):
-            tsa_window_stub = TSAWindowChild(classification="centre",
-                                             window=2)
+            tsa_window_stub = TSAWindowChild(classification="centre", window=2)
         
         with self.assertRaises(ValueError):
-            tsa_window_stub = TSAWindowChild(scoring="centre",
-                                             window=3,
-                                             stride=2)
+            tsa_window_stub = TSAWindowChild(scoring="centre", window=3, stride=2)
         
         with self.assertRaises(ValueError):
-            tsa_window_stub = TSAWindowChild(classification="centre",
-                                             window=3,
-                                             stride=2)
+            tsa_window_stub = TSAWindowChild(classification="centre", window=3, stride=2)
 
-        tsa_window_stub = TSAWindowChild(scoring="left",
-                                         window=2)
-        tsa_window_stub = TSAWindowChild(scoring="right",
-                                         window=2)
-        tsa_window_stub = TSAWindowChild(scoring="min",
-                                         window=2)
-        tsa_window_stub = TSAWindowChild(scoring="max",
-                                         window=2)
-        tsa_window_stub = TSAWindowChild(scoring="average",
-                                         window=2)
-        tsa_window_stub = TSAWindowChild(classification="left",
-                                         window=2)
-        tsa_window_stub = TSAWindowChild(classification="right",
-                                         window=2)
+        tsa_window_stub = TSAWindowChild(scoring="left", window=2)
+        tsa_window_stub = TSAWindowChild(scoring="right", window=2)
+        tsa_window_stub = TSAWindowChild(scoring="min", window=2)
+        tsa_window_stub = TSAWindowChild(scoring="max", window=2)
+        tsa_window_stub = TSAWindowChild(scoring="average", window=2)
+        tsa_window_stub = TSAWindowChild(classification="left", window=2)
+        tsa_window_stub = TSAWindowChild(classification="right", window=2)

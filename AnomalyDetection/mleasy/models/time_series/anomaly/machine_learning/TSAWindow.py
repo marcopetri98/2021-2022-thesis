@@ -107,7 +107,7 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 
     def _compute_point_scores(self, window_scores,
                               windows_per_point) -> np.ndarray:
-        check_x_y_smaller_1d(window_scores, windows_per_point)
+        check_x_y_smaller_1d(window_scores, windows_per_point, force_all_finite=False)
 
         window_scores = np.array(window_scores)
         windows_per_point = np.array(windows_per_point)
@@ -116,25 +116,28 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
 
         # Compute score of each point
         if self.scoring in ["min", "max"]:
-            scores_list = []
+            scores_list = [[] for _ in range(scores.shape[0])]
             for i in range(window_scores.shape[0]):
                 idx = i * self.stride
-                for j in range(idx, idx + self.window):
-                    try:
+                # handle the possibility of having infinite or nan values as
+                # scores for windows
+                if not (np.isinf(window_scores[i]) or np.isnan(window_scores[i])):
+                    for j in range(idx, idx + self.window):
                         scores_list[j].append(window_scores[i])
-                    except IndexError:
-                        scores_list.append([window_scores[i]])
 
             for i in range(scores.shape[0]):
                 if self.scoring == "min":
-                    scores[i] = min(scores_list[i])
+                    scores[i] = min(scores_list[i]) if len(scores_list[i]) != 0 else np.nan
                 else:
-                    scores[i] = max(scores_list[i])
+                    scores[i] = max(scores_list[i]) if len(scores_list[i]) != 0 else np.nan
 
         elif self.scoring == "average":
             for i in range(window_scores.shape[0]):
                 idx = i * self.stride
-                scores[idx:idx + self.window] += window_scores[i]
+                if not (np.isinf(window_scores[i]) or np.isnan(window_scores[i])):
+                    scores[idx:idx + self.window] += window_scores[i]
+                else:
+                    windows_per_point[idx:idx + self.window] -= 1
             scores = scores / windows_per_point
 
         elif self.scoring == "left":
@@ -156,13 +159,17 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
                 idx = i * self.stride
                 scores[idx + half_window] = window_scores[i]
 
-        # Scale the scores if requested
-        match self.scaling:
-            case "minmax":
-                # Min-max normalization
-                scores = scores.reshape((scores.shape[0], 1))
-                scores = MinMaxScaler().fit_transform(scores)
-                scores = scores.reshape(scores.shape[0])
+        if (np.isnan(scores).any() or np.isinf(scores).any()) and self.scaling == "none":
+            print_warning("Cannot perform scale since there are nan or infinite"
+                          " values in scores.")
+        else:
+            # Scale the scores if requested
+            match self.scaling:
+                case "minmax":
+                    # Min-max normalization
+                    scores = scores.reshape((scores.shape[0], 1))
+                    scores = MinMaxScaler().fit_transform(scores)
+                    scores = scores.reshape(scores.shape[0])
 
         return scores
 
@@ -178,34 +185,40 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
         labels = np.zeros(windows_per_point.shape[0])
 
         if self.classification in ["voting", "majority_voting"]:
-            # Anomalies are computed by voting of window anomalies
+            # compute the percentage of windows that agree that ith point is
+            # an anomalous point
             for i in range(window_labels.shape[0]):
                 if window_labels[i] == 1:
                     idx = i * self.stride
                     labels[idx:idx + self.window] += 1
             labels = labels / windows_per_point
 
+            # compute anomalous points based on an agreement threshold
             tau = 0.5 if self.classification == "majority_voting" else threshold
             true_anomalies = np.argwhere(labels > tau)
             labels = np.zeros(labels.shape)
             labels[true_anomalies] = 1
 
         elif self.classification == "points_score":
+            # anomalies are points with a score higher than the threshold
             labels[np.argwhere(point_scores > threshold)] = 1
 
         elif self.classification == "left":
+            # the window for which the point is at the left defines the label
             labels[:] = np.nan
             for i in range(window_labels.shape[0]):
                 idx = i * self.stride
                 labels[idx] = window_labels[i]
 
         elif self.classification == "right":
+            # the window for which the point is at the right defines the label
             labels[:] = np.nan
             for i in range(window_labels.shape[0]):
                 idx = i * self.stride
                 labels[idx + self.window - 1] = window_labels[i]
 
         elif self.classification == "centre":
+            # the window centred on the point decides the label
             labels[:] = np.nan
             half_window = int((self.window - 1) / 2)
             for i in range(window_labels.shape[0]):

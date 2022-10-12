@@ -23,7 +23,6 @@ class TSADBSCAN(TSAWindowWrapper):
 
     See Also
     --------
-    For all the other parameters, see the scikit-learn implementation of dbscan.
     https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html
     """
     WINDOW_SCORING_METHODS = ["z-score", "centroid"]
