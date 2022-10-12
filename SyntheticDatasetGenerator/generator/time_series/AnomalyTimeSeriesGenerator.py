@@ -133,8 +133,8 @@ class AnomalyTimeSeriesGenerator(TimeSeriesGenerator):
         if self.supervised:
             if verbose:
                 DecoratedPrinter.print_step(AnomalyTimeSeriesPrints.GENERATE[5])
-            self.ground_truth = np.ndarray(self.dataset.shape, dtype=object)
-            self.ground_truth.fill("normal")
+            self.ground_truth = np.ndarray(self.dataset.shape, dtype=np.intc)
+            self.ground_truth.fill(0)
 
         if verbose:
             DecoratedPrinter.print_step(AnomalyTimeSeriesPrints.GENERATE[4])
@@ -150,20 +150,18 @@ class AnomalyTimeSeriesGenerator(TimeSeriesGenerator):
                 clipping = len(self.dataset[idx:idx + len(generated)])
                 self.dataset[idx:idx + len(generated)] = generated[0:clipping]
                 if self.supervised:
-                    self.ground_truth[idx:idx + len(generated)] = "anomaly"
+                    self.ground_truth[idx:idx + len(generated)] = 1
             else:
                 self.dataset[idx] = generated
                 if self.supervised:
-                    self.ground_truth[idx] = "anomaly"
+                    self.ground_truth[idx] = 1
 
         if verbose:
             DecoratedPrinter.print_step(AnomalyTimeSeriesPrints.GENERATE[6])
 
         self.__save_anomaly(num_points,
-                            sample_freq_seconds,
                             dimensions,
-                            columns_names,
-                            start_timestamp)
+                            columns_names)
         if verbose:
             DecoratedPrinter.print_heading(AnomalyTimeSeriesPrints.GENERATE[1])
 
@@ -192,6 +190,7 @@ class AnomalyTimeSeriesGenerator(TimeSeriesGenerator):
         """
         timestamps = [pd.Timestamp(x, unit="s") for x in self.dataset_timestamps]
         index = pd.DatetimeIndex(timestamps)
+        index.name = "timestamp"
 
         if not self.supervised:
             if columns_names is None:

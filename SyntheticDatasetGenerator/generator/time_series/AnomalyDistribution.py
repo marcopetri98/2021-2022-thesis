@@ -142,8 +142,8 @@ class AnomalyDistribution(object):
                 if len(dist_params) == 2 and dist_params[0] < dist_params[1]:
                     return True
                 else:
-                    if len(dist_params) != 0:
-                        return False
+                    if len(dist_params) == 0:
+                        return True
 
             case "triangular":
                 if (len(dist_params) == 3 and

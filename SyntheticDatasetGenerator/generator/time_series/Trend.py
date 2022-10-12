@@ -125,28 +125,29 @@ class Trend(object):
                              " or equal 0")
         
         trend_value = 0
-        
-        match self.type:
-            case "linear":
-                coefficient = self.arguments[0]
-                trend_value = coefficient * elapsed_seconds
-            
-            case "quadratic":
-                coefficient = self.arguments[0]
-                trend_value = coefficient * (elapsed_seconds ** 2)
-            
-            case "cubic":
-                coefficient = self.arguments[0]
-                trend_value = coefficient * (elapsed_seconds ** 3)
-            
-            case "monomial":
-                coefficient = self.arguments[0]
-                power = self.arguments[1]
-                trend_value = coefficient * (elapsed_seconds ** power)
-            
-            case "exponential":
-                coefficient = self.arguments[0]
-                base = self.arguments[1]
-                trend_value = coefficient * (base ** elapsed_seconds)
+
+        if elapsed_seconds > self.starting_point:
+            match self.type:
+                case "linear":
+                    coefficient = self.arguments[0]
+                    trend_value = coefficient * elapsed_seconds
+
+                case "quadratic":
+                    coefficient = self.arguments[0]
+                    trend_value = coefficient * (elapsed_seconds ** 2)
+
+                case "cubic":
+                    coefficient = self.arguments[0]
+                    trend_value = coefficient * (elapsed_seconds ** 3)
+
+                case "monomial":
+                    coefficient = self.arguments[0]
+                    power = self.arguments[1]
+                    trend_value = coefficient * (elapsed_seconds ** power)
+
+                case "exponential":
+                    coefficient = self.arguments[0]
+                    base = self.arguments[1]
+                    trend_value = coefficient * (base ** elapsed_seconds)
         
         return trend_value
