@@ -7,7 +7,7 @@ from sklearn.utils import check_array
 
 from mleasy.input_validation.array_checks import check_x_y_smaller_1d
 from mleasy.models.BaseModel import BaseModel
-from mleasy.models.time_series.anomaly.machine_learning.ITimeSeriesAnomalyWindow import ITimeSeriesAnomalyWindow
+from mleasy.models.time_series.anomaly.machine_learning import ITimeSeriesAnomalyWindow
 from mleasy.utils import print_warning
 
 
@@ -34,12 +34,17 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
         anomaly score of the window that contains the point. If "average" the
         score is the average score of all windows containing the point.
 
-    classification: {"left", "centre", "right", "voting", "majority_voting", "points_score"}, default="voting"
+    classification: {"left", "centre", "right", "voting", "majority_voting", "unanimity", "points_score"}, default="voting"
         It defines the way in which a point is declared as anomaly. With voting,
         a point is an anomaly if at least `threshold` percentage of windows
         containing the point agree in saying it is an anomaly. With
         points_score, the points are considered anomalies if their score is
-        above anomaly_threshold.
+        above anomaly_threshold. `majority_voting` is a specific case of voting
+        in which the `threshold` is always 0.5. The methods `left`, `centre` and
+        `right` states that the classification of the points is propagated from
+        the windows containing the point respectively at the left, at the centre
+        and at the right. `unanimity` voting means that all the windows
+        containing a point must agree to say that a point is anomalous.
 
     threshold: float, default=None
         The threshold used to compute if a point is an anomaly or not. In case
@@ -50,7 +55,7 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
     """
     ACCEPTED_SCORING_METHODS = ["left", "centre", "right", "min", "max", "average"]
     ACCEPTED_SCALING_METHODS = ["none", "minmax"]
-    ACCEPTED_LABELLING_METHODS = ["left", "centre", "right", "voting", "majority_voting", "points_score"]
+    ACCEPTED_LABELLING_METHODS = ["left", "centre", "right", "voting", "unanimity", "majority_voting", "points_score"]
 
     def __init__(self, window: int = 5,
                  stride: int = 1,
@@ -126,19 +131,29 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
                         scores_list[j].append(window_scores[i])
 
             for i in range(scores.shape[0]):
-                if self.scoring == "min":
-                    scores[i] = min(scores_list[i]) if len(scores_list[i]) != 0 else np.nan
+                if len(scores_list[i]) != 0:
+                    if self.scoring == "min":
+                        scores[i] = min(scores_list[i]) if len(scores_list[i]) != 0 else np.nan
+                    else:
+                        scores[i] = max(scores_list[i]) if len(scores_list[i]) != 0 else np.nan
                 else:
-                    scores[i] = max(scores_list[i]) if len(scores_list[i]) != 0 else np.nan
+                    scores[i] = np.nan
 
         elif self.scoring == "average":
+            # handle points without window to avoid division by zero
+            no_windows = np.where(windows_per_point == 0)
+            windows_per_point[no_windows] = 1
+
             for i in range(window_scores.shape[0]):
                 idx = i * self.stride
                 if not (np.isinf(window_scores[i]) or np.isnan(window_scores[i])):
                     scores[idx:idx + self.window] += window_scores[i]
                 else:
                     windows_per_point[idx:idx + self.window] -= 1
+
+            # give score and restore nan when there are no windows
             scores = scores / windows_per_point
+            scores[no_windows] = np.nan
 
         elif self.scoring == "left":
             scores[:] = np.nan
@@ -184,7 +199,7 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
         threshold = self.threshold
         labels = np.zeros(windows_per_point.shape[0])
 
-        if self.classification in ["voting", "majority_voting"]:
+        if self.classification in ["voting", "majority_voting", "unanimity"]:
             # compute the percentage of windows that agree that ith point is
             # an anomalous point
             for i in range(window_labels.shape[0]):
@@ -193,11 +208,16 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
                     labels[idx:idx + self.window] += 1
             labels = labels / windows_per_point
 
-            # compute anomalous points based on an agreement threshold
-            tau = 0.5 if self.classification == "majority_voting" else threshold
-            true_anomalies = np.argwhere(labels > tau)
-            labels = np.zeros(labels.shape)
-            labels[true_anomalies] = 1
+            if self.classification == "unanimity":
+                true_anomalies = np.argwhere(labels == 1)
+                labels = np.zeros(labels.shape)
+                labels[true_anomalies] = 1
+            else:
+                # compute anomalous points based on an agreement threshold
+                tau = 0.5 if self.classification == "majority_voting" else threshold
+                true_anomalies = np.argwhere(labels > tau)
+                labels = np.zeros(labels.shape)
+                labels[true_anomalies] = 1
 
         elif self.classification == "points_score":
             # anomalies are points with a score higher than the threshold

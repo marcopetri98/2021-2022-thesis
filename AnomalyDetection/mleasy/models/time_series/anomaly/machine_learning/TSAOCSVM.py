@@ -60,6 +60,8 @@ class TSAOCSVM(TSAMultipleParametric):
 
     def _compute_window_labels(self, vector_data: np.ndarray) -> np.ndarray:
         window_anomalies = self._wrapped_model.predict(vector_data) * -1
+        normal_windows = np.where(window_anomalies == -1)
+        window_anomalies[normal_windows] = 0
         return window_anomalies
 
     def _compute_window_scores(self, vector_data: np.ndarray) -> np.ndarray:

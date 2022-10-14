@@ -48,8 +48,8 @@ class TSAWindowWrapper(TSAWindow, ITimeSeriesAnomalyWrapper, ABC):
 
         # Get the window scores
         window_scores = self._compute_window_scores(x_new)
-        anomaly_scores= self._compute_point_scores(window_scores,
-                                                   windows_per_point)
+        anomaly_scores = self._compute_point_scores(window_scores,
+                                                    windows_per_point)
         return anomaly_scores
 
     def classify(self, x, *args, **kwargs) -> np.ndarray:

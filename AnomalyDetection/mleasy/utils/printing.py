@@ -30,6 +30,7 @@ def print_header(heading: str, separator: str = "=") -> None:
 
 	print(string_to_print)
 
+
 def print_step(*args) -> None:
 	"""Prints a step of execution.
 
@@ -56,6 +57,7 @@ def print_step(*args) -> None:
 				step_print += str(var)
 
 	print(step_print)
+
 
 def print_warning(*args) -> None:
 	"""Prints a warning on screen.

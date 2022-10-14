@@ -16,9 +16,11 @@ def line_plot(x,
               x_ticks_rotation: float = 0,
               formats: list[str] | str = None,
               colors: list = None,
+              series_labels: list[str] | str = None,
               title: str = "",
               y_axis_label: str = "",
               x_axis_label: str = "",
+              plot_legend: bool = True,
               fig_size: Tuple = (8, 8),
               ax: Axes = None) -> None:
     """Creates a line plot from data.
@@ -57,6 +59,9 @@ def line_plot(x,
     colors : list[color] or color, default=None
         The colors of the lines to be drawn.
 
+    series_labels: list[str] or str, default=None
+        The labels of the lines to plot.
+
     title : str, default=""
         The title of the plot.
 
@@ -65,6 +70,9 @@ def line_plot(x,
 
     x_axis_label : str, default=""
         The label to print on the x-axis.
+
+    plot_legend : bool, default=True
+        States if the legend must be plot on the line plot.
 
     fig_size : tuple, default=(8,8)
         The dimension of the matplotlib figure to be drawn.
@@ -129,8 +137,10 @@ def line_plot(x,
         colors = [colors] * (len(x) if isinstance(x, list) else x.shape[0])
 
     # check type
-    if colors is not None and is_matplotlib_color(colors):
+    if colors is not None and not is_matplotlib_color(colors):
         raise TypeError("bars_colors must be a valid matplotlib color")
+    elif not isinstance(plot_legend, bool):
+        raise TypeError("plot_legend must be bool")
 
     # check values
     if isinstance(x, list):
@@ -140,9 +150,15 @@ def line_plot(x,
         elif colors is not None and len(x) < len(colors):
             raise ValueError("the number of colors must be at most equal to "
                              "the number of lines")
-    elif isinstance(formats, list):
-        raise ValueError("if only one line is passed, format must be None or "
-                         "a single format, not a list")
+        elif series_labels is not None and len(x) < len(series_labels):
+            raise ValueError("the number of labels must be equal to the number "
+                             "of lines")
+    elif series_labels is not None and not isinstance(series_labels, str):
+        raise TypeError("series_labels must be a string if only one line has to"
+                        " be plotted")
+    elif formats is not None and not isinstance(formats, str):
+        raise TypeError("if only one line is passed, format must be None or "
+                        "a single format, not a list")
     elif isinstance(colors, list):
         raise ValueError("if only one line is passed, colors must be None or "
                          "a single color, not a list")
@@ -163,17 +179,22 @@ def line_plot(x,
         fig = plt.figure(figsize=fig_size)
 
     # TODO: evaluate if this can be made top-level
-    def add_line(ind, dep, line_color, line_format, axes):
+    def add_line(ind, dep, line_color, line_format, axes, label):
+        if label is not None:
+            other_params = {"label": label}
+        else:
+            other_params = {}
+
         if axes is None:
             if line_format is not None:
-                plt.plot(ind, dep, line_format, color=line_color)
+                plt.plot(ind, dep, line_format, color=line_color, **other_params)
             else:
-                plt.plot(ind, dep, color=line_color)
+                plt.plot(ind, dep, color=line_color, **other_params)
         else:
             if line_format is not None:
-                axes.plot(ind, dep, line_format, color=line_color)
+                axes.plot(ind, dep, line_format, color=line_color, **other_params)
             else:
-                axes.plot(ind, dep, color=line_color)
+                axes.plot(ind, dep, color=line_color, **other_params)
 
     # TODO: evaluate if this can be made top-level
     def add_ticks(loc, label, rotation, axes):
@@ -192,10 +213,12 @@ def line_plot(x,
                 line_fmt = formats[i]
             if colors is not None and i < len(colors):
                 line_col = colors[i]
-    
-            add_line(var_ind, var_dep, line_col, line_fmt, ax)
+
+            label = None if series_labels is None else series_labels[i]
+
+            add_line(var_ind, var_dep, line_col, line_fmt, ax, label)
     else:
-        add_line(x, y, colors, formats, ax)
+        add_line(x, y, colors, formats, ax, series_labels)
 
     # put ticks on the x if they are passed to the function
     if x_ticks_loc is not None or x_ticks_labels is not None:
@@ -226,9 +249,13 @@ def line_plot(x,
         plt.xlabel(x_axis_label)
         plt.ylabel(y_axis_label)
         plt.tight_layout()
+        if series_labels is not None and plot_legend:
+            plt.legend()
     
         plt.show()
     else:
         ax.set_title(title)
         ax.set_xlabel(x_axis_label)
         ax.set_ylabel(y_axis_label)
+        if series_labels is not None and plot_legend:
+            ax.legend()
