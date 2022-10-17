@@ -12,7 +12,6 @@ from mleasy.utils.printing import print_header, print_step
 
 
 class TSReader(IDataReader,
-               IDataSupervised,
                IDataTrainTestSplitter,
                IDataTrainValidTestSplitter):
     """A reader of time series datasets."""
@@ -21,10 +20,10 @@ class TSReader(IDataReader,
     def __init__(self):
         super().__init__()
         
-        self.dataset : pd.DataFrame = None
-        self.train_frame : pd.DataFrame = None
-        self.valid_frame : pd.DataFrame = None
-        self.test_frame : pd.DataFrame = None
+        self.dataset: pd.DataFrame = None
+        self.train_frame: pd.DataFrame = None
+        self.valid_frame: pd.DataFrame = None
+        self.test_frame: pd.DataFrame = None
     
     def read(self, path: str,
              file_format: str = "csv",
@@ -33,16 +32,12 @@ class TSReader(IDataReader,
              **kwargs) -> TSReader:
         if file_format not in self.ACCEPTED_FORMATS:
             raise ValueError("The file format must be one of %s" % self.ACCEPTED_FORMATS)
-        elif path == "":
-            raise ValueError("The path cannot be empty")
-        
-        if not os.path.isfile(path):
+        elif not os.path.isfile(path):
             raise ValueError("The file path \"{}\" you are trying to read does not exists.".format(path))
         
         if verbose:
             print_header("Start reading dataset")
             print_step("Start to read csv using pandas")
-        
         
         self.dataset = pd.read_csv(path)
         
@@ -52,7 +47,9 @@ class TSReader(IDataReader,
         
         return self
     
-    def train_test_split(self, train: float | int = 0.8) -> TSReader:
+    def train_test_split(self, train: float | int = 0.8,
+                         *args,
+                         **kwargs) -> TSReader:
         check_not_default_attributes(self, {"dataset": None})
         
         if isinstance(train, float):
@@ -76,7 +73,9 @@ class TSReader(IDataReader,
         return self
     
     def train_valid_test_split(self, train: float | int = 0.7,
-                               valid: float | int = 0.1) -> TSReader:
+                               valid: float | int = 0.1,
+                               *args,
+                               **kwargs) -> TSReader:
         check_not_default_attributes(self, {"dataset": None})
         
         if isinstance(train, float) and isinstance(valid, float):
@@ -121,12 +120,3 @@ class TSReader(IDataReader,
                                             "valid_frame": None,
                                             "test_frame": None})
         return self.train_frame.copy(), self.valid_frame.copy(), self.test_frame.copy()
-    
-    def get_ground_truth(self, col_name: str) -> np.ndarray:
-        check_not_default_attributes(self, {"dataset": None})
-        
-        if col_name not in self.dataset.columns:
-            raise ValueError("The column specified does not exist")
-        
-        targets = self.dataset[col_name]
-        return np.array(targets)

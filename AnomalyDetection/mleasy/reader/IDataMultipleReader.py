@@ -43,8 +43,16 @@ class IDataMultipleReader(ABC):
         pass
     
     @abc.abstractmethod
-    def get_all_dataframes(self) -> list[pd.DataFrame]:
+    def get_all_dataframes(self, *args, **kwargs) -> list[pd.DataFrame]:
         """Gets all the dataframes previously read.
+        
+        Parameters
+        ----------
+        args
+            Not used, present to allow multiple inheritance and signature change.
+
+        kwargs
+            Not used, present to allow multiple inheritance and signature change.
         
         Returns
         -------
@@ -54,13 +62,19 @@ class IDataMultipleReader(ABC):
         pass
     
     @abc.abstractmethod
-    def get_ith_dataframe(self, pos: int) -> pd.DataFrame:
+    def get_ith_dataframe(self, pos: int, *args, **kwargs) -> pd.DataFrame:
         """Get the ith dataframe in all the read ones.
         
         Parameters
         ----------
         pos : int
             The position of the dataframe to be read.
+
+        args
+            Not used, present to allow multiple inheritance and signature change.
+
+        kwargs
+            Not used, present to allow multiple inheritance and signature change.
 
         Returns
         -------

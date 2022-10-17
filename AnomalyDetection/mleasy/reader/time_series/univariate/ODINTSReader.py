@@ -6,11 +6,11 @@ import numpy as np
 import pandas as pd
 
 from mleasy.reader import MissingStrategy
-from reader.time_series.univariate import UTSReader
+from reader.time_series.univariate import UTSAnomalyReader
 from mleasy.utils.printing import print_header, print_step
 
 
-class ODINTSReader(UTSReader):
+class ODINTSReader(UTSAnomalyReader):
     """A reader for ODIN TS annotated datasets.
     
     Parameters
@@ -87,8 +87,8 @@ class ODINTSReader(UTSReader):
                             self._ANOMALY_COL,
                             dataset_cp[self._ANOMALY_COL].values)
         self.dataset.rename(columns={
-                                self.timestamp_col : self._TIMESTAMP_COL,
-                                self.univariate_col : self._SERIES_COL
+                                self.timestamp_col: self._TIMESTAMP_COL,
+                                self.univariate_col: self._SERIES_COL
                             },
                             inplace=True)
         self.dataset.drop(columns=self.dataset.columns.difference([self._TIMESTAMP_COL,
@@ -205,7 +205,7 @@ class ODINTSReader(UTSReader):
                              for el in zip(anomalies_df[self.start_col].tolist(),
                                            anomalies_df[self.end_col].tolist())]
         if complete:
-            anomaly_type_dict = {datetime.strptime(el[0], "%Y-%m-%d %H:%M:%S") : el[1]
+            anomaly_type_dict = {datetime.strptime(el[0], "%Y-%m-%d %H:%M:%S"): el[1]
                                  for el in zip(anomalies_df[self.start_col].tolist(),
                                                anomalies_df[self.anomaly_type_col].tolist())}
 

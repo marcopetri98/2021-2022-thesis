@@ -43,8 +43,16 @@ class IDataReader(ABC):
         pass
     
     @abc.abstractmethod
-    def get_dataframe(self) -> pd.DataFrame:
+    def get_dataframe(self, *args, **kwargs) -> pd.DataFrame:
         """Gets the dataframe of the dataset previously read.
+        
+        Parameters
+        ----------
+        args
+            Not used, present to allow multiple inheritance and signature change.
+
+        kwargs
+            Not used, present to allow multiple inheritance and signature change.
         
         Returns
         -------

@@ -14,7 +14,7 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
     def __init__(self):
         super().__init__()
         
-        self.all_dataframes : list = None
+        self.all_dataframes: list = None
         
     def read_multiple(self, paths: list[str],
                       files_format: str = "csv",
@@ -61,7 +61,9 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
         check_not_default_attributes(self, {"all_dataframes": None})
         return self.all_dataframes.copy()
     
-    def get_ith_dataframe(self, pos: int) -> pd.DataFrame:
+    def get_ith_dataframe(self, pos: int,
+                          *args,
+                          **kwargs) -> pd.DataFrame:
         check_not_default_attributes(self, {"all_dataframes": None})
         
         if pos <= 0 or pos >= len(self.all_dataframes):
