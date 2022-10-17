@@ -7,10 +7,7 @@ import numpy as np
 import pandas as pd
 
 from mleasy.input_validation.attribute_checks import check_not_default_attributes
-from mleasy.reader.IDataReader import IDataReader
-from mleasy.reader.IDataSupervised import IDataSupervised
-from mleasy.reader.IDataTrainTestSplitter import IDataTrainTestSplitter
-from mleasy.reader.IDataTrainValidTestSplitter import IDataTrainValidTestSplitter
+from mleasy.reader import IDataReader, IDataSupervised, IDataTrainTestSplitter, IDataTrainValidTestSplitter
 from mleasy.utils.printing import print_header, print_step
 
 

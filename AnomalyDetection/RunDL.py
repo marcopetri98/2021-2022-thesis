@@ -14,7 +14,7 @@ from mleasy.models.time_series.anomaly.deep_learning.BraeiLSTM import BraeiLSTM
 from mleasy.models.time_series.anomaly import CNNAutoencoder
 from mleasy.models.time_series.anomaly.deep_learning.GRUAutoencoder import GRUAutoencoder
 from mleasy.models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
-from mleasy.reader.time_series.NABReader import NABReader
+from mleasy.reader.time_series.univariate import NABReader
 from mleasy.visualizer.Viewer import plot_time_series_forecast, plot_time_series_with_predicitons_bars, get_bars_indices_on_test_df
 
 ALGORITHM = "cnn"

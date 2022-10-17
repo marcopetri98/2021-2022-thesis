@@ -1,4 +1,4 @@
-from mleasy.reader.time_series.TSReader import TSReader
+from mleasy.reader.time_series import TSReader
 
 
 class UTSReader(TSReader):

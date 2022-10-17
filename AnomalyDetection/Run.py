@@ -5,17 +5,10 @@ from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
 from mleasy import visualizer as vw
-from mleasy.models.time_series.anomaly.machine_learning.TSAKMeans import \
-    TSAKMeans
-from mleasy.models.time_series.anomaly.statistical.TSAARIMA import TSAARIMA
-from mleasy.models.time_series.anomaly.machine_learning import TSADBSCAN
-from mleasy.models.time_series.anomaly.statistical.TSAES import TSAES
-from mleasy.models.time_series.anomaly.machine_learning.TSAIsolationForest import TSAIsolationForest
-from mleasy.models.time_series.anomaly.machine_learning.TSALOF import TSALOF
-from mleasy.models.time_series.anomaly.machine_learning import TSAOCSVM
-from mleasy.models.time_series.anomaly.machine_learning import TSAOCSVMPhase
-from mleasy.models.time_series.anomaly.statistical.TSASES import TSASES
-from mleasy.reader.MissingStrategy import MissingStrategy
+from mleasy.models.time_series.anomaly.machine_learning import TSAKMeans, TSADBSCAN, TSAIsolationForest, TSALOF, TSAOCSVM, TSAOCSVMPhase
+from mleasy.models.time_series.anomaly.statistical import TSAARIMA, TSAES, TSASES
+from mleasy.reader import MissingStrategy
+from mleasy.reader.time_series.univariate import ODINTSReader
 
 #################################
 #								#
@@ -24,7 +17,6 @@ from mleasy.reader.MissingStrategy import MissingStrategy
 #								#
 #								#
 #################################
-from mleasy.reader.time_series.ODINTSReader import ODINTSReader
 
 ALGORITHM = "MA"
 

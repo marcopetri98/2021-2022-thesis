@@ -5,8 +5,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from mleasy.reader.MissingStrategy import MissingStrategy
-from mleasy.reader.time_series.UTSReader import UTSReader
+from mleasy.reader import MissingStrategy
+from reader.time_series.univariate import UTSReader
 from mleasy.utils.printing import print_header, print_step
 
 
