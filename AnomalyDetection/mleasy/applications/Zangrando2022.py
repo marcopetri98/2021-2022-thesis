@@ -1,4 +1,5 @@
 import os.path
+from numbers import Number
 from typing import Tuple
 
 import numpy as np
@@ -6,11 +7,13 @@ import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 
-from mleasy.reader.time_series import TSMultipleReader, ODINTSReader
+from mleasy.applications.Interfaces import ILoader
+from mleasy.reader.time_series import TSMultipleReader
+from mleasy.reader.time_series.univariate import ODINTSReader
 from mleasy.utils import print_header, print_step
 
 
-class Zangrando2022Loader(object):
+class Zangrando2022Loader(ILoader):
     """Data loader for the paper Zangrando 2022.
 
     The paper implemented in this class is "Anomaly detection in quasi-periodic
@@ -22,7 +25,7 @@ class Zangrando2022Loader(object):
     to train the models. It the methods used to extract the training sequences,
     the validation sequences and the testing sequence.
     
-    Attributes
+    Parameters
     ----------
     datasets : list[str]
         The datasets that can be used by this instance.
@@ -49,22 +52,6 @@ class Zangrando2022Loader(object):
                  training_lengths: list[str],
                  window_sizes: list[float | int] = None,
                  datasets_path: str = "data/anomaly_detection/private_fridge"):
-        """Initialize the loader.
-        
-        Parameters
-        ----------
-        datasets : list[str]
-            The datasets that can be used by this instance.
-        
-        training_lengths : list[str]
-            The training lengths that can be loaded by this instance.
-        
-        window_sizes : list[float | int]
-            The window sizes that can be loaded by this instance.
-            
-        datasets_path : str
-            The path that contains the dataset.
-        """
         super().__init__()
         
         self.datasets = datasets
@@ -98,10 +85,12 @@ class Zangrando2022Loader(object):
                              training_length: str,
                              window_size: int | float,
                              window_multiple_of_period: bool = True,
-                             verbose: bool = True) -> Tuple[list[pd.DataFrame],
-                                                            np.ndarray,
-                                                            pd.DataFrame,
-                                                            pd.DataFrame]:
+                             verbose: bool = True,
+                             *args,
+                             **kwargs) -> Tuple[list[pd.DataFrame],
+                                                np.ndarray,
+                                                pd.DataFrame,
+                                                pd.DataFrame]:
         """Get training, validation and testing for the specified dataset.
         
         Parameters
@@ -290,10 +279,25 @@ class Zangrando2022Threshold(object):
 
     This class implements the methods used to compute the optimal threshold for
     the implemented models in the paper.
+    
+    Parameters
+    ----------
+    bounded_scores : bool
+        `True` if the scores of the model are bounded, i.e., always contained
+        inside a certain range (a,b). `False` if the scores are not bounded.
+    
+    min_bound : float
+        The minimum value a score can have if the scores are bounded.
+    
+    max_bound : float
+        The maximum value a score can have if the scores are bounded.
+    
+    num_thresholds : int
+        The number of thresholds to try when searching for the optimal one.
     """
     def __init__(self, bounded_scores: bool,
-                 min_bound: int = 0,
-                 max_bound: int = 1,
+                 min_bound: float = 0,
+                 max_bound: float = 1,
                  num_thresholds: int = 41):
         super().__init__()
         
@@ -375,9 +379,9 @@ class Zangrando2022Threshold(object):
         """
         if not isinstance(self.bounded_scores, bool):
             raise TypeError("bounded_scores must be bool")
-        elif not isinstance(self.min_bound, int):
+        elif not isinstance(self.min_bound, Number):
             raise TypeError("min_bound must be bool")
-        elif not isinstance(self.max_bound, int):
+        elif not isinstance(self.max_bound, Number):
             raise TypeError("max_bound must be bool")
         elif not isinstance(self.num_thresholds, int):
             raise TypeError("num_thresholds must be int")
