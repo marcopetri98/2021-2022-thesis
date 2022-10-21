@@ -67,9 +67,8 @@ class YahooS5Reader(UTSAnomalyReader):
     def __getitem__(self, item):
         if not isinstance(item, int):
             raise ValueError("use __getitem__ only to iterate over time series")
-        elif not 0 <= item < 367:
-            print(f"AHO STAI A PROVA {item}")
-            raise ValueError("there are only 367 series in the dataset")
+        elif not 0 <= item < len(self):
+            raise IndexError(f"there are only {len(self)} series in the dataset")
         
         item = item
         

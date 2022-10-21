@@ -30,11 +30,12 @@ DATASETS = ["fridge1", "fridge2", "fridge3"]
 WINDOW_SIZE = [21]
 TRAIN_LENGTH = ["1m", "3w", "2w", "1w", "6d", "5d", "4d", "3d", "2d", "1d"]
 SCORINGS = ["left", "centre", "right", "min", "max", "average", "non_overlapping"]
+THRESHOLDS = 41
 
 for model_name in MODELS:
     print_header("Computing best F1 of {}".format(model_name))
 
-    SAVE_RESULTS_PATH = "output/experiments_scoring/{}_scoring_f1_evaluation.csv".format(model_name.lower())
+    SAVE_RESULTS_PATH = "output/experiments_scoring/{}_scoring_f1_{}_evaluation.csv".format(model_name.lower(), THRESHOLDS)
 
     values = [["fridge1", "fridge2", "fridge3"],
               ["1m", "3w", "2w", "1w", "6d", "5d", "4d", "3d", "2d", "1d"],
@@ -69,9 +70,9 @@ for model_name in MODELS:
 
                     print_step("Computing the optimal threshold as in Zangrando2022")
                     if model_name == "lof":
-                        threshold_comp = Zangrando2022Threshold(False)
+                        threshold_comp = Zangrando2022Threshold(False, num_thresholds=THRESHOLDS)
                     else:
-                        threshold_comp = Zangrando2022Threshold(True)
+                        threshold_comp = Zangrando2022Threshold(True, num_thresholds=THRESHOLDS)
 
                     true_labels = valid["target"].values
                     true_labels, valid_scores = cut_true_pred_labels(true_labels, valid_scores, score_method, window_size)

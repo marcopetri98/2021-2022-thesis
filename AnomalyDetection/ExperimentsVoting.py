@@ -26,6 +26,7 @@ DATASETS = ["fridge1", "fridge2", "fridge3"]
 WINDOW_SIZE = [21]
 TRAIN_LENGTH = ["1m", "3w", "2w", "1w", "6d", "5d", "4d", "3d", "2d", "1d"]
 VOTINGS = ["left", "centre", "right", "majority_voting", "byzantine_voting", "unanimity", "voting"]
+VOTING_STEP = 0.01
 
 for model_name in MODELS:
     print_header("Doing scoring experiments with {}".format(model_name))
@@ -97,7 +98,7 @@ for model_name in MODELS:
                         # compute the best voting threshold on the validation set
                         best_f1 = -1
                         best_threshold = -1
-                        for threshold in np.arange(0, 1 + 1/(2*window_size), 1/window_size):
+                        for threshold in np.arange(0, 1 + VOTING_STEP, VOTING_STEP):
                             model.threshold = threshold
                             true_labels_copy = true_labels.copy()
                             labels = model.classify(data_test)
