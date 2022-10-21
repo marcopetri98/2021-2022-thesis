@@ -28,7 +28,8 @@ def check_attributes_exists(estimator,
                                  (estimator.__class__, attribute))
 
 def check_not_default_attributes(estimator,
-                                 attributes: dict) -> None:
+                                 attributes: dict,
+                                 error: str = "Train the model before calling this method") -> None:
     """Checks if the attributes have the default not trained value.
     
     It raises an exception if at least one of the attribute has the default not
@@ -43,6 +44,9 @@ def check_not_default_attributes(estimator,
         Keys are string representing the attributes' names and the values are
         the standard values used when the estimator has not been trained yet.
 
+    error : str
+        The error string that is thrown.
+
     Returns
     -------
     None
@@ -52,10 +56,10 @@ def check_not_default_attributes(estimator,
         attr_val = getattr(estimator, key)
         if value is None:
             if attr_val is None:
-                raise RuntimeError("Train the model before calling this method")
+                raise RuntimeError(error)
         else:
             if attr_val == value:
-                raise RuntimeError("Train the model before calling this method")
+                raise RuntimeError(error)
 
 def check_argument_types(arguments: list,
                          expected_types: list,

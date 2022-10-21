@@ -76,7 +76,9 @@ class TSReader(IDataReader,
                                valid: float | int = 0.1,
                                *args,
                                **kwargs) -> TSReader:
-        check_not_default_attributes(self, {"dataset": None})
+        check_not_default_attributes(self,
+                                     {"dataset": None},
+                                     "read the dataset before getting the split")
         
         if isinstance(train, float) and isinstance(valid, float):
             if not 0 < train < 1 or not 0 < valid < 1:
