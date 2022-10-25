@@ -1,10 +1,12 @@
 import os.path
+from numbers import Number
+from typing import Tuple
 
 import numpy as np
+import pandas as pd
 
 from mleasy.applications.Interfaces import ILoader
-from mleasy.reader.time_series.univariate import UTSAnomalyReader
-from reader.time_series.univariate import YahooS5Reader
+from mleasy.reader.time_series.univariate import UTSAnomalyReader, YahooS5Reader
 
 
 class Munir2018Loader(ILoader):
@@ -19,14 +21,26 @@ class Munir2018Loader(ILoader):
     
     Parameters
     ----------
-    dataset_location : str
-        The location in the file system of the dataset.
-        
     window_size : int
         The size of the window.
     
-    setting : str
+    setting : str, default="yahoo_s5"
         The experimental setting that we want to consider for the loader.
+
+    dataset_location : str, default="data/anomaly_detection/yahoo_s5"
+        The location in the file system of the dataset.
+
+    train_perc : float, default=0.36
+        The percentage of data points to be used for training. The default value
+        is the one used in Munir et al. for the training of the model.
+
+    valid_perc : float, default=0.04
+        The percentage of data points to be used for validation. The default
+        value is the one used in Munir et al. for the training of the model.
+
+    test_perc : float, default=0.6
+        The percentage of data points to be used for testing. The default value
+        is the one used in Munir et al. for the training of the model.
         
     Attributes
     ----------
@@ -49,14 +63,20 @@ class Munir2018Loader(ILoader):
     
     __IMPLEMENTED_DS = ["yahoo_s5"]
     
-    def __init__(self, dataset_location: str,
-                 window_size: int,
-                 setting: str = "yahoo_s5"):
+    def __init__(self, window_size: int,
+                 setting: str = "yahoo_s5",
+                 dataset_location: str = "data/anomaly_detection/yahoo_s5",
+                 train_perc: float = TRAINING_PERC,
+                 valid_perc: float = VALIDATION_PERC,
+                 test_perc: float = TESTING_PERC):
         super().__init__()
         
         self.dataset_location = dataset_location
         self.window_size = window_size
         self.setting = setting
+        self.train_perc = train_perc
+        self.valid_perc = valid_perc
+        self.test_perc = test_perc
         self._reader: UTSAnomalyReader = None
         self._swap_setting = None
         
@@ -117,7 +137,9 @@ class Munir2018Loader(ILoader):
                              setting: str = None,
                              window_size: int = None,
                              *args,
-                             **kwargs):
+                             **kwargs) -> Tuple[list[pd.DataFrame],
+                                                pd.DataFrame,
+                                                pd.DataFrame]:
         """Get the training, validation and testing
         
         Parameters
@@ -168,9 +190,9 @@ class Munir2018Loader(ILoader):
 
         window_size = window_size if window_size is not None else self.window_size
         dataset = self._reader[series]
-        self._reader.train_valid_test_split(self.TRAINING_PERC,
-                                            self.VALIDATION_PERC,
-                                            self.TESTING_PERC)
+        self._reader.train_valid_test_split(self.train_perc,
+                                            self.valid_perc,
+                                            self.test_perc)
         train, valid, test = self._reader.get_train_valid_test_dataframes()
         train_gt, _, _ = self._reader.get_train_valid_test_ground_truth("target")
 
@@ -236,6 +258,12 @@ class Munir2018Loader(ILoader):
             raise TypeError("dataset_location must be a string")
         elif not isinstance(self.window_size, int):
             raise TypeError("window_size must be an integer")
+        elif not isinstance(self.train_perc, Number):
+            raise TypeError("train_perc must be a number")
+        elif not isinstance(self.valid_perc, Number):
+            raise TypeError("valid_perc must be a number")
+        elif not isinstance(self.test_perc, Number):
+            raise TypeError("test_perc must be a number")
         
         if self.setting not in self.DATASETS:
             raise ValueError(f"setting must be one of {self.DATASETS}")
@@ -244,6 +272,14 @@ class Munir2018Loader(ILoader):
                              " the dataset")
         elif self.window_size < 1:
             raise ValueError("window_size must be strictly positive")
+        elif not 0 < self.train_perc < 1:
+            raise ValueError("train_perc must be between 0 and 1")
+        elif not 0 < self.valid_perc < 1:
+            raise ValueError("valid_perc must be between 0 and 1")
+        elif not 0 < self.test_perc < 1:
+            raise ValueError("test_perc must be between 0 and 1")
+        elif self.train_perc + self.valid_perc + self.test_perc != 1:
+            raise ValueError("train_perc+valid_perc+test_perc must be 1")
         
         # FIXME: implement all datasets
         if self.setting not in self.__IMPLEMENTED_DS:

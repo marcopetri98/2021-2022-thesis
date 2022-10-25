@@ -6,7 +6,7 @@ import os.path
 import pandas as pd
 
 from mleasy.reader.time_series.univariate import UTSAnomalyReader
-from utils import print_header, print_step
+from mleasy.utils import print_header, print_step
 
 
 class YahooS5Iterator(object):

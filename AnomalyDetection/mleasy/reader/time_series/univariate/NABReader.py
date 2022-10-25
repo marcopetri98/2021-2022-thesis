@@ -5,7 +5,7 @@ import json
 
 import numpy as np
 
-from reader.time_series.univariate import UTSAnomalyReader
+from mleasy.reader.time_series.univariate import UTSAnomalyReader
 from mleasy.utils.printing import print_header, print_step
 
 

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from mleasy.reader import MissingStrategy
-from reader.time_series.univariate import UTSAnomalyReader
+from mleasy.reader.time_series.univariate import UTSAnomalyReader
 from mleasy.utils.printing import print_header, print_step
 
 
