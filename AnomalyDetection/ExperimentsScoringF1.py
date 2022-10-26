@@ -55,9 +55,6 @@ for model_name in MODELS:
                                                                                          window_size,
                                                                                          window_multiple_of_period=False)
 
-                    train_pts = [e["value"].values.reshape(-1, 1) for e in train_seq]
-                    train_lab = [e["target"].values for e in train_seq]
-
                     valid_scores_path = "output/experiments_scoring/{}/validation_{}_{}_{}_{}_{}_scores.csv".format(model_name, model_name, dataset, score_method, train_length, window_size)
                     test_scores_path = "output/experiments_scoring/{}/testing_{}_{}_{}_{}_{}_scores.csv".format(model_name, model_name, dataset, score_method, train_length, window_size)
 
