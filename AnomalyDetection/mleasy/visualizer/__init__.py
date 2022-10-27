@@ -18,5 +18,6 @@ from .pie_plots import pie_class_distribution
 from .box_plots import box_plot
 
 from .line_plots import line_plot
+from .line_plots import confidence_line_plot
 
 from .scatter_plots import scatter_plot
