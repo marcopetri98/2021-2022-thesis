@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score
 
 from mleasy.applications import Zangrando2022Loader
 from mleasy.models.time_series.anomaly.machine_learning import TSAIsolationForest
-from mleasy.utils import print_header, print_step
+from mleasy.utils import print_header, print_step, load_py_json
 
 
 def cut_true_pred_labels(true, pred, cutting, window):
@@ -32,9 +32,13 @@ VOTINGS = ["left", "centre", "right", "majority_voting", "byzantine_voting", "un
 VOTING_STEP = 0.01
 SAVE_DIR = "output/experiments_voting/confidence"
 # never put a value less than 1
-BASE_TO_ADD = 11
-REPETITIONS = 15
-EXPERIMENT_REP = 2
+BASE_TO_ADD = 1
+REPETITIONS = 25
+EXPERIMENT_REP = 1
+SEEDS: list | None = load_py_json("ExperimentsConfidenceSeeds.json")
+
+if len(SEEDS) < BASE_TO_ADD + REPETITIONS - 1:
+    raise ValueError("There aren't enough seeds. Increase them.")
 
 for model_name in MODELS:
     print_header("Doing scoring experiments with {}".format(model_name))
@@ -46,7 +50,7 @@ for model_name in MODELS:
               ["left", "centre", "right", "majority_voting", "byzantine_voting", "unanimity", "voting"],
               [e for e in range(1, REPETITIONS+BASE_TO_ADD)]]
     df_index = pd.MultiIndex.from_product(values, names=["dataset", "training_length", "voting", "repetition"])
-    results_df = pd.DataFrame(0.0, df_index, ["f1_val", "f1_test", "threshold"])
+    results_df = pd.DataFrame(0.0, df_index, ["seed", "f1_val", "f1_test", "threshold"])
 
     data_loader = Zangrando2022Loader(DATASETS, TRAIN_LENGTH)
     
@@ -71,6 +75,7 @@ for model_name in MODELS:
             model = TSAIsolationForest(window=window_size,
                                        n_estimators=70,
                                        max_samples=400,
+                                       random_state=SEEDS[rep + BASE_TO_ADD - 1],
                                        **voting_params)
             model.fit_multiple(train_pts, train_lab)
         else:
@@ -162,6 +167,9 @@ for model_name in MODELS:
         true_labels, labels = cut_true_pred_labels(true_labels, labels, vote_method, window_size)
         f1 = f1_score(true_labels, labels)
         results_df.loc[(dataset, train_length, vote_method, rep + BASE_TO_ADD), "f1_test"] = f1
+
+        # save the seed on the CSV
+        results_df.loc[(dataset, train_length, vote_method, rep + BASE_TO_ADD), "seed"] = SEEDS[rep + BASE_TO_ADD - 1]
 
         print_step("F1 on testing is {}".format(f1))
                 

@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.metrics import f1_score
 
 from mleasy.applications import Zangrando2022Threshold, Zangrando2022Loader
-from mleasy.utils import print_header, print_step
+from mleasy.utils import print_header, print_step, load_py_json
 
 
 def cut_true_pred_labels(true, pred, cutting, window):
@@ -35,9 +35,13 @@ SCORINGS = ["left", "centre", "right", "min", "max", "average", "non_overlapping
 SAVE_DIR = "output/experiments_scoring/confidence"
 THRESHOLDS = 41
 # never put a value less than 1
-BASE_TO_ADD = 11
-REPETITIONS = 15
-EXPERIMENT_REP = 2
+BASE_TO_ADD = 1
+REPETITIONS = 25
+EXPERIMENT_REP = 1
+SEEDS: list | None = load_py_json("ExperimentsConfidenceSeeds.json")
+
+if len(SEEDS) < BASE_TO_ADD + REPETITIONS - 1:
+    raise ValueError("There aren't enough seeds. Increase them.")
 
 for model_name in MODELS:
     print_header("Computing best F1 of {}".format(model_name))
@@ -49,7 +53,7 @@ for model_name in MODELS:
               ["left", "centre", "right", "min", "max", "average", "non_overlapping"],
               [e for e in range(1, REPETITIONS+BASE_TO_ADD)]]
     df_index = pd.MultiIndex.from_product(values, names=["dataset", "training_length", "scoring", "repetition"])
-    results_df = pd.DataFrame(0.0, df_index, ["f1_val", "f1_test", "threshold"])
+    results_df = pd.DataFrame(0.0, df_index, ["seed", "f1_val", "f1_test", "threshold"])
 
     data_loader = Zangrando2022Loader(DATASETS, TRAIN_LENGTH)
 
@@ -110,6 +114,9 @@ for model_name in MODELS:
 
         print_step("The best F1 on testing is {}".format(f1))
         results_df.loc[(dataset, train_length, score_method, rep + BASE_TO_ADD), "f1_test"] = f1
+
+        # save the seed on the CSV
+        results_df.loc[(dataset, train_length, score_method, rep + BASE_TO_ADD), "seed"] = SEEDS[rep + BASE_TO_ADD - 1]
 
     results_df.to_csv(SAVE_RESULTS_PATH)
     print_header("Ended F1 computation of {}".format(model_name))

@@ -5,8 +5,8 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 from mleasy.applications import Zangrando2022Loader
-from mleasy.models.time_series.anomaly.machine_learning import TSAIsolationForest, TSALOF, TSAOCSVM
-from mleasy.utils import print_header, print_step
+from mleasy.models.time_series.anomaly.machine_learning import TSAIsolationForest
+from mleasy.utils import print_header, print_step, load_py_json
 
 
 def cut_true_pred_labels(true, pred, cutting, window):
@@ -35,9 +35,13 @@ TRAIN_LENGTH = ["1m", "3w", "2w", "1w", "6d", "5d", "4d", "3d", "2d", "1d"]
 SCORINGS = ["left", "centre", "right", "min", "max", "average", "non_overlapping"]
 SAVE_DIR = "output/experiments_scoring/confidence"
 # never put a value less than 1
-BASE_TO_ADD = 11
-REPETITIONS = 15
-EXPERIMENT_REP = 2
+BASE_TO_ADD = 1
+REPETITIONS = 25
+EXPERIMENT_REP = 1
+SEEDS: list | None = load_py_json("ExperimentsConfidenceSeeds.json")
+
+if len(SEEDS) < BASE_TO_ADD + REPETITIONS - 1:
+    raise ValueError("There aren't enough seeds. Increase them.")
 
 for model_name in MODELS:
     print_header("Doing scoring experiments with {}".format(model_name))
@@ -49,7 +53,7 @@ for model_name in MODELS:
               ["left", "centre", "right", "min", "max", "average", "non_overlapping"],
               [e for e in range(1, REPETITIONS+BASE_TO_ADD)]]
     df_index = pd.MultiIndex.from_product(values, names=["dataset", "training_length", "scoring", "repetition"])
-    results_df = pd.DataFrame(0.0, df_index, ["auroc_val", "auroc_test"])
+    results_df = pd.DataFrame(0.0, df_index, ["seed", "auroc_val", "auroc_test"])
 
     data_loader = Zangrando2022Loader(DATASETS, TRAIN_LENGTH)
     
@@ -70,7 +74,8 @@ for model_name in MODELS:
                                        classification="points_score",
                                        window=window_size,
                                        n_estimators=70,
-                                       max_samples=400)
+                                       max_samples=400,
+                                       random_state=SEEDS[rep + BASE_TO_ADD - 1])
             model.fit_multiple(train_pts, train_lab)
         else:
             raise ValueError("Model {} is not expected".format(model_name))
@@ -137,6 +142,9 @@ for model_name in MODELS:
         true_labels, scores = cut_true_pred_labels(true_labels, scores, score_method, window_size)
         roc_auc = roc_auc_score(true_labels, scores)
         results_df.loc[(dataset, train_length, score_method, rep + BASE_TO_ADD), "auroc_test"] = roc_auc
+
+        # save the seed on the CSV
+        results_df.loc[(dataset, train_length, score_method, rep + BASE_TO_ADD), "seed"] = SEEDS[rep + BASE_TO_ADD - 1]
 
         print_step("ROC AUC on testing is {}".format(roc_auc))
 
