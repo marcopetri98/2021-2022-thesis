@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt, gridspec
 
-from visualizer import confidence_line_plot
+from mleasy.visualizer import confidence_line_plot
 
 # which and at which significance level to do the normality tests
 EXPERIMENT = "scoring"
@@ -21,7 +21,7 @@ METRIC = "AUROC" if EXPERIMENT == "scoring" and not F1_SCORING else "F1"
 # constants for the plot
 VALIDATION = False
 LEGEND_LOC = "lower right"
-SUPER_TITLE = f"Confidence intervals for the {EXPERIMENT} methods"
+SUPER_TITLE = f"{'Testing' if not VALIDATION else 'Validation'} confidence intervals for the {EXPERIMENT} methods"
 COLORS = ["red", "black", "blue", "green", "darkorange", "mediumvioletred", "darkturquoise"]
 
 # models involved in testing and path where scores are saved
