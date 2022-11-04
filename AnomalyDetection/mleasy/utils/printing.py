@@ -4,7 +4,7 @@ import colorama
 from colorama import Fore, Style
 
 
-def print_header(heading: str, separator: str = "=") -> None:
+def print_header(heading: str, separator: str = "=", **kwargs) -> None:
 	"""Prints a heading.
 
 	Parameters
@@ -14,6 +14,10 @@ def print_header(heading: str, separator: str = "=") -> None:
 
 	separator: str, default="="
 		The separator to be used to limit the heading.
+
+	kwargs
+		Keyword arguments. The only accepted is end which is propagated to the
+		print function.
 
 	Returns
 	-------
@@ -28,16 +32,23 @@ def print_header(heading: str, separator: str = "=") -> None:
 	string_to_print = string_to_print + "= " + heading + " =\n"
 	string_to_print = string_to_print + "=" * (len(heading) + 4)
 
-	print(string_to_print)
+	if "end" in kwargs.keys():
+		print(string_to_print, end=kwargs["end"])
+	else:
+		print(string_to_print)
 
 
-def print_step(*args) -> None:
+def print_step(*args, **kwargs) -> None:
 	"""Prints a step of execution.
 
 	Parameters
 	----------
-	*args
+	args
 		Objects representing the message to be printed.
+
+	kwargs
+		Keyword arguments. The only accepted is end which is propagated to the
+		print function.
 
 	Returns
 	-------
@@ -56,16 +67,23 @@ def print_step(*args) -> None:
 			else:
 				step_print += str(var)
 
-	print(step_print)
+	if "end" in kwargs.keys():
+		print(step_print, end=kwargs["end"])
+	else:
+		print(step_print)
 
 
-def print_warning(*args) -> None:
+def print_warning(*args, **kwargs) -> None:
 	"""Prints a warning on screen.
 
 	Parameters
 	----------
-	*args
+	args
 		Objects representing the message to be printed.
+
+	kwargs
+		Keyword arguments. The only accepted is end which is propagated to the
+		print function.
 
 	Returns
 	-------
@@ -85,4 +103,7 @@ def print_warning(*args) -> None:
 			else:
 				warning += str(var)
 
-	print(Fore.RED + Style.BRIGHT + warning + Style.RESET_ALL)
+	if "end" in kwargs.keys():
+		print(Fore.RED + Style.BRIGHT + warning + Style.RESET_ALL, end=kwargs["end"])
+	else:
+		print(Fore.RED + Style.BRIGHT + warning + Style.RESET_ALL)
