@@ -1,14 +1,11 @@
 import itertools
-from math import sqrt
 
-import numpy as np
 import pandas as pd
-from scipy.stats import t
 
-from utils import print_header, print_step
+from mleasy.utils import print_header, print_step
 
 # which and at which significance level to do the normality tests
-EXPERIMENT = "scoring"
+EXPERIMENT = "voting"
 F1_SCORING = False
 if F1_SCORING:
     ADD = "f1_41_"
@@ -30,11 +27,16 @@ for model_name in MODELS:
     train_lengths = bounds_df["training_length"].unique()
     methods = bounds_df[EXPERIMENT].unique()
     bounds_df.set_index(["dataset", "training_length", EXPERIMENT, "repetition"], inplace=True)
+    
+    if EXPERIMENT == "scoring":
+        methods_cols = ["left", "centre", "right", "min", "max", "average", "non_overlapping"]
+    else:
+        methods_cols = ["left", "centre", "right", "majority_voting", "byzantine_voting", "unanimity", "voting"]
 
     # build results dataframe
     values = [["fridge1", "fridge2", "fridge3"],
               ["1m", "3w", "2w", "1w", "6d", "5d", "4d", "3d", "2d", "1d"],
-              ["left", "centre", "right", "min", "max", "average", "non_overlapping"]]
+              methods_cols]
     df_index = pd.MultiIndex.from_product(values, names=["dataset", "training_length", EXPERIMENT])
     results_df = pd.DataFrame(0.0, df_index, ["confidence_level",
                                               "lower_bound_val", "upper_bound_val", "sample_mean_val",

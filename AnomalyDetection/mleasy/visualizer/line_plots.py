@@ -10,6 +10,8 @@ from mleasy.input_validation import is_matplotlib_color
 
 
 def __check_common_line_params(x,
+                               y_lim: dict = None,
+                               x_lim: dict = None,
                                x_ticks_loc=None,
                                x_ticks_labels=None,
                                x_ticks_rotation: float = 0,
@@ -25,9 +27,21 @@ def __check_common_line_params(x,
     x_ticks_loc = np.array(x_ticks_loc) if x_ticks_loc is not None else None
     x_ticks_labels = np.array(x_ticks_labels) if x_ticks_labels is not None else None
 
-    check_argument_types([x_ticks_rotation, formats, title, y_axis_label, x_axis_label, fig_size, ax],
-                         [Number, [str, list, None], str, str, str, tuple, [Axes, None]],
-                         ["x_ticks_rotation", "formats", "title", "y_axis_label", "x_axis_label", "fig_size", "ax"])
+    check_argument_types([y_lim, x_lim, x_ticks_rotation, formats, title, y_axis_label, x_axis_label, fig_size, ax],
+                         [[dict, None], [dict, None], Number, [str, list, None], str, str, str, tuple, [Axes, None]],
+                         ["y_lim", "x_lim", "x_ticks_rotation", "formats", "title", "y_axis_label", "x_axis_label", "fig_size", "ax"])
+    
+    # check that lims are numbers
+    x_lim, y_lim = __set_lim(x_lim), __set_lim(y_lim)
+    for key in ["low", "high"]:
+        if x_lim is not None:
+            check_argument_types([x_lim[key]],
+                                 [[Number, None]],
+                                 [f"x_lim[\"{key}\"]"])
+        if y_lim is not None:
+            check_argument_types([y_lim[key]],
+                                 [[Number, None]],
+                                 [f"y_lim[\"{key}\"]"])
 
     if colors is not None and not isinstance(colors, list):
         colors = [colors] * (len(x) if isinstance(x, list) else x.shape[0])
@@ -71,8 +85,35 @@ def __check_common_line_params(x,
         raise ValueError("x_ticks_labels must have at most 1 dimension")
 
 
+def __set_lim(lim: dict = None) -> dict:
+    """Checks correctness of lims and eventually corrects them.
+    
+    Parameters
+    ----------
+    lim : dict, default=None
+        It represents the limits on an axis for the plot. The only keys used
+        on the dictionary are "low" and "high" and they represent the limits
+        on the axis.
+
+    Returns
+    -------
+    correct_x_lim, correct_y_lim : dict | None, dict | None
+        The correct dictionaries representing the lims.
+    """
+    new_lim = {"low": None, "high": None}
+    
+    if lim is not None and "low" in lim:
+        new_lim["low"] = lim["low"]
+    if lim is not None and "high" in lim:
+        new_lim["high"] = lim["high"]
+        
+    return new_lim
+
+
 def __line_plot(x,
                 y,
+                x_lim: dict = None,
+                y_lim: dict = None,
                 x_ticks_loc=None,
                 x_ticks_labels=None,
                 x_ticks_rotation: float = 0,
@@ -103,6 +144,16 @@ def __line_plot(x,
         and a list of array-like in case multiple lines should be drawn. All the
         array-like contained in this variable must have the same shape of the
         array-like contained in the `x` argument.
+    
+    x_lim : dict, default=None
+        It represents the limits on the x-axis for the plot. The only keys used
+        on the dictionary are "low" and "high" and they represent the limits
+        on the axis.
+        
+    y_lim : dict, default=None
+        It represents the limits on the y-axis for the plot. The only keys used
+        on the dictionary are "low" and "high" and they represent the limits
+        on the axis.
 
     x_ticks_loc : array-like, default=None
         The location at which printing the ticks labels. These will be also the
@@ -198,19 +249,21 @@ def __line_plot(x,
             raise ValueError("arrays have more than one dimension, if you want "
                              "to plot multiple lines, pass a list of 1d arrays")
 
-    __check_common_line_params(x,
-                               x_ticks_loc,
-                               x_ticks_labels,
-                               x_ticks_rotation,
-                               formats,
-                               colors,
-                               series_labels,
-                               title,
-                               y_axis_label,
-                               x_axis_label,
-                               plot_legend,
-                               fig_size,
-                               ax)
+    __check_common_line_params(x=x,
+                               x_lim=x_lim,
+                               y_lim=y_lim,
+                               x_ticks_loc=x_ticks_loc,
+                               x_ticks_labels=x_ticks_labels,
+                               x_ticks_rotation=x_ticks_rotation,
+                               formats=formats,
+                               colors=colors,
+                               series_labels=series_labels,
+                               title=title,
+                               y_axis_label=y_axis_label,
+                               x_axis_label=x_axis_label,
+                               plot_legend=plot_legend,
+                               fig_size=fig_size,
+                               ax=ax)
 
     x_ticks_loc = np.array(x_ticks_loc) if x_ticks_loc is not None else None
     x_ticks_labels = np.array(x_ticks_labels) if x_ticks_labels is not None else None
@@ -285,12 +338,15 @@ def __line_plot(x,
             x_ticks_loc = np.linspace(start, end, x_ticks_labels.shape[0])
             add_ticks(x_ticks_loc, x_ticks_labels, x_ticks_rotation, ax)
 
+    x_lim, y_lim = __set_lim(x_lim), __set_lim(y_lim)
+
     if ax is None:
-        if plot_fig:
-            plt.title(title)
-            plt.xlabel(x_axis_label)
-            plt.ylabel(y_axis_label)
-            plt.tight_layout()
+        plt.title(title)
+        plt.xlabel(x_axis_label)
+        plt.ylabel(y_axis_label)
+        plt.tight_layout()
+        plt.ylim(y_lim["low"], y_lim["high"])
+        plt.xlim(x_lim["low"], x_lim["high"])
 
         if series_labels is not None and plot_legend:
             plt.legend()
@@ -298,10 +354,11 @@ def __line_plot(x,
         if plot_fig:
             plt.show()
     else:
-        if plot_fig:
-            ax.set_title(title)
-            ax.set_xlabel(x_axis_label)
-            ax.set_ylabel(y_axis_label)
+        ax.set_title(title)
+        ax.set_xlabel(x_axis_label)
+        ax.set_ylabel(y_axis_label)
+        ax.set_ylim(y_lim["low"], y_lim["high"])
+        ax.set_xlim(x_lim["low"], x_lim["high"])
 
         if series_labels is not None and plot_legend:
             ax.legend()
@@ -309,6 +366,8 @@ def __line_plot(x,
 
 def line_plot(x,
               y,
+              x_lim: dict = None,
+              y_lim: dict = None,
               x_ticks_loc=None,
               x_ticks_labels=None,
               x_ticks_rotation: float = 0,
@@ -337,6 +396,16 @@ def line_plot(x,
         and a list of array-like in case multiple lines should be drawn. All the
         array-like contained in this variable must have the same shape of the
         array-like contained in the `x` argument.
+    
+    x_lim : dict, default=None
+        It represents the limits on the x-axis for the plot. The only keys used
+        on the dictionary are "low" and "high" and they represent the limits
+        on the axis.
+        
+    y_lim : dict, default=None
+        It represents the limits on the y-axis for the plot. The only keys used
+        on the dictionary are "low" and "high" and they represent the limits
+        on the axis.
 
     x_ticks_loc : array-like, default=None
         The location at which printing the ticks labels. These will be also the
@@ -391,26 +460,30 @@ def line_plot(x,
     ValueError
         At least one variable has unacceptable value or inconsistent value.
     """
-    __line_plot(x,
-                y,
-                x_ticks_loc,
-                x_ticks_labels,
-                x_ticks_rotation,
-                formats,
-                colors,
-                series_labels,
-                title,
-                y_axis_label,
-                x_axis_label,
-                plot_legend,
-                fig_size,
-                ax,
-                True,
-                True)
+    __line_plot(x=x,
+                y=y,
+                x_lim=x_lim,
+                y_lim=y_lim,
+                x_ticks_loc=x_ticks_loc,
+                x_ticks_labels=x_ticks_labels,
+                x_ticks_rotation=x_ticks_rotation,
+                formats=formats,
+                colors=colors,
+                series_labels=series_labels,
+                title=title,
+                y_axis_label=y_axis_label,
+                x_axis_label=x_axis_label,
+                plot_legend=plot_legend,
+                fig_size=fig_size,
+                ax=ax,
+                create_fig=True,
+                plot_fig=True)
 
 
 def confidence_line_plot(x,
                          y,
+                         x_lim: dict = None,
+                         y_lim: dict = None,
                          x_ticks_loc=None,
                          x_ticks_labels=None,
                          x_ticks_rotation: float = 0,
@@ -436,7 +509,18 @@ def confidence_line_plot(x,
 
     y : list array-like or list of lists of array-like
         A list of dimension 3 with the upper bounds at location 0, the lower
-        bounds at location 1, and the estimate at location 2.
+        bounds at location 1, and the estimate at location 2. Or a list of lists
+        of dimension 3 composed as in the single case.
+    
+    x_lim : dict, default=None
+        It represents the limits on the x-axis for the plot. The only keys used
+        on the dictionary are "low" and "high" and they represent the limits
+        on the axis.
+        
+    y_lim : dict, default=None
+        It represents the limits on the y-axis for the plot. The only keys used
+        on the dictionary are "low" and "high" and they represent the limits
+        on the axis.
 
     x_ticks_loc : array-like, default=None
         The location at which printing the ticks labels. These will be also the
@@ -495,18 +579,18 @@ def confidence_line_plot(x,
             raise ValueError("x and y must have the same dimension")
 
         for i, couple in enumerate(zip(x, y)):
-            var_dep, var_ind = couple
+            var_ind, var_dep = couple
             
-            if not isinstance(var_ind, list):
+            if not isinstance(var_dep, list):
                 raise ValueError("if you provide multiple lines, the y parameter"
                                  " must be a list of lists of length 3.")
-            elif len(var_ind) != 3:
+            elif len(var_dep) != 3:
                 raise ValueError("elements of y must be lists of length 3")
             
-            var_dep = np.array(var_dep)
-            lower_bound = np.array(var_ind[0])
-            upper_bound = np.array(var_ind[1])
-            estimate = np.array(var_ind[2])
+            var_ind = np.array(var_ind)
+            lower_bound = np.array(var_dep[0])
+            upper_bound = np.array(var_dep[1])
+            estimate = np.array(var_dep[2])
             x[i] = var_ind
             y[i] = [lower_bound, upper_bound, estimate]
 
@@ -524,10 +608,10 @@ def confidence_line_plot(x,
                 raise ValueError("the estimate must be between upper and lower "
                                  "bounds (it is lower than lower bound for "
                                  "some points)")
-            elif var_dep.shape != lower_bound.shape:
+            elif var_ind.shape != lower_bound.shape:
                 raise ValueError("the dependent arrays must have the same shape"
                                  " as the elements of lists of y")
-            elif var_dep.ndim != 1:
+            elif var_ind.ndim != 1:
                 raise ValueError("when you pass a list of arrays, arrays must "
                                  "have 1 dimension")
     else:
@@ -542,20 +626,22 @@ def confidence_line_plot(x,
         elif x.ndim != 1:
             raise ValueError("arrays have more than one dimension, if you want "
                              "to plot multiple lines, pass a list of 1d arrays")
-    
-    __check_common_line_params(x,
-                               x_ticks_loc,
-                               x_ticks_labels,
-                               x_ticks_rotation,
-                               formats,
-                               colors,
-                               series_labels,
-                               title,
-                               y_axis_label,
-                               x_axis_label,
-                               plot_legend,
-                               fig_size,
-                               ax)
+
+    __check_common_line_params(x=x,
+                               x_lim=x_lim,
+                               y_lim=y_lim,
+                               x_ticks_loc=x_ticks_loc,
+                               x_ticks_labels=x_ticks_labels,
+                               x_ticks_rotation=x_ticks_rotation,
+                               formats=formats,
+                               colors=colors,
+                               series_labels=series_labels,
+                               title=title,
+                               y_axis_label=y_axis_label,
+                               x_axis_label=x_axis_label,
+                               plot_legend=plot_legend,
+                               fig_size=fig_size,
+                               ax=ax)
 
     if not 0 < conf_transparency < 1:
         raise ValueError("conf_transparency must be between 0 and 1")
@@ -574,9 +660,9 @@ def confidence_line_plot(x,
     if isinstance(x, list):
         # add all the confidence shadows
         for i, couple in enumerate(zip(x, y)):
-            var_dep, var_ind = couple
-            lower_bound = var_ind[0]
-            upper_bound = var_ind[1]
+            var_ind, var_dep = couple
+            lower_bound = var_dep[0]
+            upper_bound = var_dep[1]
             conf_color_ = None
             if colors is not None and i < len(colors):
                 conf_color_ = colors[i]
@@ -585,37 +671,43 @@ def confidence_line_plot(x,
 
         # add the lines, ticks, legend and plot
         estimates = [e[2] for e in y]
-        __line_plot(x,
-                    estimates,
-                    x_ticks_loc,
-                    x_ticks_labels,
-                    x_ticks_rotation,
-                    formats,
-                    colors,
-                    series_labels,
-                    title,
-                    y_axis_label,
-                    x_axis_label,
-                    plot_legend,
-                    fig_size,
-                    ax)
+        __line_plot(x=x,
+                    y=estimates,
+                    x_lim=x_lim,
+                    y_lim=y_lim,
+                    x_ticks_loc=x_ticks_loc,
+                    x_ticks_labels=x_ticks_labels,
+                    x_ticks_rotation=x_ticks_rotation,
+                    formats=formats,
+                    colors=colors,
+                    series_labels=series_labels,
+                    title=title,
+                    y_axis_label=y_axis_label,
+                    x_axis_label=x_axis_label,
+                    plot_legend=plot_legend,
+                    fig_size=fig_size,
+                    ax=ax,
+                    create_fig=True,
+                    plot_fig=True)
     else:
         # add the confidence shadow
         add_confidence_shadow(x, y[0], y[1], colors, ax, conf_transparency)
         # add the line, ticks, legend and plot
-        __line_plot(x,
-                    y[2],
-                    x_ticks_loc,
-                    x_ticks_labels,
-                    x_ticks_rotation,
-                    formats,
-                    colors,
-                    series_labels,
-                    title,
-                    y_axis_label,
-                    x_axis_label,
-                    plot_legend,
-                    fig_size,
-                    ax,
-                    False,
-                    True)
+        __line_plot(x=x,
+                    y=y[2],
+                    x_lim=x_lim,
+                    y_lim=y_lim,
+                    x_ticks_loc=x_ticks_loc,
+                    x_ticks_labels=x_ticks_labels,
+                    x_ticks_rotation=x_ticks_rotation,
+                    formats=formats,
+                    colors=colors,
+                    series_labels=series_labels,
+                    title=title,
+                    y_axis_label=y_axis_label,
+                    x_axis_label=x_axis_label,
+                    plot_legend=plot_legend,
+                    fig_size=fig_size,
+                    ax=ax,
+                    create_fig=False,
+                    plot_fig=True)
