@@ -10,7 +10,7 @@ class IPredictor(ABC):
 	
 	@abc.abstractmethod
 	def predict(self, X, *args, **kwargs) -> np.ndarray:
-		"""
+		"""Computes prediction for each data point in input.
 		
 		Parameters
 		----------
