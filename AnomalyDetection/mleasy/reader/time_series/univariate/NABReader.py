@@ -5,11 +5,11 @@ import json
 
 import numpy as np
 
-from mleasy.reader.time_series.univariate import UTSAnomalyReader
+from mleasy.reader.time_series import TSReader
 from mleasy.utils.printing import print_header, print_step
 
 
-class NABReader(UTSAnomalyReader):
+class NABReader(TSReader):
     """A reader of NAB time series datasets.
     
     Parameters
@@ -28,6 +28,9 @@ class NABReader(UTSAnomalyReader):
         Whether we should save windows and not only the anomalous point in the
         extracted dataset.
     """
+    _ANOMALY_COL = "target"
+    _SERIES_COL = "value"
+    _TIMESTAMP_COL = "timestamp"
     
     def __init__(self, label_path: str,
                  labels_name: str = "combined_labels.json",

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn import metrics
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
@@ -67,9 +68,10 @@ all_df = reader.read(DATASET_PATH + "all_" + DATASET,
                      missing_strategy=MissingStrategy.FIXED_VALUE).get_dataframe()
 
 if PHASE == "validation":
-    training, test = reader.train_valid_test_split(train=0.6, valid=0.2).get_train_test_dataframes()
+    train_valid, test = train_test_split(all_df, test_size=0.2, shuffle=False)
+    training, valid = train_test_split(train_valid, test_size=0.2, shuffle=False)
 else:
-    training, test = reader.train_test_split(train=0.6).get_train_test_dataframes()
+    training, test = train_test_split(all_df, test_size=0.4, shuffle=False)
 
 normal_data = np.argwhere(training["target"].values == 0)
 training = training.iloc[normal_data.reshape(-1)]

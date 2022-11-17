@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
@@ -53,7 +54,7 @@ model = None
 
 reader = NABReader(DATASET_PATH)
 all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
-training, test = reader.train_test_split(train=0.37).get_train_test_dataframes()
+training, test = train_test_split(all_df, train_size=0.37, shuffle=False)
 
 #################################
 #								#

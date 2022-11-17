@@ -4,9 +4,11 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from mleasy.applications.Interfaces import ILoader
-from mleasy.reader.time_series.univariate import UTSAnomalyReader, YahooS5Reader
+from mleasy.reader.time_series.univariate import YahooS5Reader
+from mleasy.reader.time_series import TSReader
 
 
 class Munir2018Loader(ILoader):
@@ -44,7 +46,7 @@ class Munir2018Loader(ILoader):
         
     Attributes
     ----------
-    _reader : UTSAnomalyReader
+    _reader : TSReader
         The reader for the dataset that is used by the loader.
     """
     DATASETS = ["yahoo_s5",
@@ -77,7 +79,7 @@ class Munir2018Loader(ILoader):
         self.train_perc = train_perc
         self.valid_perc = valid_perc
         self.test_perc = test_perc
-        self._reader: UTSAnomalyReader = None
+        self._reader: UTSReader = None
         self._swap_setting = None
         
         self.__check_parameters()
@@ -190,11 +192,13 @@ class Munir2018Loader(ILoader):
 
         window_size = window_size if window_size is not None else self.window_size
         dataset = self._reader[series]
-        self._reader.train_valid_test_split(self.train_perc,
-                                            self.valid_perc,
-                                            self.test_perc)
-        train, valid, test = self._reader.get_train_valid_test_dataframes()
-        train_gt, _, _ = self._reader.get_train_valid_test_ground_truth("target")
+        train_valid, test = train_test_split(dataset,
+                                             test_size=self.test_perc,
+                                             shuffle=False)
+        train, valid = train_test_split(dataset,
+                                        test_size=self.valid_perc,
+                                        shuffle=False)
+        train_gt = train["target"].values
 
         if setting_is_changed:
             self.set_setting(self._swap_setting)

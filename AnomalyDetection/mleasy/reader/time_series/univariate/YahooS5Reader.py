@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import datetime
-import os.path
+import os
 
 import pandas as pd
 
-from mleasy.reader.time_series.univariate import UTSAnomalyReader
+from mleasy.reader.time_series import TSReader, TSBenchmarkReader
 from mleasy.utils import print_header, print_step
 
 
@@ -24,7 +24,7 @@ class YahooS5Iterator(object):
             raise StopIteration()
 
 
-class YahooS5Reader(UTSAnomalyReader):
+class YahooS5Reader(TSReader, TSBenchmarkReader):
     """Data reader for the yahoo webscope S5 anomaly detection dataset.
     
     The class is used to read and access time series contained in the yahoo S5
@@ -32,11 +32,14 @@ class YahooS5Reader(UTSAnomalyReader):
     
     Parameters
     ----------
-    dataset_location : str
+    benchmark_location : str
         The location of te dataset in the file system. The location is the
         folder containing the benchmarks and the readme files. If a benchmark is
         not present, an exception will be thrown when trying to load it.
     """
+    _ANOMALY_COL = "target"
+    _SERIES_COL = "value"
+    _TIMESTAMP_COL = "timestamp"
     _ALL_BENCHMARKS = ["A1", "A2", "A3", "A4"]
     _MAX_INT = {
         "A1": 67,
@@ -51,12 +54,8 @@ class YahooS5Reader(UTSAnomalyReader):
         "A4": "A4Benchmark-TS"
     }
     
-    def __init__(self, dataset_location: str):
-        super().__init__()
-        
-        self.dataset_location = dataset_location
-        
-        self.__check_parameters()
+    def __init__(self, benchmark_location: str):
+        super().__init__(benchmark_location=benchmark_location)
         
     def __iter__(self):
         return YahooS5Iterator(self)
@@ -121,7 +120,7 @@ class YahooS5Reader(UTSAnomalyReader):
         if isinstance(path, str):
             super().read(path, file_format, False)
         else:
-            complete_path = os.path.join(self.dataset_location,
+            complete_path = os.path.join(self.benchmark_location,
                                          benchmark + "Benchmark",
                                          self._PREFIX[benchmark] + str(path) + ".csv")
             super().read(complete_path, file_format, verbose=False)
@@ -155,24 +154,3 @@ class YahooS5Reader(UTSAnomalyReader):
             print_header("Dataset reading ended")
         
         return self
-        
-    def __check_parameters(self):
-        """Check parameters.
-        
-        Returns
-        -------
-        None
-        
-        Raises
-        ------
-        TypeError
-            If any parameter has wrong type.
-            
-        ValueError
-            If any parameter has wrong value.
-        """
-        if not isinstance(self.dataset_location, str):
-            raise TypeError("dataset_location must be a string")
-        
-        if not os.path.isdir(self.dataset_location):
-            raise ValueError("dataset_location must be a directory")

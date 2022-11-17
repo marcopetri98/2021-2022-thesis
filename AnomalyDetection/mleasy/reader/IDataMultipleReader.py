@@ -20,7 +20,7 @@ class IDataMultipleReader(ABC):
         Parameters
         ----------
         paths : str
-            It is a list of strings representing the paths at which the dataset
+            It is a list of strings representing the paths at which the datasets
             to read are stored.
         
         files_format : str, default="csv"

@@ -6,11 +6,11 @@ import numpy as np
 import pandas as pd
 
 from mleasy.reader import MissingStrategy
-from mleasy.reader.time_series.univariate import UTSAnomalyReader
+from mleasy.reader.time_series import TSReader
 from mleasy.utils.printing import print_header, print_step
 
 
-class ODINTSReader(UTSAnomalyReader):
+class ODINTSReader(TSReader):
     """A reader for ODIN TS annotated datasets.
     
     Parameters
@@ -32,6 +32,9 @@ class ODINTSReader(UTSAnomalyReader):
         It is the column of the anomalies file stating the end of an anomaly
         window.
     """
+    _ANOMALY_COL = "target"
+    _SERIES_COL = "value"
+    _TIMESTAMP_COL = "timestamp"
     _DAY_COL = "day_of_the_week"
     _ANOMALY_TYPE = "anomaly_type"
     
