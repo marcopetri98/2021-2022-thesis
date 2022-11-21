@@ -124,7 +124,7 @@ class YahooS5Reader(TSBenchmarkReader):
             
         if verbose:
             print_step("Renaming columns with standard names [",
-                       rts_config["Univariate"]["index_column"],
+                       rts_config["Univariate"]["index_column"], ", ",
                        rts_config["Univariate"]["value_column"], "]")
             
         match benchmark:
