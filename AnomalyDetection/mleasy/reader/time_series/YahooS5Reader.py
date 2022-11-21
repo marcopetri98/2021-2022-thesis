@@ -22,9 +22,9 @@ class YahooS5Iterator(object):
         self.yahoo_s5 = yahoo_s5
         
     def __next__(self):
-        if self.index < len(self.yahoo_s5) - 1:
+        if self.index < len(self.yahoo_s5):
             self.index += 1
-            return self.yahoo_s5[self.index]
+            return self.yahoo_s5[self.index - 1]
         else:
             raise StopIteration()
 
@@ -68,10 +68,10 @@ class YahooS5Reader(TSBenchmarkReader):
         
         if item <= 66:
             benchmark = "A1"
-            num = item + 1
+            num = item
         else:
             benchmark = "A" + str(int((item - 67) / 100) + 2)
-            num = ((item - 67) % 100) + 1
+            num = ((item - 67) % 100)
             
         return self.read(num, benchmark=benchmark).get_dataframe()
         
