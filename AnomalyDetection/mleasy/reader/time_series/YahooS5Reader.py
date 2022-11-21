@@ -75,7 +75,7 @@ class YahooS5Reader(TSBenchmarkReader):
             
         return self.read(num, benchmark=benchmark).get_dataframe()
         
-    def read(self, path: str | int,
+    def read(self, path: str | bytes | os.PathLike | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
              verbose: bool = True,
@@ -85,10 +85,9 @@ class YahooS5Reader(TSBenchmarkReader):
         """
         Parameters
         ----------
-        path : str or int
-            The absolute path to the csv file of the yahoo dataset, or an
-            integer stating which number of time series to load for the
-            specified benchmark.
+        path : str or bytes or PathLike or int
+            The path to the csv file of the yahoo dataset, or an integer stating
+            which number of time series to load for the specified benchmark.
         
         benchmark : ["A1", "A2", "A3", "A4"]
             The benchmark from which the time series must be extracted in case
@@ -99,8 +98,8 @@ class YahooS5Reader(TSBenchmarkReader):
         self : YahooS5Reader
             Reference to itself to allow call concatenation.
         """
-        if not isinstance(path, str) and not isinstance(path, int):
-            raise TypeError("path must be a string or an int")
+        if not isinstance(path, int) and not os.path.isfile(path):
+            raise TypeError("path must be a valid path or an int")
         elif benchmark is None:
             raise TypeError(f"benchmark must be one of {self._ALL_BENCHMARKS}")
         

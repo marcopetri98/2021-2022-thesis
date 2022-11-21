@@ -8,5 +8,6 @@ from .TSMultipleReader import TSMultipleReader
 # concrete instances for specific datasets and benchmarks
 from .MGABReader import MGABReader, MGABReaderIterator
 from .NABReader import NABReader
+from .NASAReader import NASAReader, NASAIterator
 from .ODINTSReader import ODINTSReader
 from .YahooS5Reader import YahooS5Reader, YahooS5Iterator

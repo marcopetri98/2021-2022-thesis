@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import os
 
-from mleasy.reader.time_series import TSBenchmarkReader
+from mleasy.reader.time_series import TSBenchmarkReader, rts_config
 from mleasy.utils import print_header, print_step
-from reader.time_series import rts_config
 
 
 class MGABReaderIterator(object):
@@ -50,7 +49,7 @@ class MGABReader(TSBenchmarkReader):
 
         return self.read(path=item).get_dataframe()
 
-    def read(self, path: str | int,
+    def read(self, path: str | bytes | os.PathLike | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
              verbose: bool = True,
@@ -59,7 +58,7 @@ class MGABReader(TSBenchmarkReader):
         """
         Parameters
         ----------
-        path : str or int
+        path : str or bytes or PathLike or int
             The path to the csv containing the time series or the integer
             representing which time series to load from the dataset location.
 
@@ -68,8 +67,8 @@ class MGABReader(TSBenchmarkReader):
         self : MGABReader
             An instance to itself to allow call chaining.
         """
-        if not isinstance(path, str) and not isinstance(path, int):
-            raise TypeError("path must be a string or an int")
+        if not isinstance(path, int) and not os.path.isfile(path):
+            raise TypeError("path must be a valid path or an int")
         elif isinstance(path, int) and not 0 <= path < len(self):
             raise ValueError(f"path must be between 0 and {len(self)}")
 

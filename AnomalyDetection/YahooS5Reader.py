@@ -9,10 +9,7 @@ SERIES = 1
 
 for SERIES in range(100):
     reader = YahooS5Reader("data/anomaly_detection/yahoo_s5/")
-    print(SERIES)
     ds = reader.read(SERIES, benchmark=BENCHMARK).get_dataframe()
-
-    print(ds.head())
 
     fig = plt.figure(figsize=(8, 8), tight_layout=True)
     gs = gridspec.GridSpec(2, 1)

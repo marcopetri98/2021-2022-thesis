@@ -18,7 +18,7 @@ class TSReader(IDataReader):
         
         self.dataset: pd.DataFrame | None = None
     
-    def read(self, path: str,
+    def read(self, path,
              file_format: str = "csv",
              pandas_args: dict | None = None,
              verbose: bool = True,

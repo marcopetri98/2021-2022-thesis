@@ -10,7 +10,7 @@ class IDataReader(ABC):
     """
     
     @abc.abstractmethod
-    def read(self, path: str,
+    def read(self, path,
              file_format: str,
              pandas_args: dict | None = None,
              verbose: bool = True,
@@ -23,8 +23,8 @@ class IDataReader(ABC):
         
         Parameters
         ----------
-        path : str
-            It is a string representing the location on disk of the dataset to
+        path
+            It is an  representing the location on disk of the dataset to
             read.
         
         file_format : ["csv", "json"]
