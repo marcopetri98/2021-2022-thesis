@@ -8,8 +8,7 @@ from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 
 from mleasy.applications.Interfaces import ILoader
-from mleasy.reader.time_series import TSMultipleReader
-from mleasy.reader.time_series.univariate import ODINTSReader
+from mleasy.reader.time_series import TSMultipleReader, ODINTSReader
 from mleasy.utils import print_header, print_step
 
 

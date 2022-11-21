@@ -1,6 +1,6 @@
 import os
 
-from reader.time_series import TSReader
+from mleasy.reader.time_series import TSReader
 
 
 class TSBenchmarkReader(TSReader):

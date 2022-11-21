@@ -23,6 +23,7 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
         
     def read_multiple(self, paths: list[str],
                       files_format: str = "csv",
+                      pandas_args: dict | None = None,
                       verbose: bool = True,
                       *args,
                       **kwargs) -> TSMultipleReader:
@@ -34,7 +35,10 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
             if verbose:
                 print_step(f"Start to read the {idx}th dataset")
                 
-            self.read(path, files_format, False)
+            self.read(path=path,
+                      file_format=files_format,
+                      pandas_args=pandas_args,
+                      verbose=False)
             self.all_dataframes.append(self.dataset)
             
             if verbose:

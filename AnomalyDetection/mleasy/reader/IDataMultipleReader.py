@@ -12,6 +12,7 @@ class IDataMultipleReader(ABC):
     @abc.abstractmethod
     def read_multiple(self, paths: list[str],
                       files_format: str = "csv",
+                      pandas_args: dict | None = None,
                       verbose: bool = True,
                       *args,
                       **kwargs) -> IDataMultipleReader:
@@ -25,6 +26,12 @@ class IDataMultipleReader(ABC):
         
         files_format : str, default="csv"
             It is the format in which the datasets are stored.
+
+        pandas_args : dict or None
+            This dict represent all the additional params to be used while
+            reading the dataset with pandas. The params depend on the file
+            format of the dataset. If the format is "csv", the additional params
+            will be the pandas params for `read_csv` and so on.
         
         verbose : bool, default=True
             States if detailed printing must be done while reading the dataset.

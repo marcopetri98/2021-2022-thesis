@@ -47,6 +47,7 @@ class NABReader(TSReader):
     
     def read(self, path: str,
              file_format: str = "csv",
+             pandas_args: dict | None = None,
              verbose: bool = True,
              *args,
              **kwargs) -> NABReader:

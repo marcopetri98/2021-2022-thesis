@@ -11,7 +11,7 @@ from mleasy.utils.printing import print_header, print_step
 
 class TSReader(IDataReader):
     """A reader of time series datasets."""
-    ACCEPTED_FORMATS = ["csv"]
+    ACCEPTED_FORMATS = ["csv", "json", "xml"]
     
     def __init__(self):
         super().__init__()
@@ -20,19 +20,36 @@ class TSReader(IDataReader):
     
     def read(self, path: str,
              file_format: str = "csv",
+             pandas_args: dict | None = None,
              verbose: bool = True,
              *args,
              **kwargs) -> TSReader:
-        if file_format not in self.ACCEPTED_FORMATS:
-            raise ValueError(f"The file format must be one of {self.ACCEPTED_FORMATS}")
-        elif not os.path.isfile(path):
-            raise ValueError(f"The file path \"{path}\" you are trying to read does not exists.")
+        if not os.path.isfile(path):
+            raise ValueError(f"The file path \"{path}\" you are trying to read "
+                             "does not exists.")
+        elif pandas_args is not None and not isinstance(pandas_args, dict):
+            raise TypeError("pandas_args must be None or a dict")
         
         if verbose:
             print_header("Start reading dataset")
             print_step("Start to read csv using pandas")
-        
-        self.dataset = pd.read_csv(path)
+
+        pandas_args = pandas_args if pandas_args is not None else {}
+
+        match file_format:
+            case "csv":
+                self.dataset = pd.read_csv(path, **pandas_args)
+
+            case "json":
+                self.dataset = pd.read_json(path, **pandas_args)
+
+            case "xml":
+                self.dataset = pd.read_xml(path, **pandas_args)
+
+            case _:
+                raise NotImplementedError("The dataset format is not supported,"
+                                          " the accepted formats are "
+                                          f"{self.ACCEPTED_FORMATS}")
         
         if verbose:
             print_step("Ended pandas reading")

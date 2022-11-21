@@ -57,6 +57,7 @@ class ODINTSReader(TSReader):
         
     def read(self, path: str,
              file_format: str = "csv",
+             pandas_args: dict | None = None,
              verbose: bool = True,
              resample: bool = False,
              resampling_granularity: str = "1min",
