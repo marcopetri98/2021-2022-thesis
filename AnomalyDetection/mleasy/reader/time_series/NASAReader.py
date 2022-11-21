@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from reader.time_series import TSReader, rts_config
-from utils import print_header, print_step
+from mleasy.reader.time_series import TSReader, rts_config
+from mleasy.utils import print_header, print_step
 
 
 class NASAIterator(object):
@@ -67,7 +67,6 @@ class NASAReader(TSReader):
              file_format: str = "csv",
              pandas_args: dict | None = None,
              verbose: bool = True,
-             merge_split: bool = False,
              dataset_folder: str = "same-as-labels",
              *args,
              **kwargs) -> NASAReader:
@@ -90,8 +89,6 @@ class NASAReader(TSReader):
         """
         if not isinstance(path, str):
             raise TypeError("path must be a string")
-        elif not isinstance(merge_split, bool):
-            raise TypeError("merge_split must be a boolean")
         elif dataset_folder != "same-as-labels" and not os.path.isdir(dataset_folder):
             raise TypeError("dataset_folder must be a valid path to a dir")
 
@@ -142,27 +139,21 @@ class NASAReader(TSReader):
         if verbose:
             print_step("Building the dataframe")
 
-        if merge_split:
-            series = np.concatenate((train_series, test_series))
-            self.dataset = pd.DataFrame(series, columns=columns)
-        else:
-            train_cols = ["train_" + e for e in columns]
-            test_cols = ["test_" + e for e in columns]
-            data = np.full((train_series.shape[0] + test_series.shape[0], train_series.shape[1] * 2),
-                           fill_value=np.nan)
-            data[:train_series.shape[0], :train_series.shape[1]] = train_series
-            data[train_series.shape[0]:, train_series.shape[1]:] = test_series
-            columns = train_cols
-            columns.extend(test_cols)
-            self.dataset = pd.DataFrame(data, columns=columns)
-
-        self.dataset.insert(0,
-                            rts_config["Multivariate"]["index_column"],
-                            range(train_series.shape[0] + test_series.shape[0]))
-        all_labels = np.concatenate((train_labels, test_labels))
-        self.dataset.insert(len(self.dataset.columns),
-                            rts_config["Multivariate"]["target_column"],
-                            all_labels)
+        series = np.concatenate((train_series, test_series))
+        targets = np.concatenate((train_labels, test_labels))
+        timestamp = np.arange(series.shape[0])
+        is_training = np.zeros(series.shape[0])
+        is_training[:train_series.shape[0]] = 1
+        all_columns = [rts_config["Multivariate"]["index_column"]]
+        all_columns.extend(columns)
+        all_columns.append(rts_config["Multivariate"]["target_column"])
+        all_columns.append(rts_config["Multivariate"]["is_training"])
+        all_data = np.concatenate((timestamp.reshape(-1, 1),
+                                   series,
+                                   targets.reshape(-1, 1),
+                                   is_training.reshape(-1, 1)),
+                                  axis=1)
+        self.dataset = pd.DataFrame(all_data, columns=all_columns)
 
         if verbose:
             print_header("Ended dataset reading")

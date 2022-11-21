@@ -30,7 +30,7 @@ class YahooS5Iterator(object):
 
 
 class YahooS5Reader(TSBenchmarkReader):
-    """Data reader for the yahoo webscope S5 anomaly detection dataset.
+    """Data reader for the yahoo webscope S5 anomaly detection (https://webscope.sandbox.yahoo.com/catalog.php?datatype=s&did=70).
     
     The class is used to read and access time series contained in the yahoo S5
     benchmark for anomaly detection.

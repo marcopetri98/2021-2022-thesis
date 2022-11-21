@@ -10,4 +10,5 @@ from .MGABReader import MGABReader, MGABReaderIterator
 from .NABReader import NABReader
 from .NASAReader import NASAReader, NASAIterator
 from .ODINTSReader import ODINTSReader
+from .UCRReader import UCRReader, UCRIterator
 from .YahooS5Reader import YahooS5Reader, YahooS5Iterator

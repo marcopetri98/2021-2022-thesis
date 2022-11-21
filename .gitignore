@@ -269,3 +269,5 @@ cython_debug/
 
 # Project specific ignores
 **/StupidTest.py
+**/dataset
+**/searches
