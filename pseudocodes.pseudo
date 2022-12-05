@@ -1,0 +1,149 @@
+package AnomalyDetection {
+	/**
+		domain -> time series
+	
+		dataset : an anomaly detection dataset
+		minTrainPerc : the minimum percentage of training points
+		minTestPerc : the minimum percentage of testing points
+		targetMarginDim : the number of normal points at the start of the testing set
+		
+		complexity -> O(dataset.size * (1 - minTestPerc) * log(dataset.size * (1 - minTestPerc)) + targetMarginDim + dataset.size * (1 - minTestPerc))
+		complexity (let dataset.size = n, 1 - minTestPerc = p, targetMarginDim = m) -> O(nplog(np) + m + np)
+		return -> train and testing
+	*/
+	procedure FindTrainTestSplit(array dataset, real minTestPerc, real minTrainPerc, integer targetMarginDim) throws Error, TestingSetNotExist, TrainingSetNotExist {
+		// check that the input is ok
+		if (round(minTestPerc * dataset.size) == 0 or round(minTrainPerc * dataset.size) == 0) {
+			raise Error
+		} elseif (minTestPerc + minTrainPerc > 1) {
+			raise Error
+		} elseif (window < 0) {
+			raise Error
+		}
+		
+		// actually compute the split
+		integer testingStart = round((1 - minTestPerc) * dataset.size)
+		array testingSet = dataset[testingStart:end]
+		// containsAnomalies complexity is O(n log(n))
+		bool hasAnomalies = containsAnomalies(testingSet)
+		
+		if (hasAnomalies) {
+			integer marginPoints = ComputeTestingMargin(testingSet, targetMarginDim)
+			
+			if (marginPoints < targetMarginDim) {
+				testingStart = GetTesting(dataset, testingStart, marginPoints, targetMarginDim)
+			}
+		} else {
+			testingStart = GetTesting(dataset, testingStart, 0, targetMarginDim)
+		}
+		
+		// if the testing must be so big that the training cannot contain minTrainPerc an error must be raised
+		if ((dataset.size - testingStart) / dataset.size < minTrainPerc) {
+			raise TrainingSetNotExist
+		}
+		
+		array testingSet = dataset[testingStart:end]
+		array trainingSet = dataset[0:testingStart]
+		
+		return trainingSet, testingSet
+	}
+	
+	/**
+	domain -> time series
+	
+	testingSet : the testing set
+	targetMarginDim : the number of normal points at the start of the testing set
+	
+	complexity -> O(targetMarginDim)
+	return -> number of margin points in the test
+	*/
+	procedure ComputeTestingMargin(array testingSet, integer targetMarginDim) {
+		integer marginPoints = 0
+		bool stopIteration = FALSE
+		
+		for (integer i = 0; i < targetMarginDim and not stopIteration; i++) {
+			if (isAnomaly(testingSet[i]) {
+				stopIteration = True
+			} else {
+				marginPoints++
+				stopIteration = marginPoints >= targetMarginDim
+			}
+		}
+		
+		return marginPoints
+	}
+	
+	/**
+		domain -> time series
+	
+		dataset : an anomaly detection dataset
+		testing : the current starting index of testing set
+		marginDim : the number of normal points at the start of the testing set
+		targetMarginDim : the number of margin points the test MUST have
+		
+		complexity -> O(testingStart)
+		return -> first index of the testing
+	*/
+	procedure GetTesting(array dataset, array testingStart, integer marginDim, integer targetMarginDim) throws TestingSetNotExist {
+		bool hasAnomalies = containsAnomalies(dataset[testingStart:end])
+		integer newStart
+		
+		for (newStart = testingStart - 1; newStart >= 0 and marginDim < targetMarginDim; newStart--) {
+			if (not hasAnomalies) {
+				hasAnomalies = isAnomaly(dataset[newStart])
+				marginDim = 0
+			} else {
+				if (isAnomaly(dataset[newStart])) {
+					marginDim = 0
+				} else {
+					marginDim++
+				}
+			}
+		}
+		
+		if (not hasAnomalies or marginDim < targetMarginDim) {
+			raise TestingSetNotExist
+		}
+		
+		return newStart
+	}
+	
+	/**
+	domain -> time series
+	
+	k : the number of train/validation splits (if k = 1 it is hold-out set validation)
+	dataset : an anomaly detection dataset
+	minTrainPerc : the minimum percentage of training points
+	minTestPerc : the minimum percentage of testing points
+	targetMarginDim : the number of normal points at the start of the testing set
+	
+	complexity -> O(k * targetMarginDim * (sum from 1 to k of dataset.size) + dataset.size * (1 - minTestPerc) * log(dataset.size * (1 - minTestPerc)) + targetMarginDim + dataset.size * (1 - minTestPerc))
+	return -> start indices of the testing folds (all testing folds starts at that index and end at the next fold start or at the end)
+	*/
+	procedure AnomalyKFoldCrossValidation(integer k, array dataset, real minTestPerc, real minTrainPerc, integer targetMarginDim) throws Error, TestingSetNotExist, TrainingSetNotExist {
+		List foldsStart = List()
+		integer minTestPoints = round(dataset.size * minTestPerc)
+		array training, array testing = FindTrainTestSplit(dataset, minTestPerc, minTrainPerc, targetMarginDim)
+		foldsStart.addFirst(training.size)
+		
+		for (integer currentFold = 1; currentFold < k; currentFold++) {
+			integer newFoldStart = foldsStart[0] - minTestPoints
+			array newFold = dataset[newFoldStart:foldsStart[0]]
+			bool hasAnomalies = hasAnomalies(newFold)
+			integer marginPoints = hasAnomalies ? ComputeTestingMargin(newFold, targetMarginDim) : 0
+			
+			if (not hasAnomalies or (hasAnomalies and marginPoints < targetMarginDim)) {
+				newFoldStart = GetTesting(dataset, newFoldStart, marginPoints, targetMarginDim)
+			}
+			
+			// control that with the current fold we can have the minimum training dimension
+			if ((dataset.size - newFoldStart) / dataset.size < minTrainPerc) {
+				raise TrainingSetNotExist
+			}
+			
+			foldsStart.addFirst(newFoldStart)
+		}
+		
+		return foldsStart
+	}
+}
