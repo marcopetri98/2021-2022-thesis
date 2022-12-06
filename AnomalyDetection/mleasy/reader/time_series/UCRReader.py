@@ -39,9 +39,9 @@ class UCRReader(TSBenchmarkReader):
     def __init__(self, benchmark_location: str):
         super().__init__(benchmark_location=benchmark_location)
 
-        self.__check_parameters()
-
         self._all_datasets = os.listdir(self.benchmark_location)
+
+        self.__check_parameters()
 
     def __iter__(self):
         return UCRIterator(self)
@@ -128,5 +128,5 @@ class UCRReader(TSBenchmarkReader):
         return self
 
     def __check_parameters(self):
-        if len(os.listdir(self.benchmark_location)) != len(self):
+        if len(self._all_datasets) != len(self):
             raise ValueError(f"The benchmark should contain {len(self)} files")

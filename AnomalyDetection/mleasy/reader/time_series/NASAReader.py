@@ -74,7 +74,14 @@ class NASAReader(TSReader):
         Parameters
         ----------
         path : str
-            The names of the channels to read
+            The names of the channels to read (e.g., "A-1" is a valid value
+            for path).
+
+        file_format : str, default="csv"
+            Ignored.
+
+        pandas_args : dict or None, default=None
+            Ignored.
 
         merge_split : bool, default=True
             Whether to merge train and test (concatenate train and test such

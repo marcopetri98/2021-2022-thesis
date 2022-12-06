@@ -35,7 +35,7 @@ class TSBenchmarkReader(TSReader):
             If any parameter has wrong value.
         """
         if not isinstance(self.benchmark_location, str):
-            raise TypeError("dataset_location must be a string")
+            raise TypeError("benchmark_location must be a string")
 
         if not os.path.isdir(self.benchmark_location):
-            raise ValueError("dataset_location must be a directory")
+            raise ValueError("benchmark_location must be a directory")
