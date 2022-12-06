@@ -6,6 +6,7 @@ from .TSBenchmarkReader import TSBenchmarkReader
 from .TSMultipleReader import TSMultipleReader
 
 # concrete instances for specific datasets and benchmarks
+from .ExathlonReader import ExathlonReader, ExathlonIterator
 from .GHLReader import GHLReader, GHLIterator
 from .MGABReader import MGABReader, MGABReaderIterator
 from .NABReader import NABReader
