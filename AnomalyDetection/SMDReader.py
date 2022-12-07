@@ -1,9 +1,7 @@
-import os
-
 from matplotlib import pyplot as plt, gridspec
 
-from reader.time_series import SMDReader
-from visualizer import line_plot
+from mleasy.reader.time_series import SMDReader
+from mleasy.visualizer import line_plot
 
 reader = SMDReader("data/anomaly_detection/smd")
 

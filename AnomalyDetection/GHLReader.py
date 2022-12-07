@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt, gridspec
 
-from reader.time_series import GHLReader
-from visualizer import line_plot
+from mleasy.reader.time_series import GHLReader
+from mleasy.visualizer import line_plot
 
 reader = GHLReader("data/anomaly_detection/ghl")
 

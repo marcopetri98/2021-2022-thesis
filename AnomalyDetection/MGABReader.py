@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt, gridspec
 
-from reader.time_series import MGABReader
-from visualizer import line_plot
+from mleasy.reader.time_series import MGABReader
+from mleasy.visualizer import line_plot
 
 reader = MGABReader("data/anomaly_detection/mgab/")
 

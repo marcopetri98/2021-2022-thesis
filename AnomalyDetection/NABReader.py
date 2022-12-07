@@ -1,16 +1,23 @@
-from sklearn.model_selection import train_test_split
+import numpy as np
+from matplotlib import pyplot as plt, gridspec
 
-from reader.time_series.univariate import NABReader
+from mleasy.reader.time_series import NABReader
+from mleasy.visualizer import line_plot
 
-DATASET_PATH = "data/dataset/"
-DATASET = "ambient_temperature_system_failure.csv"
-WHERE_TO_SAVE = "ambient_gt_labels.csv"
+reader = NABReader("data/anomaly_detection/nab")
 
-reader = NABReader(DATASET_PATH)
-all_df = reader.read(DATASET_PATH + DATASET).get_dataframe()
-training, test = train_test_split(all_df, train_size=0.37, shuffle=False)
+for ds in reader:
+    fig = plt.figure(figsize=(8, 8), tight_layout=True)
+    gs = gridspec.GridSpec(2, 1)
 
-print(test.head())
+    series = fig.add_subplot(gs[0, 0])
+    line_plot(np.arange(ds["timestamp"].values.shape[0]),
+              ds["value"].values,
+              ax=series)
 
-modified_df = test.drop(columns=["value"])
-modified_df.to_csv(WHERE_TO_SAVE, index=False)
+    targets = fig.add_subplot(gs[1, 0])
+    line_plot(np.arange(ds["timestamp"].values.shape[0]),
+              ds["class"].values,
+              ax=targets)
+
+    plt.show()
