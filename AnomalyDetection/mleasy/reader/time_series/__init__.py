@@ -6,12 +6,11 @@ from .TSBenchmarkReader import TSBenchmarkReader
 from .TSMultipleReader import TSMultipleReader
 
 # concrete instances for specific datasets and benchmarks
-from .ExathlonReader import ExathlonReader, ExathlonIterator
-from .GHLReader import GHLReader, GHLIterator
-from .MGABReader import MGABReader, MGABReaderIterator
-from .NABReader import NABReader
-from .NASAReader import NASAReader, NASAIterator
-from .ODINTSReader import ODINTSReader
-from .SMDReader import SMDReader, SMDIterator
-from .UCRReader import UCRReader, UCRIterator
-from .YahooS5Reader import YahooS5Reader, YahooS5Iterator
+from .implementations.ExathlonReader import ExathlonReader, ExathlonIterator
+from .implementations.GHLReader import GHLReader, GHLIterator
+from .implementations.MGABReader import MGABReader, MGABReaderIterator
+from .implementations.NABReader import NABReader
+from .implementations.NASAReader import NASAReader, NASAIterator
+from .implementations.ODINTSReader import ODINTSReader
+from .implementations.SMDReader import SMDReader, SMDIterator
+from .implementations.YahooS5Reader import YahooS5Reader, YahooS5Iterator
