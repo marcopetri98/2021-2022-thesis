@@ -1,5 +1,59 @@
-# 2021-2022-thesis-petri
-Github repository containing all the codes used for the thesis on Anomaly Detection on IoT devices' time series and on the prediction of the residual lifetime of the component.
+# Anomaly detection in time series for energy efficiency
+This is the repository containing all the codes related to my Master of Science thesis in Computer Science and Engineering at Politecnico di Milano. The description of the thesis and of the repository structure and code structure is postponed to next sections to keep the first sections short. The first components I will describe are the ones needed to reproduce the experiments and to download and set up the datasets using automated scripts. I don't want you to lose time, most of the things just involve just running a script.
+
+# Get the python packages
+In my thesis I used several different packages. To get all the needed packages, make sure you use python 3.10 and create the virtual environment using:
+
+```
+conda create -n <env-name> python=3.10
+conda activate <env-name>
+pip install -r ./requirements.txt
+```
+
+If you don't have conda or you don't know what conda is, I invite you to follow this link: https://docs.conda.io/en/latest/miniconda.html
+
+# Get the datasets
+In my thesis I use several public datasets. To increase reproducibility, you can find the script ``setup_datasets.py``. The script accepts some arguments. By default the script downloads, extracts and rename folders. The usage with all default settings is:
+
+```
+python ./setup_datasets.py
+```
+
+**Be aware that the script does not download datasets that are not directly downloadable**: for those datasets (such as Yahoo! Webscope S5) you need to request access to them, download them and to positionate them in the folder in which you downloaded the other datasets. Then, you need also to rename them with the expected name by the program, here is the list:
+
+* Yahoo! Webscope S5: the filename must be "yahoo_s5.tgz".
+
+If you want to download some of the datasets, you can specify that by using the appropriate optional argument:
+
+```
+python ./setup_datasets.py -d ucr smd nab mgab
+```
+
+Will download, extract and rename the datasets: ucr, smd, nab and mgab.
+
+The script is a program as any other linux program. You can call the man page with the following (if you want to know about the optional parameters and their usage):
+
+```
+python ./setup_datasets.py -h
+```
+
+# Datasets description
+In my thesis I used many different datasets to evaluate the methods I developed and state-of-the-art methods against each other. The datasets I used are: Yahoo Webscope S5, UCR, SMD, NASA-MSL, NASA-SMAP, NAB, MGAB, Kitsune, GHL and Exathlon. Here you can find a table with the datasets, reference to the paper presenting them and the link to the dataset.
+
+| Dataset | Paper | Repository |
+| ------- | ----- | ---------- |
+| Exathlon | https://doi.org/10.14778/3476249.3476307 | https://github.com/exathlonbenchmark/exathlon |
+| GHL | https://doi.org/10.48550/arXiv.1612.06676 | https://kas.pr/ics-research/dataset_ghl_1 |
+| Kitsune | http://dx.doi.org/10.14722/ndss.2018.23204 | https://github.com/ymirsky/KitNET-py |
+| MGAB | None | https://doi.org/10.5281/zenodo.3760086 |
+| NAB | https://doi.org/10.1016/j.neucom.2017.04.070 | https://github.com/htm-community/NAB |
+| NASA-SMAP | https://doi.org/10.1145/3219819.3219845 | https://github.com/khundman/telemanom |
+| NASA-MSL | https://doi.org/10.1145/3219819.3219845 | https://github.com/khundman/telemanom |
+| SMD | https://doi.org/10.1145/3292500.3330672 | https://github.com/smallcowbaby/OmniAnomaly |
+| UCR | https://doi.org/10.1109/TKDE.2021.3112126 | https://wu.renjie.im/research/anomaly-benchmarks-are-flawed/ |
+| Yahoo! Webscope S5 | None | https://webscope.sandbox.yahoo.com/catalog.php?datatype=s&did=70 |
+
+These datasets are all public datasets. However, not all of them are directly downloadable. For instance, Yahoo! Webscope S5 can be downloaded upon request approval made to Yahoo via their website. Therefore, I will speak about public datasets (available for download from a link) and about accessible datasets (downloadable after request acceptance).
 
 # Required packages
 The required python module to be able to run the codes of this repository are:
