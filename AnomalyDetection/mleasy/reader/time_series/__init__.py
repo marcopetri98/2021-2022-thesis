@@ -8,6 +8,7 @@ from .TSMultipleReader import TSMultipleReader
 # concrete instances for specific datasets and benchmarks
 from .implementations.ExathlonReader import ExathlonReader, ExathlonIterator
 from .implementations.GHLReader import GHLReader, GHLIterator
+from .implementations.KitsuneReader import KitsuneReader, KitsuneIterator
 from .implementations.MGABReader import MGABReader, MGABReaderIterator
 from .implementations.NABReader import NABReader, NABIterator
 from .implementations.NASAReader import NASAReader, NASAIterator
