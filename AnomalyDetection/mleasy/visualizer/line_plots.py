@@ -44,7 +44,7 @@ def __check_common_line_params(x,
                                  [f"y_lim[\"{key}\"]"])
 
     if colors is not None and not isinstance(colors, list):
-        colors = [colors] * (len(x) if isinstance(x, list) else x.shape[0])
+        colors = [colors] * len(x) if isinstance(x, list) else colors
 
     # check type
     if colors is not None and not is_matplotlib_color(colors):
@@ -243,8 +243,8 @@ def __line_plot(x,
         y = np.array(y)
 
         if x.shape != y.shape:
-            raise ValueError("the dependent and independent arrays must have "
-                             "the same shape")
+            raise ValueError(f"the dependent (shape {x.shape}) and independent "
+                             f"(shape {y.shape}) arrays must have the same shape")
         elif x.ndim != 1:
             raise ValueError("arrays have more than one dimension, if you want "
                              "to plot multiple lines, pass a list of 1d arrays")
