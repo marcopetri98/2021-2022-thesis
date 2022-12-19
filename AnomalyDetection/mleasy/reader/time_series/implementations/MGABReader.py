@@ -21,7 +21,7 @@ class MGABReaderIterator(object):
     def __next__(self):
         if self.index < len(self.mgab_reader):
             self.index += 1
-            return self.mgab_reader[self.index + 1]
+            return self.mgab_reader[self.index - 1]
         else:
             raise StopIteration()
 
