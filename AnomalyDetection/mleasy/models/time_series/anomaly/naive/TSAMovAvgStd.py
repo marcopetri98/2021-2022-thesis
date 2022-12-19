@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import brute
 from sklearn.metrics import f1_score
 
-from models.time_series.anomaly.naive.TSAConstant import TSAConstant
+from mleasy.models.time_series.anomaly.naive import TSAConstant
 from mleasy.utils import print_header, print_step, mov_avg, mov_std
 
 
