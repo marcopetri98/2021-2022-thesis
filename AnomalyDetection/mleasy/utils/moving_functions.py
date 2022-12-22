@@ -23,8 +23,8 @@ def mov_avg(x, window):
     
     if is_multivariate:
         mov_avg_series = np.zeros((x.shape[0] - window + 1, x.shape[1]))
-        for channel in mov_avg_series.shape[1]:
-            mov_avg_series[:, channel] = np.convolve(x, [1 / window] * window, "valid")
+        for channel in range(mov_avg_series.shape[1]):
+            mov_avg_series[:, channel] = np.convolve(x[:, channel], [1 / window] * window, "valid")
     else:
         x = x.flatten()
         mov_avg_series = np.convolve(x, [1 / window] * window, "valid")
@@ -53,8 +53,8 @@ def mov_std(x, window):
     
     if is_multivariate:
         mov_std_series = np.zeros((x.shape[0] - window + 1, x.shape[1]))
-        for channel in mov_std_series.shape[1]:
-            sliding_windows = sliding_window_view(x, window)
+        for channel in range(mov_std_series.shape[1]):
+            sliding_windows = sliding_window_view(x, window, axis=0)
             mov_std_series[:, channel] = np.array(list(map(lambda w: np.std(w), sliding_windows)))
     else:
         x = x.flatten()

@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import f1_score
 
-from models.time_series.anomaly.naive import TSAConstAvgStd
-from reader.time_series import ODINTSReader
-from visualizer import line_plot
+from mleasy.models.time_series.anomaly.naive import TSAConstAvgStd
+from mleasy.reader.time_series import ODINTSReader
+from mleasy.visualizer import line_plot
 
 
 def train_evaluate_plot(values, targets, first_print, classifier, test_perc, verbose=True):
@@ -27,11 +27,11 @@ def train_evaluate_plot(values, targets, first_print, classifier, test_perc, ver
     line_plot(range(values.shape[0]),
               values,
               ax=ax)
-    line_plot(range(predictions.shape[0]),
+    line_plot(range(predictions.shape[0] - half * 2),
               classifier.get_upper_series().flatten(),
               colors="green",
               ax=ax)
-    line_plot(range(predictions.shape[0]),
+    line_plot(range(predictions.shape[0] - half * 2),
               classifier.get_lower_series().flatten(),
               colors="green",
               ax=ax)
@@ -41,8 +41,8 @@ def train_evaluate_plot(values, targets, first_print, classifier, test_perc, ver
               targets,
               colors="red",
               ax=ax)
-    line_plot(range(predictions.shape[0]),
-              predictions,
+    line_plot(range(predictions.shape[0] - half * 2),
+              predictions[half:-half],
               colors="green",
               ax=ax)
     plt.show()

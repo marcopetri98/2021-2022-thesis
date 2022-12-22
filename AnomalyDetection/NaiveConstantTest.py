@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import f1_score
 
-from models.time_series.anomaly.naive import TSAConstant
-from reader.time_series import ODINTSReader
-from visualizer import line_plot
+from mleasy.models.time_series.anomaly.naive import TSAConstant
+from mleasy.reader.time_series import ODINTSReader
+from mleasy.visualizer import line_plot
 
 FRIDGE = 1
 TEST_PERC = 0.5

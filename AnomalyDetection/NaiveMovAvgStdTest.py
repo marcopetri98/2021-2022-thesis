@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import f1_score
 
-from models.time_series.anomaly.naive import TSAMovAvgStd
-from reader.time_series import ODINTSReader
-from visualizer import line_plot
+from mleasy.models.time_series.anomaly.naive import TSAMovAvgStd
+from mleasy.reader.time_series import ODINTSReader
+from mleasy.visualizer import line_plot
 
 
 def train_evaluate_plot(values, targets, first_print, classifier, test_perc, verbose=False):
@@ -18,8 +18,8 @@ def train_evaluate_plot(values, targets, first_print, classifier, test_perc, ver
     half = int((classifier.get_window() - 1) / 2)
 
     print(f"The constant learned is {classifier.get_constant()}, the window learned is {classifier.get_window()}, and the comparison is {classifier.get_comparison()}")
-    print(f"The f1 score of the method is: {f1_score(targets[half:-half], predictions)}")
-    print(f"The f1 score of the method on test set is: {f1_score(targets[last_train_point:][half:-half], predictions[last_train_point:])}")
+    print(f"The f1 score of the method is: {f1_score(targets[half:-half], predictions[half:-half])}")
+    print(f"The f1 score of the method on test set is: {f1_score(targets[last_train_point:][half:-half], predictions[last_train_point:][half:-half])}")
 
     fig = plt.figure(figsize=(8, 8))
     gs = plt.GridSpec(2, 1)
@@ -27,7 +27,7 @@ def train_evaluate_plot(values, targets, first_print, classifier, test_perc, ver
     line_plot(range(values.shape[0]),
               values,
               ax=ax)
-    line_plot(range(predictions.shape[0]),
+    line_plot(range(predictions.shape[0] - half * 2),
               classifier.get_moving_series(),
               colors="green",
               ax=ax)
@@ -37,8 +37,8 @@ def train_evaluate_plot(values, targets, first_print, classifier, test_perc, ver
               targets,
               colors="red",
               ax=ax)
-    line_plot(range(predictions.shape[0]),
-              predictions,
+    line_plot(range(predictions.shape[0] - half * 2),
+              predictions[half:-half],
               colors="green",
               ax=ax)
     plt.show()

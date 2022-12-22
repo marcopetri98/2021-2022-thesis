@@ -10,8 +10,6 @@ from threading import Thread
 from time import sleep
 from typing import Iterable
 
-import inflate64
-
 _PUBLIC_DATASETS = ["exathlon",
                     "ghl",
                     "kitsune",
@@ -21,7 +19,7 @@ _PUBLIC_DATASETS = ["exathlon",
                     "smd",
                     "ucr"]
 _AVAILABLE_DATASETS = ["yahoo_s5"]
-_DEFAULT_FOLDER = "C:/Users/marco/Documents/test/"
+_DEFAULT_FOLDER = "./data/"
 _DATASET_LOCATIONS = {
     "exathlon": "https://api.github.com/repos/exathlonbenchmark/exathlon/zipball",
     "ghl": "https://kas.pr/ics-research/dataset_ghl_1",
