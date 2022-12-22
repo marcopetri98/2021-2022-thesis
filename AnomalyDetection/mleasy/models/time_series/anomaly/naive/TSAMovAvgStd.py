@@ -31,7 +31,7 @@ class TSAMovAvgStd(TSAConstant):
         `y = 1(movavg(series, w) < c)`. With "auto" and supervised  learning it
         chooses the better. Otherwise, it is identical to "greater".
 
-    learning : ["semi-supervised", "supervised"], default="semi"
+    learning : ["supervised"], default="supervised"
         States the type of "learning" that the function must perform. With
         "semi-supervised" it learns the constant from normal data only. With
         "supervised" it learns the constant from labeled data.
@@ -53,7 +53,7 @@ class TSAMovAvgStd(TSAConstant):
     series.
     """
     def __init__(self, comparison: str = "auto",
-                 learning: str = "semi-supervised",
+                 learning: str = "supervised",
                  max_window: int = 100,
                  method: str = "movavg"):
         super().__init__(comparison=comparison, learning=learning)
@@ -64,6 +64,8 @@ class TSAMovAvgStd(TSAConstant):
         self._window = 0
         self._mov_avg_series = None
         self._mov_std_series = None
+        
+        self.__check_parameters()
 
     def get_window(self):
         return self._window
@@ -86,15 +88,19 @@ class TSAMovAvgStd(TSAConstant):
             mov_series = mov_std(x, self._window)
             self._mov_std_series = mov_series
         
-        result = super().classify(mov_series, verbose=verbose if verbose != 2 else True)
+        middle = super().classify(mov_series, verbose=verbose if verbose != 2 else True)
+        half = int((self._window - 1) / 2)
+        all_predictions = np.full(x.shape[0], np.nan)
+        all_predictions[half:-half] = middle
         
         if verbose:
             print_header("Ended samples' classification")
         
-        return result
+        return all_predictions
 
     def fit(self, x, y=None, verbose: bool = True, *args, **kwargs) -> None:
         x = np.array(x)
+        y = np.array(y)
         
         if verbose:
             print_header("Started learning of window and constant")
@@ -107,9 +113,6 @@ class TSAMovAvgStd(TSAConstant):
             except Exception:
                 window = round(window)
 
-            if verbose:
-                print_step(f"Trying window {window}")
-
             if window < 3 or window % 2 == 0:
                 return 1
             else:
@@ -120,9 +123,15 @@ class TSAMovAvgStd(TSAConstant):
                 
                 return 1 - f1_score(targets, super(TSAMovAvgStd, self).classify(mov_series, verbose=False))
 
-        optimal_window = brute(compute_1_minus_f1, [(3, self.max_window)])
-        self._window = round(optimal_window[0])
-        _ = compute_1_minus_f1(self._window)
+        if self.learning == "supervised":
+            optimal_window = brute(compute_1_minus_f1, [(3, self.max_window)])
+            self._window = round(optimal_window[0])
+            _ = compute_1_minus_f1(self._window)
         
         if verbose:
             print_header("Ended learning of window and constant")
+            
+    def __check_parameters(self):
+        if self.learning != "supervised":
+            raise ValueError("moving average method only accepts supervised "
+                             "training")

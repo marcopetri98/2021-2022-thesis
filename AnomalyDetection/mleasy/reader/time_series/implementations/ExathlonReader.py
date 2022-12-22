@@ -222,10 +222,9 @@ class ExathlonReader(TSBenchmarkReader):
         if not isinstance(self.mode, str):
             raise TypeError(f"mode must be one of {self._ALL_MODES}")
 
-        if len(contents) != 11:
-            raise ValueError("benchmark_location must contain the 10 app's "
-                             "folders with data and the ground truth. No other "
-                             "files")
-        elif len(allowed_content.difference(contents)) != 0:
+        if len(contents) < 11:
+            raise ValueError("benchmark_location must contain the 10 apps' "
+                             "folders with data and the ground truth")
+        elif len(allowed_content.difference(allowed_content.intersection(contents))) != 0:
             raise ValueError("benchmark_location must contain the following "
                              f"folders and libraries {allowed_content}")

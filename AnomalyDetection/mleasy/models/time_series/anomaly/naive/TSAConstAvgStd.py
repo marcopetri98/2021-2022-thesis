@@ -23,7 +23,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
     
     Parameters
     ----------
-    learning : ["supervised"], default="semi"
+    learning : ["supervised"], default="supervised"
         States the type of "learning" that the function must perform. With
         "semi-supervised" it learns the constant from normal data only. With
         "supervised" it learns the constant from labeled data.
@@ -97,11 +97,14 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
             print_step("Building the predictions")
 
         pred = np.logical_or(x[half:-half] > self._upper_series, x[half:-half] < self._lower_series)
+        middle = np.array(list(map(lambda row: 1 if np.max(row) else 0, pred)))
+        all_predictions = np.full(x.shape[0], np.nan)
+        all_predictions[half:-half] = middle
 
         if verbose:
             print_header("Ended samples' classification")
 
-        return np.array(list(map(lambda row: 1 if np.max(row) else 0, pred)))
+        return all_predictions
     
     def fit(self, x, y=None, verbose: bool = True, *args, **kwargs) -> None:
         """
@@ -112,6 +115,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
             printing is performed. With True detailed printing is done.
         """
         x = np.array(x)
+        y = np.array(y)
 
         if verbose:
             print_header("Started learning")
@@ -127,8 +131,8 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
             if w % 2 == 0:
                 return 1
             
-            moving_avg = mov_avg(x, w)
-            moving_std = mov_std(x, w)
+            moving_avg = mov_avg(series, w)
+            moving_std = mov_std(series, w)
             half = int((w - 1) / 2)
             
             upper_boundary = a * moving_avg + b * moving_std + c

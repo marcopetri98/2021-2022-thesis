@@ -25,13 +25,13 @@ class TSAConstant(IAnomalyClassifier, IParametric):
         "auto" and supervised learning it chooses the better. Otherwise, it
         is identical to "greater".
 
-    learning : ["semi-supervised", "supervised"], default="semi"
+    learning : ["semi-supervised", "supervised"], default="supervised"
         States the type of "learning" that the function must perform. With
         "semi-supervised" it learns the constant from normal data only. With
         "supervised" it learns the constant from labeled data.
     """
     def __init__(self, comparison: str = "auto",
-                 learning: str = "semi-supervised"):
+                 learning: str = "supervised"):
         super().__init__()
         
         self.comparison = comparison
@@ -68,10 +68,19 @@ class TSAConstant(IAnomalyClassifier, IParametric):
             print_step(f"Classifying using rule: {self._comparison}")
 
         x = np.array(x)
-        if self._comparison == "less":
-            compared = x.flatten() < self._constant
+        compared = np.zeros(x.shape)
+        
+        if self._multivariate:
+            for dim in range(compared.shape[1]):
+                if self._comparison[dim] == "less":
+                    compared[:, dim] = x[:, dim] < self._constant[dim]
+                else:
+                    compared[:, dim] = x[:, dim] > self._constant[dim]
         else:
-            compared = x.flatten() > self._constant
+            if self._comparison == "less":
+                compared = x < self._constant
+            else:
+                compared = x > self._constant
 
         if verbose == 2:
             print_header("Ended samples' classification")
@@ -79,7 +88,7 @@ class TSAConstant(IAnomalyClassifier, IParametric):
         if self._multivariate:
             return np.array(list(map(lambda row: np.max(row), compared)))
         else:
-            return compared
+            return compared.flatten()
 
     def fit(self, x, y=None, verbose: bool | int = 2, *args, **kwargs) -> None:
         """
