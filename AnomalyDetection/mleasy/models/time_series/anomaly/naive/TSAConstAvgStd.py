@@ -139,21 +139,10 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
             lower_boundary = a * moving_avg - b * moving_std + c
             series = series[half:-half]
             
-            pred = np.logical_or(series > upper_boundary, series < lower_boundary)
+            pred = (series > upper_boundary.reshape(-1, 1)) | (series < lower_boundary.reshape(-1, 1))
             return 1 - f1_score(targets[half:-half], pred)
 
         def globally_optimize(extra_args):
-            # def call_obj_func(points):
-            #     return compute_1_minus_f1(points, *extra_args)
-            #
-            # space = [
-            #     Integer(0, 1, name="a"),
-            #     Real(-4, 4, name="b"),
-            #     Real(np.min(extra_args[0]), np.max(extra_args[0]), name="c"),
-            #     Categorical([e for e in range(3, self.max_window + 1, 1) if e % 2 != 0], name="w")
-            # ]
-            # return forest_minimize(call_obj_func, space, random_state=47)
-
             return brute(compute_1_minus_f1,
                          (slice(0, 2, 1), slice(-4, 4.1, 0.1), (np.min(extra_args[0]), np.max(extra_args[0])), (3, self.max_window)),
                          args=extra_args)
