@@ -96,8 +96,8 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
         if verbose:
             print_step("Building the predictions")
 
-        pred = np.logical_or(x[half:-half] > self._upper_series, x[half:-half] < self._lower_series)
-        middle = np.array(list(map(lambda row: 1 if np.max(row) else 0, pred)))
+        pred = (x[half:-half] > self._upper_series) | (x[half:-half] < self._lower_series)
+        middle = np.array(list(map(lambda row: 1 if np.max(row) == 1 else 0, pred)))
         all_predictions = np.full(x.shape[0], np.nan)
         all_predictions[half:-half] = middle
 
@@ -167,7 +167,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
                     extra_params = (x[:, i], y)
                     optimum = globally_optimize(extra_params)
                     self._a[i], self._b[i], self._c[i], self._w[i] = optimum
-                    self._w[i] = int(self._w[i])
+                    self._w[i] = round(self._w[i])
             else:
                 if verbose:
                     print_step("Getting the optimal parameters")
@@ -175,7 +175,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
                 extra_params = (x, y)
                 optimum = globally_optimize(extra_params)
                 self._a, self._b, self._c, self._w = optimum
-                self._w = int(self._w)
+                self._w = round(self._w)
 
         if verbose:
             print_header("Ended learning")

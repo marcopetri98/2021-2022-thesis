@@ -73,7 +73,7 @@ class YahooS5Reader(TSBenchmarkReader):
             benchmark = "A" + str(int((item - 67) / 100) + 2)
             num = ((item - 67) % 100)
             
-        return self.read(num, benchmark=benchmark).get_dataframe()
+        return self.read(num, benchmark=benchmark, verbose=False).get_dataframe()
         
     def read(self, path: str | bytes | os.PathLike | int,
              file_format: str = "csv",
