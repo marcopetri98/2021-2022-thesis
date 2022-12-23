@@ -13,7 +13,7 @@ class YahooS5Iterator(object):
     """An iterator for the YahooS5Reader class.
 
     The iterator iterates over all the time series present in the Yahoo
-    benchmark from the first benchmark class till the last.
+    benchmark in lexicographic order.
     """
     def __init__(self, yahoo_s5):
         super().__init__()
@@ -115,9 +115,9 @@ class YahooS5Reader(TSBenchmarkReader):
         if isinstance(path, int):
             path = os.path.join(self.benchmark_location,
                                 benchmark + "Benchmark",
-                                self._PREFIX[benchmark] + str(path + 1) + f".{file_format}")
+                                self._PREFIX[benchmark] + str(path + 1) + ".csv")
         super().read(path=path,
-                     file_format=file_format,
+                     file_format="csv",
                      pandas_args=pandas_args,
                      verbose=False)
             

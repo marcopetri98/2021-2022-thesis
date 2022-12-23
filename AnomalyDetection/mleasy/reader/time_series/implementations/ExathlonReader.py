@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from mleasy.reader.time_series import TSBenchmarkReader, rts_config
-from mleasy.utils import print_header, print_step
+from mleasy.utils import print_header, print_step, print_warning
 
 
 class ExathlonIterator(object):
@@ -46,29 +46,27 @@ class ExathlonReader(TSBenchmarkReader):
 
         self.__check_parameters()
 
+        def _exathlon_file_order(el):
+            first_num = int(el.split("_")[0])*1e10
+            second_num = int(el.split("_")[1])*1e8
+            third_num = int(el.split("_")[2])
+            fourth_num = int(el.split("_")[3])
+            return first_num + second_num + third_num + fourth_num
+
         self._gt = pd.read_csv(os.path.join(self.benchmark_location, "ground_truth.csv"))
         self._disturbed = self._gt["trace_name"].unique().tolist()
-        self._disturbed.sort()
-
-        last_placed_first = [e for e in self._disturbed if e[:2] == "10"]
-        self._disturbed = self._disturbed[len(last_placed_first):]
-        self._disturbed.extend(last_placed_first)
+        self._disturbed.sort(key=_exathlon_file_order)
 
         self._files_paths = []
         for root, dirs, files in os.walk(self.benchmark_location):
             for name in files:
                 if name != "ground_truth.csv":
-                    self._files_paths.append(os.path.join(root, name))
-
-        last_placed_first = [(e, i) for i, e in enumerate(self._files_paths) if "app10" in e]
-        lasts, lasts_idx = zip(*last_placed_first)
-        for i in reversed(lasts_idx):
-            self._files_paths.pop(i)
-        self._files_paths.extend(lasts)
+                    self._files_paths.append(os.path.normpath(os.path.join(root, name)))
+        self._files_paths.sort(key=lambda el: int(el.split(os.sep)[-2].split("app")[1]) * 1e12 + _exathlon_file_order(el.split(os.sep)[-1].split(".")[0]))
 
         self._disturbed_paths = [e
                                  for e in self._files_paths
-                                 if os.path.basename(os.path.normpath(e)).split(".")[0] in self._disturbed]
+                                 if os.path.basename(e).split(".")[0] in self._disturbed]
         self._undisturbed_paths = [e
                                    for e in self._files_paths
                                    if e not in self._disturbed_paths]
@@ -94,10 +92,10 @@ class ExathlonReader(TSBenchmarkReader):
     def __len__(self):
         match self.mode:
             case "all":
-                return 93
+                return len(self._files_paths)
 
             case "train":
-                return 93 - len(self._disturbed)
+                return len(self._files_paths) - len(self._disturbed)
 
             case "test":
                 return len(self._disturbed)
@@ -111,7 +109,7 @@ class ExathlonReader(TSBenchmarkReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"there are only {len(self)} time series to read")
 
-        return self.read(path=item).get_dataframe()
+        return self.read(path=item, verbose=False).get_dataframe()
 
     def read(self, path: int | str,
              file_format: str = "csv",
@@ -188,8 +186,19 @@ class ExathlonReader(TSBenchmarkReader):
                     end = int(row["extended_effect_end"])
                 start = int(row["root_cause_start"])
 
-                start_idx = dataset["t"].values.tolist().index(start)
-                end_idx = dataset["t"].values.tolist().index(end)
+                if start not in dataset["t"].tolist():
+                    print_warning("Reading a dataset whose anomaly start is not"
+                                  " present in the dataset. It will be selected"
+                                  " the next timestamp if possible.")
+                    start += 1
+                if end not in dataset["t"].tolist():
+                    print_warning("Reading a dataset whose anomaly start is not"
+                                  " present in the dataset. It will be selected"
+                                  " the previous timestamp if possible.")
+                    end -= 1
+                
+                start_idx = dataset["t"].tolist().index(start)
+                end_idx = dataset["t"].tolist().index(end)
                 target[start_idx:end_idx + 1] = 1
 
         if verbose:

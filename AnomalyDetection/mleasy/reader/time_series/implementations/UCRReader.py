@@ -12,8 +12,8 @@ from mleasy.utils import print_header, print_step
 class UCRIterator(object):
     """An iterator for UCRReader.
 
-    The iterator reads the datasets from the first till the last as they are
-    ordered in the benchmark's folder.
+    The iterator reads the datasets from the first till the last in
+    lexicographic order.
     """
     def __init__(self, ucr_reader):
         super().__init__()
@@ -39,7 +39,10 @@ class UCRReader(TSBenchmarkReader):
     def __init__(self, benchmark_location: str):
         super().__init__(benchmark_location=benchmark_location)
 
-        self._all_datasets = os.listdir(self.benchmark_location)
+        self._all_datasets = [e
+                              for e in os.listdir(self.benchmark_location)
+                              if os.path.isfile(os.path.join(self.benchmark_location, e))]
+        self._all_datasets = sorted(self._all_datasets)
 
         self.__check_parameters()
 
@@ -53,7 +56,7 @@ class UCRReader(TSBenchmarkReader):
         if not isinstance(item, int):
             raise TypeError("the index must be an int")
 
-        return self.read(item).get_dataframe()
+        return self.read(item, verbose=False).get_dataframe()
 
     def read(self, path: str | bytes | os.PathLike | int,
              file_format: str = "csv",
@@ -78,16 +81,25 @@ class UCRReader(TSBenchmarkReader):
             print_header("Start reading dataset")
 
         if isinstance(path, int):
-            path = os.path.join(self.benchmark_location,
-                                self._all_datasets[path])
+            path = os.path.normpath(os.path.join(self.benchmark_location,
+                                                 self._all_datasets[path]))
 
         if verbose:
             print_step(f"Dataset {path} is being loaded")
 
         data = []
         with open(path, "r") as f:
-            for line in f:
-                data.append(float(line))
+            contents = f.read()
+            is_multiline = contents.count('\n') != 1
+            
+            if is_multiline:
+                numbers = contents.split("\n")
+            else:
+                numbers = contents.split(" ")
+            numbers = [e.strip() for e in numbers if len(e.strip()) != 0]
+            
+            for number in numbers:
+                data.append(float(number))
         data = np.array(data)
 
         if verbose:

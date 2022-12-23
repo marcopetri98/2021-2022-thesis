@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import datetime
 import json
+import operator
 import os
 
 import numpy as np
@@ -9,14 +9,13 @@ import pandas as pd
 
 from mleasy.reader.time_series import TSBenchmarkReader, rts_config
 from mleasy.utils.printing import print_header, print_step
-from mleasy.utils import load_py_json
 
 
 class NABIterator(object):
     """An iterator for the NAB benchmark.
 
-    The iterator reads from the first to the last ordered datasets' folders and
-    csv files. It also reads the datasets without anomalies.
+    The iterator reads in lexicographic order datasets' folders and csv files.
+    It also reads the datasets without anomalies.
     """
     def __init__(self, nab_reader):
         super().__init__()
@@ -51,7 +50,12 @@ class NABReader(TSBenchmarkReader):
             for file in files:
                 if file != "README.md":
                     self._datasets_names.append(file.split(".")[0])
-                    self._datasets_paths.append(os.path.join(root, file))
+                    self._datasets_paths.append(os.path.normpath(os.path.join(root, file)))
+                    
+        # order paths and names as in path
+        sorted_couples = sorted(list(zip(self._datasets_paths, self._datasets_names)), key=operator.itemgetter(0))
+        self._datasets_paths = [e[0] for e in sorted_couples]
+        self._datasets_names = [e[1] for e in sorted_couples]
 
         labels_path = os.path.join(self.benchmark_location, "labels")
         windows_path = os.path.normpath(os.path.join(labels_path, "combined_windows.json"))
@@ -65,7 +69,7 @@ class NABReader(TSBenchmarkReader):
         return NABIterator(self)
 
     def __len__(self):
-        return 58
+        return len(self._datasets_names)
 
     def __getitem__(self, item):
         if not isinstance(item, int):
@@ -73,7 +77,7 @@ class NABReader(TSBenchmarkReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"item must be less than {len(self)}")
 
-        return self.read(path=item).get_dataframe()
+        return self.read(path=item, verbose=False).get_dataframe()
 
     def read(self, path: str | int,
              file_format: str = "csv",

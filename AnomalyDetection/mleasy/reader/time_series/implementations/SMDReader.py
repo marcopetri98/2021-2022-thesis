@@ -13,7 +13,7 @@ class SMDIterator(object):
     """An iterator for SMDReader.
 
     The iterator reads the datasets from the first machine till the last machine
-    as ordered in the dataset's folder.
+    in lexicographic order.
     """
     def __init__(self, smd_reader):
         super().__init__()
@@ -35,14 +35,6 @@ class SMDReader(TSBenchmarkReader):
     The reader reads the txt files in the SMD benchmark folder and translates
     them into the default format for time series.
     """
-    _MACHINES = ["machine-1-1", "machine-1-2", "machine-1-3", "machine-1-4",
-                 "machine-1-5", "machine-1-6", "machine-1-7", "machine-1-8",
-                 "machine-2-1", "machine-2-2", "machine-2-3", "machine-2-4",
-                 "machine-2-5", "machine-2-6", "machine-2-7", "machine-2-8",
-                 "machine-2-9", "machine-3-1", "machine-3-2", "machine-3-3",
-                 "machine-3-4", "machine-3-5", "machine-3-6", "machine-3-7",
-                 "machine-3-8", "machine-3-9", "machine-3-10", "machine-3-10"]
-
     def __init__(self, benchmark_location: str):
         super().__init__(benchmark_location=benchmark_location)
 
@@ -50,6 +42,11 @@ class SMDReader(TSBenchmarkReader):
         self._test_set = os.path.join(self.benchmark_location, "test")
         self._test_gt = os.path.join(self.benchmark_location, "test_label")
         self._train_set = os.path.join(self.benchmark_location, "train")
+        
+        self._machines = [e.split(".txt")[0]
+                          for e in os.listdir(self._train_set)
+                          if os.path.isfile(os.path.join(self._train_set, e))]
+        self._machines.sort(key=lambda elem: int(elem.split("-")[1])*10 + int(elem.split("-")[2]))
 
         self.__check_parameters()
 
@@ -65,7 +62,7 @@ class SMDReader(TSBenchmarkReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"there are only {len(self)} machines")
 
-        return self.read(path=self._MACHINES[item]).get_dataframe()
+        return self.read(path=self._machines[item], verbose=False).get_dataframe()
 
     def read(self, path: str,
              file_format: str = "csv",
@@ -88,8 +85,8 @@ class SMDReader(TSBenchmarkReader):
         """
         if not isinstance(path, str):
             raise TypeError("path must be a machine name")
-        elif path not in self._MACHINES:
-            raise ValueError(f"path must be one of {self._MACHINES}")
+        elif path not in self._machines:
+            raise ValueError(f"path must be one of {self._machines}")
 
         if verbose:
             print_header("Started dataset reading")

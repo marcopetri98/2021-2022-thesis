@@ -61,7 +61,7 @@ class NASAReader(TSReader):
             raise IndexError(f"there are only {len(self)} channels in total")
 
         channel = self.anomalies_df.iloc[item]["chan_id"]
-        return self.read(path=channel, merge_split=True).get_dataframe()
+        return self.read(path=channel, merge_split=True, verbose=False).get_dataframe()
 
     def read(self, path: str,
              file_format: str = "csv",

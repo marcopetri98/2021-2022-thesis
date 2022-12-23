@@ -11,8 +11,7 @@ from mleasy.utils import print_header, print_step
 class GHLIterator(object):
     """An iterator for GHLReader.
 
-    This iterator reads the testing datasets in the order in which they appear
-    in the benchmark folder.
+    This iterator reads the testing datasets in lexicographic order.
     """
     def __init__(self, ghl_reader):
         super().__init__()
@@ -39,7 +38,7 @@ class GHLReader(TSBenchmarkReader):
 
         self.__check_parameters()
 
-        self._all_test_sets_paths = list(filter(lambda x: "train" not in x, os.listdir(self.benchmark_location)))
+        self._all_test_sets_paths = list(filter(lambda x: "train" not in x, sorted(os.listdir(self.benchmark_location))))
         self._train_set_path = list(filter(lambda x: "train" in x, os.listdir(self.benchmark_location)))[0]
 
     def __iter__(self):
@@ -54,7 +53,7 @@ class GHLReader(TSBenchmarkReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"there are only {len(self)} testing sets")
 
-        return self.read(path=item).get_dataframe()
+        return self.read(path=item, verbose=False).get_dataframe()
 
     def read(self, path: int | str,
              file_format: str = "csv",

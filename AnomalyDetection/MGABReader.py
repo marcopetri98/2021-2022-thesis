@@ -5,9 +5,7 @@ from mleasy.visualizer import line_plot
 
 reader = MGABReader("data/anomaly_detection/mgab/")
 
-for SERIES in range(10):
-    ds = reader.read(SERIES).get_dataframe()
-
+for ds in reader:
     fig = plt.figure(figsize=(8, 8), tight_layout=True)
     gs = gridspec.GridSpec(2, 1)
 

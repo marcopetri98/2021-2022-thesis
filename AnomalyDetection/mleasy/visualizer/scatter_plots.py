@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.markers import MarkerStyle
 
-from input_validation import check_argument_types, is_matplotlib_color
+from mleasy.input_validation import check_argument_types, is_matplotlib_color
 
 
 def scatter_plot(x,

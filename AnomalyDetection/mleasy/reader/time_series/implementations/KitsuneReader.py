@@ -11,8 +11,7 @@ from mleasy.utils import print_step, print_header
 class KitsuneIterator(object):
     """An iterator for KitsuneReader.
     
-    The iterator reads the datasets from the first to the last in lexicographic
-    order.
+    The iterator reads the datasets in lexicographic order.
     """
     def __init__(self, kitsune_reader):
         super().__init__()
@@ -54,7 +53,7 @@ class KitsuneReader(TSBenchmarkReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"there are only {len(self)} datasets")
         
-        return self.read(path=item).get_dataframe()
+        return self.read(path=item, verbose=False).get_dataframe()
     
     def read(self, path: str | int,
              file_format: str = "csv",
@@ -90,6 +89,7 @@ class KitsuneReader(TSBenchmarkReader):
             print_step(f"Reading {dataset_name} dataset located in folder {dataset_path}")
             print_step("Reading raw data and raw labels")
             
+        print(os.path.join(dataset_path, dataset_name + "_dataset.csv"))
         # read raw data and labels
         dataset = pd.read_csv(os.path.join(dataset_path, dataset_name + "_dataset.csv"),
                               header=None,

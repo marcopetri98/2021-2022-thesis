@@ -9,8 +9,7 @@ from mleasy.utils import print_header, print_step
 class MGABReaderIterator(object):
     """An iterator for the MGABReader class.
 
-    The iterator iterates from the first time series till the last in ascending
-    order.
+    The iterator iterates over time series in ascending order.
     """
     def __init__(self, mgab_reader):
         super().__init__()
@@ -47,7 +46,7 @@ class MGABReader(TSBenchmarkReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"there are only {len(self)} series in the dataset")
 
-        return self.read(path=item).get_dataframe()
+        return self.read(path=item, verbose=False).get_dataframe()
 
     def read(self, path: str | bytes | os.PathLike | int,
              file_format: str = "csv",
