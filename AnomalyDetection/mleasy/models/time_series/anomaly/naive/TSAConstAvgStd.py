@@ -1,3 +1,5 @@
+from numbers import Number
+
 import numpy as np
 from scipy.optimize import brute
 from sklearn.metrics import f1_score
@@ -59,12 +61,28 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
         
     def get_w(self):
         return self._w
+    
+    def get_multivariate(self):
+        return self._multivariate
         
     def get_upper_series(self):
         return self._upper_series
         
     def get_lower_series(self):
         return self._lower_series
+    
+    def set_parameters(self, a: Number | list[Number],
+                       b: Number | list[Number],
+                       c: Number | list[Number],
+                       w: Number | list[Number],
+                       multivariate: bool,
+                       *args,
+                       **kwargs) -> None:
+        self._a = a
+        self._b = b
+        self._c = c
+        self._w = w
+        self._multivariate = multivariate
 
     def classify(self, x, verbose: bool = True, *args, **kwargs) -> np.ndarray:
         """

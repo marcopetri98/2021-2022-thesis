@@ -1,3 +1,5 @@
+from numbers import Number
+
 import numpy as np
 from scipy.optimize import brute
 from sklearn.metrics import f1_score
@@ -69,6 +71,17 @@ class TSAMovAvgStd(TSAConstant):
 
     def get_window(self):
         return self._window
+    
+    def set_parameters(self, constant: Number | list[Number],
+                       comparison: str | list[str],
+                       multivariate: bool,
+                       window: Number | list[Number] = None,
+                       *args,
+                       **kwargs) -> None:
+        self._window = window
+        super().set_parameters(constant=constant,
+                               comparison=comparison,
+                               multivariate=multivariate)
 
     def get_moving_series(self):
         return self._mov_avg_series if self._mov_avg_series is not None else self._mov_std_series

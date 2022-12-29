@@ -1,3 +1,5 @@
+from numbers import Number
+
 import numpy as np
 from scipy.optimize import brute
 from sklearn.metrics import f1_score
@@ -49,6 +51,18 @@ class TSAConstant(IAnomalyClassifier, IParametric):
 
     def get_comparison(self) -> str | list[str]:
         return self._comparison
+    
+    def get_multivariate(self) -> bool:
+        return self._multivariate
+    
+    def set_parameters(self, constant: Number | list[Number],
+                       comparison: str | list[str],
+                       multivariate: bool,
+                       *args,
+                       **kwargs) -> None:
+        self._constant = constant
+        self._comparison = comparison
+        self._multivariate = multivariate
 
     def classify(self, x, verbose: bool = True, *args, **kwargs) -> np.ndarray:
         """
@@ -182,6 +196,8 @@ class TSAConstant(IAnomalyClassifier, IParametric):
                 
                 optimal_lt, optimal_gt = globally_optimize(x)
                 self._comparison, self._constant = get_comp_cons(optimal_lt, optimal_gt)
+                if isinstance(self._constant, np.ndarray):
+                    self._constant = self._constant[0]
                 
         if verbose == 2:
             print_header("Ended constant's learning")
