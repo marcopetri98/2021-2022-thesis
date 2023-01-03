@@ -9,21 +9,21 @@ class SavableModel(ISavable, BaseModel):
     def __init__(self):
         super().__init__()
 
-    def save(self, file_path: str,
+    def save(self, path: str,
              *args,
              **kwargs) -> None:
         params_and_attribs = self._get_all_params()
 
-        if not file_path.endswith(".pickle"):
-            file_path += ".pickle"
+        if not path.endswith(".pickle"):
+            path += ".pickle"
 
-        with open(file_path, "wb") as file:
+        with open(path, "wb") as file:
             pickle.dump(params_and_attribs, file)
 
-    def load(self, file_path: str,
+    def load(self, path: str,
              *args,
              **kwargs) -> None:
-        with open(file_path, "rb") as file:
+        with open(path, "rb") as file:
             params_and_attribs = pickle.load(file)
 
         self.set_params(**params_and_attribs)

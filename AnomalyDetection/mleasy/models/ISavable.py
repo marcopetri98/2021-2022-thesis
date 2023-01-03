@@ -8,14 +8,14 @@ class ISavable(ABC):
     """
     
     @abc.abstractmethod
-    def save(self, file_path: str,
+    def save(self, path: str,
              *args,
              **kwargs) -> None:
         """Saves all the parameters of the model.
         
         Parameters
         ----------
-        file_path : str
+        path : str
             It is the path where to save the model. All the file paths are
             extended to be saved in a file with extensions ".pickle", i.e., if
             the path does not end with ".pickle", the string ".pickle" will be
@@ -34,14 +34,14 @@ class ISavable(ABC):
         pass
     
     @abc.abstractmethod
-    def load(self, file_path: str,
+    def load(self, path: str,
              *args,
              **kwargs) -> None:
         """Loads all the parameters of the model.
         
         Parameters
         ----------
-        file_path : str
+        path : str
             It is the path of the file to read containing the model.
 
         args
