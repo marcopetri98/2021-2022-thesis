@@ -1,6 +1,3 @@
-import inspect
-
-
 class BaseModel(object):
     """Object representing a general model"""
 
@@ -29,7 +26,27 @@ class BaseModel(object):
                 self.__dict__[key] = value
 
     def get_params(self, deep=True) -> dict:
-        """Gets all the parameters of the model defined in init.
+        """Gets all the parameters (public attributes) of the model.
+
+        Parameters
+        ----------
+        deep : bool, default=True
+            States whether the method must return also the parameters of nested
+            base models.
+
+        Returns
+        -------
+        param_dict : dict
+            Dictionary with parameters' names as keys and values as values.
+        """
+        all_parameters = self._get_all_params(deep=deep)
+        public_parameters = {key: value
+                             for key, value in all_parameters.items()
+                             if not key.startswith("_")}
+        return public_parameters
+
+    def _get_all_params(self, deep=True) -> dict:
+        """Gets all the parameters and attributes of the model.
 
         Parameters
         ----------
@@ -46,10 +63,9 @@ class BaseModel(object):
         params_to_return = dict()
 
         for key, value in parameters.items():
-            if not key.startswith("_"):
-                if deep and isinstance(value, BaseModel):
-                    params_to_return[key] = value.get_params(deep)
-                else:
-                    params_to_return[key] = value
+            if deep and isinstance(value, BaseModel):
+                params_to_return[key] = value.get_params(deep)
+            else:
+                params_to_return[key] = value
 
         return params_to_return
