@@ -20,7 +20,7 @@ class BaseModel(object):
         None
         """
         for key, value in params.items():
-            if key not in self.__dict__.keys():
+            if key not in self.__dict__:
                 raise ValueError("Parameter '%s' does not exist in class '%s'. "
                                  "Please, read either the signature or the "
                                  "docs for that class." %
@@ -42,22 +42,14 @@ class BaseModel(object):
         param_dict : dict
             Dictionary with parameters' names as keys and values as values.
         """
-        init = getattr(self, "__init__")
-        if init is object.__init__:
-            return {}
+        parameters = vars(self)
+        params_to_return = dict()
 
-        init_signature = inspect.signature(init)
-        parameters = [p
-                      for p in init_signature.parameters.values()
-                      if p.name != "self" and p.kind == p.POSITIONAL_OR_KEYWORD]
-        parameters_name = [name.name
-                           for name in parameters]
-        params_to_return = {}
-        for key, value in self.__dict__.items():
-            if key in parameters_name:
+        for key, value in parameters.items():
+            if not key.startswith("_"):
                 if deep and isinstance(value, BaseModel):
                     params_to_return[key] = value.get_params(deep)
-                elif not isinstance(value, BaseModel):
+                else:
                     params_to_return[key] = value
 
         return params_to_return
