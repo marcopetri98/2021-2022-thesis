@@ -46,6 +46,20 @@ class TSAMovAvgStd(TSAConstant):
         It is the moving window method to be used. It can either be "movavg" for
         moving average or "movstd" for moving standard deviation.
 
+    Attributes
+    ----------
+    _window : int
+        The sliding window to be used to compute the moving average or the
+        moving standard deviation.
+
+    _mov_avg_series : ndarray
+        The moving average series computed when classifying a time series. This
+        field is updated each time a time series is classified.
+
+    _mov_std_series : ndarray
+        The moving standard deviation series computed when classifying a time
+        series. This field is updated each time a time series is classified.
+
     Notes
     -----
     The class inherits from `TSAConstant` since it is conceptually the same
@@ -69,22 +83,72 @@ class TSAMovAvgStd(TSAConstant):
         
         self.__check_parameters()
 
-    def get_window(self):
-        return self._window
-    
-    def set_parameters(self, constant: Number | list[Number],
-                       comparison: str | list[str],
-                       multivariate: bool,
+    def get_parameters(self) -> dict:
+        """Gets all the parameters of the model.
+
+        Returns
+        -------
+        parameters : dict
+            A dictionary with all the parameters of the model, including the
+            "private" parameters of the model. "comparison" is the `comparison`
+            parameter of the model, "learning" is the `learning` parameter of
+            the model, "constant" is the constant or the list of constants
+            learnt by the model during fit, "learnt_comparison" is the learnt
+            comparison or comparisons by the model during fit, "multivariate"
+            is the flag learnt during fit by the model to specify whether the
+            series is multivariate or univariate, "max_window" is the
+            `max_window` parameter of the model, "method" is the `method`
+            parameter of the model and "window" is the window learnt by the
+            model during fit.
+        """
+        all_params = super().get_parameters()
+        all_params["max_window"] = self.max_window
+        all_params["method"] = self.method
+        all_params["window"] = self._window
+        return all_params
+
+    def get_moving_series(self) -> np.ndarray | None:
+        """Gets the moving average or standard deviation series depending on `method`.
+
+        Returns
+        -------
+        moving_series : ndarray
+            It is the moving average or moving standard deviation series
+            computed by the model after the `classify` method has been called on
+            a time series.
+        """
+        return self._mov_avg_series if self._mov_avg_series is not None else self._mov_std_series
+
+    def set_parameters(self, comparison: str = None,
+                       learning: str = None,
+                       constant: Number | list[Number] = None,
+                       learnt_comparison: str | list[str] = None,
+                       multivariate: bool = None,
+                       max_window: int = None,
+                       method: str = None,
                        window: Number | list[Number] = None,
                        *args,
                        **kwargs) -> None:
-        self._window = window
-        super().set_parameters(constant=constant,
-                               comparison=comparison,
-                               multivariate=multivariate)
+        """
+        Parameters
+        ----------
+        max_window : int, default=None
+            The maximum window to be searched during fit.
 
-    def get_moving_series(self):
-        return self._mov_avg_series if self._mov_avg_series is not None else self._mov_std_series
+        method : str, default=None
+            The method to be used.
+
+        window : Number or list of Number, default=None
+            The window learnt during fit.
+        """
+        self.max_window = max_window if max_window is not None else self.max_window
+        self.method = method if method is not None else self.method
+        self._window = window if window is not None else self._window
+        super().set_parameters(comparison=comparison,
+                               learning=learning,
+                               constant=constant,
+                               learnt_comparison=learnt_comparison,
+                               multivariate=multivariate)
 
     def classify(self, x, verbose: bool = True, *args, **kwargs) -> np.ndarray:
         self._mov_avg_series = None

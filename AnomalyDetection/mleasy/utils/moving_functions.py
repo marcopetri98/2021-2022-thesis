@@ -2,7 +2,7 @@ import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 
 
-def mov_avg(x, window):
+def mov_avg(x, window: int) -> np.ndarray:
     """Compute the moving average series of `x`.
     
     Parameters
@@ -32,7 +32,7 @@ def mov_avg(x, window):
     return mov_avg_series
 
 
-def mov_std(x, window):
+def mov_std(x, window: int) -> np.ndarray:
     """Compute the moving average series of `x`.
     
     Parameters

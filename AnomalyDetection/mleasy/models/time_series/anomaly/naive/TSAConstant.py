@@ -31,6 +31,21 @@ class TSAConstant(IAnomalyClassifier, IParametric):
         States the type of "learning" that the function must perform. With
         "semi-supervised" it learns the constant from normal data only. With
         "supervised" it learns the constant from labeled data.
+
+    Attributes
+    ----------
+    _anomaly_label : int
+        The label of an anomaly.
+
+    _multivariate : bool
+        A flag learnt during fit stating if the time series is multivariate.
+
+    _constant : Number or list of Number
+        The constant or constants learnt during model fit to classify anomalies.
+
+    _comparison : str or list of str
+        The comparison or comparisons learnt during model fit to classify
+        anomalies.
     """
     def __init__(self, comparison: str = "auto",
                  learning: str = "supervised"):
@@ -46,23 +61,78 @@ class TSAConstant(IAnomalyClassifier, IParametric):
         
         self.__check_parameters()
 
-    def get_constant(self) -> float | np.ndarray:
-        return self._constant
+    def get_parameters(self) -> dict:
+        """Gets all the parameters of the model.
 
-    def get_comparison(self) -> str | list[str]:
-        return self._comparison
-    
-    def get_multivariate(self) -> bool:
-        return self._multivariate
-    
-    def set_parameters(self, constant: Number | list[Number],
-                       comparison: str | list[str],
-                       multivariate: bool,
+        Returns
+        -------
+        parameters : dict
+            A dictionary with all the parameters of the model, including the
+            "private" parameters of the model. "comparison" is the `comparison`
+            parameter of the model, "learning" is the `learning` parameter of
+            the model, "constant" is the constant or the list of constants
+            learnt by the model during fit, "learnt_comparison" is the learnt
+            comparison or comparisons by the model during fit and "multivariate"
+            is the flag learnt during fit by the model to specify whether the
+            series is multivariate or univariate.
+        """
+        all_params = dict()
+        all_params["comparison"] = self.comparison
+        all_params["learning"] = self.learning
+        try:
+            all_params["constant"] = self._constant.tolist()
+            all_params["learnt_comparison"] = self._comparison.copy()
+        except:
+            all_params["constant"] = self._constant
+            all_params["learnt_comparison"] = self._comparison
+        all_params["multivariate"] = self._multivariate
+        return all_params
+
+    def set_parameters(self, comparison: str = None,
+                       learning: str = None,
+                       constant: Number | list[Number] = None,
+                       learnt_comparison: str | list[str] = None,
+                       multivariate: bool = None,
                        *args,
                        **kwargs) -> None:
-        self._constant = constant
-        self._comparison = comparison
-        self._multivariate = multivariate
+        """Sets the parameters of the model.
+
+        Parameters
+        ----------
+        comparison : str, default=None
+            The way in which to learn comparisons.
+
+        learning : str, default=None
+            The learning method.
+
+        constant : Number or list of Number, default=None
+            The learnt constant or constants during fit.
+
+        learnt_comparison : str or list of str, default=None
+            The learnt comparison or comparisons during fit.
+
+        multivariate : bool, default=None
+            The flag learnt during fit stating if the series is multivariate or
+            not.
+
+        args
+            Not used, present for signature change or multiple inheritance.
+
+        kwargs
+            Not used, present for signature change or multiple inheritance.
+
+        Returns
+        -------
+        None
+        """
+        self.comparison = comparison if comparison is not None else self.comparison
+        self.learning = learning if learning is not None else self.learning
+        self._constant = constant if constant is not None else self._constant
+        self._comparison = learnt_comparison if learnt_comparison is not None else self._comparison
+        self._multivariate = multivariate if multivariate is not None else self._multivariate
+
+        if isinstance(self._constant, list):
+            self._constant = np.array(self._constant)
 
     def classify(self, x, verbose: bool = True, *args, **kwargs) -> np.ndarray:
         """
@@ -100,7 +170,7 @@ class TSAConstant(IAnomalyClassifier, IParametric):
             print_header("Ended samples' classification")
 
         if self._multivariate:
-            return np.array(list(map(lambda row: np.max(row), compared)))
+            return np.array(list(map(lambda row: np.min(row), compared)))
         else:
             return compared.flatten()
 

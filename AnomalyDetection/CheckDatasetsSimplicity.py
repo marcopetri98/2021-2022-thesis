@@ -1,17 +1,17 @@
 import itertools
 import math
-import warnings
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 from mleasy.models.time_series.anomaly.naive import TSAConstant, TSAMovAvgStd, TSAConstAvgStd
-from mleasy.reader.time_series import YahooS5Reader, NASAReader, NABReader, UCRReader, MGABReader, SMDReader, KitsuneReader, \
-    GHLReader, ExathlonReader, rts_config
+from mleasy.reader.time_series import YahooS5Reader, NASAReader, NABReader, UCRReader, MGABReader, SMDReader, \
+    KitsuneReader, GHLReader, ExathlonReader, rts_config
 
 TEST_PERC = 0.2
 UNUSABLE_TAG = "UNUSABLE"
+MAX_WINDOW = 200
 
 
 def get_series_columns(series):
@@ -128,9 +128,9 @@ if __name__ == "__main__":
 
     # create list of models to try
     models_to_use = [TSAConstant(),
-                     TSAMovAvgStd(max_window=200, method="movavg"),
-                     TSAMovAvgStd(max_window=200, method="movstd"),
-                     TSAConstAvgStd(max_window=200)]
+                     TSAMovAvgStd(max_window=MAX_WINDOW, method="movavg"),
+                     TSAMovAvgStd(max_window=MAX_WINDOW, method="movstd"),
+                     TSAConstAvgStd(max_window=MAX_WINDOW)]
 
     for idx, reader in enumerate(all_readers):
         print(f"Reading time series using {all_datasets[idx]}")
@@ -145,36 +145,27 @@ if __name__ == "__main__":
                 for version in ["normal", "diff", "absdiff"]:
                     offset = 0 if version == "normal" else 1 if version == "diff" else 2
                     true_idx = mod_idx * 3 + offset
-                    training, training_labels, testing, testing_labels = get_training_testing_diff_absdiff(offset, train_series, train_labels, test_series, test_labels)
+                    training, training_labels, testing, testing_labels = get_training_testing_diff_absdiff(offset,
+                                                                                                           train_series,
+                                                                                                           train_labels,
+                                                                                                           test_series,
+                                                                                                           test_labels)
 
-                    warnings.simplefilter("ignore")
                     try:
                         parameters = parameters_df.loc[row_idx, models[true_idx]]
                         if parameters != UNUSABLE_TAG and isinstance(parameters, float) and math.isnan(parameters):
+                            # if the model is moving average or keogh adjust maximum window dimension
+                            if mod_idx != 0:
+                                max_window = min(round(testing.shape[0] / 2), MAX_WINDOW)
+                                model.set_parameters(max_window=max_window)
+
                             model.fit(training, training_labels)
                         else:
                             if parameters == UNUSABLE_TAG:
                                 raise ValueError("supervised training requires at least one anomaly")
                             
                             parameters = eval(parameters)
-                            match mod_idx:
-                                case 0:
-                                    model.set_parameters(constant=parameters["constant"] if not isinstance(parameters["constant"], list) else np.array(parameters["constant"]),
-                                                         comparison=parameters["comparison"] if not isinstance(parameters["comparison"], list) else np.array(parameters["comparison"]),
-                                                         multivariate=parameters["multivariate"])
-                                
-                                case 1 | 2:
-                                    model.set_parameters(constant=parameters["constant"] if not isinstance(parameters["constant"], list) else np.array(parameters["constant"]),
-                                                         comparison=parameters["comparison"] if not isinstance(parameters["comparison"], list) else np.array(parameters["comparison"]),
-                                                         multivariate=parameters["multivariate"],
-                                                         window=parameters["window"] if not isinstance(parameters["window"], list) else np.array(parameters["window"]))
-                                
-                                case 3:
-                                    model.set_parameters(a=parameters["a"] if not isinstance(parameters["a"], list) else np.array(parameters["a"]),
-                                                         b=parameters["b"] if not isinstance(parameters["b"], list) else np.array(parameters["b"]),
-                                                         c=parameters["c"] if not isinstance(parameters["c"], list) else np.array(parameters["c"]),
-                                                         w=parameters["w"] if not isinstance(parameters["w"], list) else np.array(parameters["w"]),
-                                                         multivariate=parameters["multivariate"])
+                            model.set_parameters(**parameters)
 
                         print("Classify the train and the test series to compute the f1")
 
@@ -196,24 +187,7 @@ if __name__ == "__main__":
                         usable_df.loc[(all_datasets[idx], "test", "F1"), models[true_idx]] += 1
 
                         parameters_df.loc[row_idx, "Dataset"] = all_datasets[idx]
-                        match mod_idx:
-                            case 0:
-                                parameters_df.loc[row_idx][models[true_idx]] = {"constant": model.get_constant() if not isinstance(model.get_constant(), np.ndarray) else model.get_constant().tolist(),
-                                                                                "comparison": model.get_comparison() if not isinstance(model.get_comparison(), np.ndarray) else model.get_comparison().tolist(),
-                                                                                "multivariate": model.get_multivariate()}
-                            
-                            case 1 | 2:
-                                parameters_df.loc[row_idx][models[true_idx]] = {"constant": model.get_constant() if not isinstance(model.get_constant(), np.ndarray) else model.get_constant().tolist(),
-                                                                                "comparison": model.get_comparison() if not isinstance(model.get_comparison(), np.ndarray) else model.get_comparison().tolist(),
-                                                                                "multivariate": model.get_multivariate(),
-                                                                                "window": model.get_window() if not isinstance(model.get_window(), np.ndarray) else model.get_window().tolist()}
-                        
-                            case 3:
-                                parameters_df.loc[row_idx][models[true_idx]] = {"multivariate": model.get_multivariate(),
-                                                                                "a": model.get_a() if not isinstance(model.get_a(), np.ndarray) else model.get_a().tolist(),
-                                                                                "b": model.get_b() if not isinstance(model.get_b(), np.ndarray) else model.get_b().tolist(),
-                                                                                "c": model.get_c() if not isinstance(model.get_c(), np.ndarray) else model.get_c().tolist(),
-                                                                                "w": model.get_w() if not isinstance(model.get_w(), np.ndarray) else model.get_w().tolist()}
+                        parameters_df.loc[row_idx][models[true_idx]] = model.get_parameters()
                     except ValueError as e:
                         if str(e) != "supervised training requires at least one anomaly":
                             raise e
