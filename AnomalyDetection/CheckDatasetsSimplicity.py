@@ -172,34 +172,34 @@ if __name__ == "__main__":
                         train_pr, train_rec, train_f1 = classify_and_score(model, training, training_labels)
                         test_pr, test_rec, test_f1 = classify_and_score(model, testing, testing_labels)
 
-                        results_df.loc[(all_datasets[idx], "train", "Pr"), models[true_idx]] += train_pr
-                        results_df.loc[(all_datasets[idx], "train", "Rec"), models[true_idx]] += train_rec
-                        results_df.loc[(all_datasets[idx], "train", "F1"), models[true_idx]] += train_f1
-                        results_df.loc[(all_datasets[idx], "test", "Pr"), models[true_idx]] += test_pr
-                        results_df.loc[(all_datasets[idx], "test", "Rec"), models[true_idx]] += test_rec
-                        results_df.loc[(all_datasets[idx], "test", "F1"), models[true_idx]] += test_f1
+                        results_df.loc[(all_datasets[idx], "train", "Pr")][models[true_idx]] += train_pr
+                        results_df.loc[(all_datasets[idx], "train", "Rec")][models[true_idx]] += train_rec
+                        results_df.loc[(all_datasets[idx], "train", "F1")][models[true_idx]] += train_f1
+                        results_df.loc[(all_datasets[idx], "test", "Pr")][models[true_idx]] += test_pr
+                        results_df.loc[(all_datasets[idx], "test", "Rec")][models[true_idx]] += test_rec
+                        results_df.loc[(all_datasets[idx], "test", "F1")][models[true_idx]] += test_f1
 
-                        usable_df.loc[(all_datasets[idx], "train", "Pr"), models[true_idx]] += 1
-                        usable_df.loc[(all_datasets[idx], "train", "Rec"), models[true_idx]] += 1
-                        usable_df.loc[(all_datasets[idx], "train", "F1"), models[true_idx]] += 1
-                        usable_df.loc[(all_datasets[idx], "test", "Pr"), models[true_idx]] += 1
-                        usable_df.loc[(all_datasets[idx], "test", "Rec"), models[true_idx]] += 1
-                        usable_df.loc[(all_datasets[idx], "test", "F1"), models[true_idx]] += 1
+                        usable_df.loc[(all_datasets[idx], "train", "Pr")][models[true_idx]] += 1
+                        usable_df.loc[(all_datasets[idx], "train", "Rec")][models[true_idx]] += 1
+                        usable_df.loc[(all_datasets[idx], "train", "F1")][models[true_idx]] += 1
+                        usable_df.loc[(all_datasets[idx], "test", "Pr")][models[true_idx]] += 1
+                        usable_df.loc[(all_datasets[idx], "test", "Rec")][models[true_idx]] += 1
+                        usable_df.loc[(all_datasets[idx], "test", "F1")][models[true_idx]] += 1
 
-                        parameters_df.loc[row_idx, "Dataset"] = all_datasets[idx]
+                        parameters_df.loc[row_idx]["Dataset"] = all_datasets[idx]
                         parameters_df.loc[row_idx][models[true_idx]] = model.get_parameters()
                     except ValueError as e:
                         if str(e) != "supervised training requires at least one anomaly":
                             raise e
-                        unusable_df.loc[(all_datasets[idx], "train", "Pr"), models[true_idx]] += 1
-                        unusable_df.loc[(all_datasets[idx], "train", "Rec"), models[true_idx]] += 1
-                        unusable_df.loc[(all_datasets[idx], "train", "F1"), models[true_idx]] += 1
-                        unusable_df.loc[(all_datasets[idx], "test", "Pr"), models[true_idx]] += 1
-                        unusable_df.loc[(all_datasets[idx], "test", "Rec"), models[true_idx]] += 1
-                        unusable_df.loc[(all_datasets[idx], "test", "F1"), models[true_idx]] += 1
+                        unusable_df.loc[(all_datasets[idx], "train", "Pr")][models[true_idx]] += 1
+                        unusable_df.loc[(all_datasets[idx], "train", "Rec")][models[true_idx]] += 1
+                        unusable_df.loc[(all_datasets[idx], "train", "F1")][models[true_idx]] += 1
+                        unusable_df.loc[(all_datasets[idx], "test", "Pr")][models[true_idx]] += 1
+                        unusable_df.loc[(all_datasets[idx], "test", "Rec")][models[true_idx]] += 1
+                        unusable_df.loc[(all_datasets[idx], "test", "F1")][models[true_idx]] += 1
 
-                        parameters_df.loc[row_idx, models[true_idx]] = UNUSABLE_TAG
-                        parameters_df.loc[row_idx, "Dataset"] = all_datasets[idx]
+                        parameters_df.loc[row_idx]["Dataset"] = all_datasets[idx]
+                        parameters_df.loc[row_idx][models[true_idx]] = UNUSABLE_TAG
 
                     results_df.to_csv(output_file)
                     usable_df.to_csv(output_usable_series)
