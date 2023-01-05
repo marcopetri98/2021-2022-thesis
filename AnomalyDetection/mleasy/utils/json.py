@@ -1,5 +1,6 @@
 import json
 from os.path import exists
+from typing import Any
 
 
 def save_py_json(obj_to_save,
@@ -24,7 +25,7 @@ def save_py_json(obj_to_save,
         json.dump(json_string, file_)
 
 
-def load_py_json(path: str) -> object | None:
+def load_py_json(path: str) -> Any | None:
     """Load a python object from file saved with json.
     
     Parameters
@@ -34,7 +35,7 @@ def load_py_json(path: str) -> object | None:
 
     Returns
     -------
-    result : object or None
+    result : Any or None
         The object that has been loaded from file or None in case the path does
         not exist.
     """
