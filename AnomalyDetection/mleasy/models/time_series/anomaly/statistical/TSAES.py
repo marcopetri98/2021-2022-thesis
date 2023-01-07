@@ -1,154 +1,140 @@
-from copy import copy
+from pathlib import Path
+from typing import Callable
 
 import numpy as np
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
+import pandas as pd
+from statsmodels.tsa.holtwinters import ExponentialSmoothing, HoltWintersResults
 
-from mleasy.models.time_series.anomaly.statistical.TSAForecaster import TSAForecaster
+from mleasy.models.time_series.anomaly.statistical import TSAStatistical
+from mleasy.utils import save_py_json, load_py_json
 
 
-class TSAES(TSAForecaster):
-	"""ES model to perform anomaly detection on time series.
-	
-	When points are predicted using SES, it is important to know that the points
-	to be predicted must be the whole sequence immediately after the training.
-	It is not possible to predicted from the 50th point to the 100th with the
-	current implementation.
-	
-	Notes
-	-----
-	For all the other parameters that are not included in the documentation, see
-	the `statsmodels <https://www.statsmodels.org/stable/api.html>`
-	documentation for `ARIMA models <https://www.statsmodels.org/stable/generate
-	d/statsmodels.tsa.holtwinters.SimpleExpSmoothing.html>`."""
-	
-	def __init__(self, validation_split: float = 0.1,
-				 distribution: str = "gaussian",
-				 perc_quantile: float = 0.999,
-				 scoring: str = "difference",
-				 es_params: dict = None):
-		super().__init__(validation_split=validation_split,
-						 distribution=distribution,
-						 perc_quantile=perc_quantile,
-						 scoring=scoring)
-		
-		# Estimated parameters
-		self.alpha = None
-		self.beta = None
-		self.gamma = None
-		self.phi = None
-		self.l0 = None
-		self.b0 = None
-		self.s0 = None
-		
-		# Type of training
-		self.trend = None
-		self.damped_trend = None
-		self.seasonal = None
-		self.seasonal_periods = None
-		
-		self.es_params = es_params
-		
-		self.__check_parameters()
-	
-	def set_params(self, **params) -> None:
-		super().set_params(**params)
-		self.__check_parameters()
-	
-	def fit(self, x=None,
-			y=None,
-			verbose: bool = True,
-			fit_params: dict = None,
-			*args,
-			**kwargs):
-		"""
-		Parameters
-		----------
-		x
-			Ignored by definition since ARIMA stores endogenous variables.
-		"""
-		return super().fit(self.es_params["endog"],
-						   y,
-						   verbose,
-						   fit_params,
-						   *args,
-						   **kwargs)
-	
-	def _model_predict(self, previous: np.ndarray,
-					   x: np.ndarray):
-		if previous.shape != tuple(()):
-			all_data = np.concatenate((previous, x))
-		else:
-			all_data = x
-			
-		self._model = ExponentialSmoothing(all_data,
-										   initialization_method="known",
-										   trend=self.trend,
-										   damped_trend=self.damped_trend,
-										   seasonal=self.seasonal,
-										   seasonal_periods=self.seasonal_periods,
-										   initial_level=self.l0,
-										   initial_trend=self.b0,
-										   initial_seasonal=self.s0)
-		self._fitted_model = self._model.fit(smoothing_level=self.alpha,
-											 smoothing_trend=self.beta,
-											 smoothing_seasonal=self.gamma,
-											 damping_trend=self.phi,
-											 optimized=False)
-		
-		predictions = self._fitted_model.predict(start=all_data.shape[0] - x.shape[0],
-												 end=all_data.shape[0] - 1)
-	
-		return predictions
-	
-	def _model_fit(self, *args, **kwargs):
-		self._fitted_model = self._model.fit(**kwargs)
-		
-		learnt_params = self._fitted_model.params_formatted
-		index_of_seasonal = 3
-		
-		if self.trend is not None:
-			self.beta = learnt_params.loc["smoothing_trend"]["param"]
-			self.b0 = learnt_params.loc["initial_trend"]["param"]
-			index_of_seasonal += 2
-		if self.damped_trend is not None:
-			self.phi = learnt_params.loc["damping_trend"]["param"]
-			index_of_seasonal += 1
-		if self.seasonal is not None:
-			self.gamma = learnt_params.loc["smoothing_seasonal"]["param"]
-			self.s0 = np.array(learnt_params["param"].iloc[index_of_seasonal:])
-		
-		self.alpha = learnt_params.loc["smoothing_level"]["param"]
-		self.l0 = learnt_params.loc["initial_level"]["param"]
-	
-	def _model_build(self, inplace: bool=True) -> None | object:
-		endog = self.es_params["endog"]
-		num_validation = int(endog.shape[0] * self.validation_split)
-		endog_training_data = endog[:-num_validation]
-		new_params = copy(self.es_params)
-		new_params["endog"] = endog_training_data
-		
-		if inplace:
-			if "trend" in self.es_params.keys():
-				self.trend = self.es_params["trend"]
-			if "damped_trend" in self.es_params.keys():
-				self.damped_trend = self.es_params["damped_trend"]
-			if "seasonal" in self.es_params.keys():
-				self.seasonal = self.es_params["seasonal"]
-			if "seasonal_periods" in self.es_params.keys():
-				self.seasonal_periods = self.es_params["seasonal_periods"]
-			
-			self._model = ExponentialSmoothing(**new_params)
-		else:
-			return ExponentialSmoothing(**new_params)
-	
-	def __check_parameters(self):
-		"""Checks that the class parameters are correct.
+class TSAES(TSAStatistical):
+    """ES model to perform anomaly detection on time series.
 
-		Returns
-		-------
-		None
-		"""
-		if "endog" in self.es_params.keys():
-			if self.es_params["endog"] is None:
-				raise ValueError("It is impossible to forecast without data. "
-								 "Endog must be a set of points, at least 2.")
+    When points are predicted using SES, it is important to know that the points
+    to be predicted must be the whole sequence immediately after the training.
+    It is not possible to predicted from the 50th point to the 100th with the
+    current implementation.
+
+    Notes
+    -----
+    For all the other parameters that are not included in the documentation, see
+    the `statsmodels <https://www.statsmodels.org/stable/api.html>`
+    documentation for `ARIMA models <https://www.statsmodels.org/stable/generate
+    d/statsmodels.tsa.holtwinters.SimpleExpSmoothing.html>`."""
+    __es_params = "tsa_es_parameters.csv"
+    __es_build_params = "tsa_es_build_params.json"
+
+    def __init__(self, prediction_horizon: int = 1,
+                 validation_split: float = 0.1,
+                 mean_cov_sets: str = "training",
+                 threshold_sets: str = "training",
+                 error_method: str = "difference",
+                 error_function: Callable[[np.ndarray, np.ndarray], np.ndarray] | None = None,
+                 threshold_computation: str = "gaussian",
+                 threshold_function: Callable[[np.ndarray], np.ndarray] | None = None,
+                 scoring_function: str | Callable[[np.ndarray], np.ndarray] = "gaussian"):
+        super().__init__(prediction_horizon=prediction_horizon,
+                         validation_split=validation_split,
+                         mean_cov_sets=mean_cov_sets,
+                         threshold_sets=threshold_sets,
+                         error_method=error_method,
+                         error_function=error_function,
+                         threshold_computation=threshold_computation,
+                         threshold_function=threshold_function,
+                         scoring_function=scoring_function)
+
+        self._build_params = None
+
+    def save(self, path: str,
+             *args,
+             **kwargs) -> None:
+        super().save(path=path)
+
+        path_obj = Path(path)
+
+        params_formatted = self._fitted_model.params_formatted.reset_index()
+        params_formatted.to_csv(str(path_obj / self.__es_params), index=False)
+
+        if self._build_params is not None:
+            new_build_params = self._build_params.copy()
+            for key, value in new_build_params.items():
+                if isinstance(value, np.ndarray):
+                    new_build_params[key] = value.tolist()
+                elif isinstance(value, np.ma.MaskedArray):
+                    new_build_params[key] = value.tolist(fill_value=None)
+        else:
+            new_build_params = None
+        save_py_json(new_build_params, str(path_obj / self.__es_build_params))
+
+    def load(self, path: str,
+             *args,
+             **kwargs) -> None:
+        super().load(path=path)
+
+        path_obj = Path(path)
+
+        params_formatted = pd.read_csv(str(path_obj / self.__es_params), index_col="index")
+
+        self._build_params = load_py_json(str(path_obj / self.__es_build_params))
+        self._build_params["endog"] = np.random.rand(100)
+        self._model_build(build_params=self._build_params)
+        self._model_fit()
+        self._fitted_model.params_formatted = params_formatted
+
+    def fit(self, x=None,
+            y=None,
+            verbose: bool = True,
+            fit_params: dict = None,
+            build_params: dict = None,
+            *args,
+            **kwargs):
+        num_validation = round(x.shape[0] * self.validation_split)
+        if build_params is not None:
+            build_params["endog"] = x[:-num_validation]
+        else:
+            build_params = {"endog": x[:-num_validation]}
+
+        self._build_params = build_params
+
+        super().fit(x=x,
+                    y=y,
+                    verbose=verbose,
+                    fit_params=fit_params,
+                    build_params=build_params)
+
+    def _model_predict(self, x: np.ndarray,
+                       *args,
+                       **kwargs):
+        if self.prediction_horizon == 1:
+            build_params = self._build_params.copy()
+            build_params["endog"] = x
+            self._model_build(build_params=build_params)
+            new_df = self._fitted_model.params_formatted.reset_index()
+            params = {row["index"]: row["param"] for idx, row in new_df.iterrows()}
+            self._fitted_model.initialize(self._model, params)
+            prediction_results = self._fitted_model.predict(0)
+            predictions = prediction_results
+        else:
+            predictions = np.full((x.shape[0], self.prediction_horizon), np.nan)
+
+            for i in range(x.shape[0] - self.prediction_horizon - 1):
+                build_params = self._build_params.copy()
+                build_params["endog"] = x[:i + 2]
+                self._model_build(build_params=build_params)
+                new_df = self._fitted_model.params_formatted.reset_index()
+                params = {row["index"]: row["param"] for idx, row in new_df.iterrows()}
+                self._fitted_model.initialize(self._model, params)
+                prediction_results = self._fitted_model.forecast(self.prediction_horizon)
+                np.fill_diagonal(predictions[i + 2:i + 2 + self.prediction_horizon], prediction_results)
+
+        return predictions.reshape((-1, x.shape[1], self.prediction_horizon))
+
+    def _model_build(self, build_params: dict = None,
+                     *args,
+                     **kwargs) -> None:
+        if build_params is None:
+            raise ValueError("exponential smoothing needs endog in order to be created")
+
+        self._model = ExponentialSmoothing(**build_params)

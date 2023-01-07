@@ -101,7 +101,9 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
 
     _threshold : Number
         It is the threshold that has been found by means of learning on
-        validation data by calling `_learn_threshold()`.
+        training and validation data by calling `_learn_threshold()`. The
+        threshold is selected such that both training and validation are
+        labelled as normal points.
     """
     _ACCEPTED_THRESHOLD = ["gaussian", "mahalanobis", "custom"]
     _ACCEPTED_ERROR = ["difference", "abs_difference", "norm", "custom"]
@@ -223,7 +225,7 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
 
         Returns
         -------
-        prediction_errors : ndarray
+        prediction_errors : ndarray of shape (n_samples, n_features)
             Errors of the prediction.
         """
         check_array(gt, force_all_finite="allow-nan")
@@ -284,7 +286,7 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
         Parameters
         ----------
         errors : array-like of shape (n_samples, n_features)
-            Data of the prediction errors on the validation points.
+            Data of the prediction errors.
             
         verbose : bool, default=True
             States if detailed printing must be performed.
@@ -297,34 +299,75 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
 
         Returns
         -------
-        scores : ndarray
+        scores : ndarray of shape (n_samples,)
             The scores of the errors.
         """
         check_array(errors, force_all_finite="allow-nan")
         errors = np.ma.array(errors, mask=np.isnan(errors))
-        
+        rows_with_nan = np.unique(np.argwhere(np.ma.getmask(errors))[:, 0])
+        rows_without_nan = np.array(sorted(set(range(errors.shape[0])).difference(rows_with_nan)))
+        scores = np.full(errors.shape[0], fill_value=np.nan)
+        clean_errors = errors[rows_without_nan]
+
         match self.threshold_computation:
             case "gaussian":
-                return 1 / multivariate_normal.pdf(errors, mean=self._mean, cov=self._cov)
+                # add 1e-10 to avoid zero division
+                proba = multivariate_normal.pdf(clean_errors,
+                                                mean=self._mean,
+                                                cov=self._cov,
+                                                allow_singular=True) + 1e-10
+                valid_scores = 1 / proba
+                scores[rows_without_nan] = valid_scores
                 
             case "mahalanobis":
-                return np.array([mahalanobis(errors[i], self._mean, self._inv_cov) for i in range(errors.shape[0])])
+                valid_scores = np.array([mahalanobis(clean_errors[i], self._mean, self._inv_cov)
+                                         for i in range(clean_errors.shape[0])])
+                scores[rows_without_nan] = valid_scores
             
             case "custom":
-                return self.scoring_function(errors)
+                scores = self.scoring_function(errors)
             
             case _:
                 print_warning("Impossible to compute score since the field "
                               "threshold_computation has an invalid value.")
-                return np.full(errors.shape[0], fill_value=np.nan)
+
+        return scores
+
+    def _compute_mean_and_cov(self, errors,
+                              verbose: bool = True,
+                              *args,
+                              **kwargs) -> None:
+        check_array(errors, force_all_finite="allow-nan")
+        errors = np.ma.array(errors, mask=np.isnan(errors))
+
+        self._mean = np.ma.mean(errors, axis=0)
+        self._cov = np.ma.cov(errors, rowvar=False, ddof=1) if errors.ndim != 1 and errors.shape[1] != 1 else np.ma.std(errors, axis=0, ddof=1)
+        is_vector = errors.ndim != 1 and errors.shape[1] != 1
+
+        if (errors.ndim != 1 and errors.shape[1] != 1) and np.any(np.linalg.eigvals(self._cov) < 0):
+            raise ValueError("Impossible to compute the covariance matrix.")
+
+        if np.sum(self._cov) == 0:
+            self._cov += 1e-10
+
+        if is_vector:
+            try:
+                self._inv_cov = np.linalg.inv(self._cov)
+            except LinAlgError:
+                self._inv_cov = np.linalg.pinv(self._cov)
+        else:
+            self._inv_cov = 1 / self._cov
 
     def _learn_threshold(self, errors, verbose: bool = True, *args, **kwargs) -> None:
         """Computes the threshold to be used given the prediction errors.
 
+        Remember to compute mean vector and covariance matrices before calling
+        this method.
+
         Parameters
         ----------
         errors : array-like of shape (n_samples, n_features)
-            Data of the prediction errors on the validation points.
+            Data of the prediction errors.
             
         verbose : bool, default=True
             States if detailed printing must be performed.
@@ -343,28 +386,13 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
         errors = np.ma.array(errors, mask=np.isnan(errors))
 
         if verbose:
-            print_step("Start to compute the threshold on the validation data")
-
-        self._mean = np.mean(errors, axis=0)
-        self._cov = np.cov(errors, rowvar=False, ddof=1) if errors.ndim != 1 and errors.shape[1] != 1 else np.std(errors, axis=0, ddof=1)
-        is_vector = errors.ndim != 1 and errors.shape[1] != 1
-        
-        if np.sum(self._cov) == 0:
-            print_step("Standard deviation is 0. 1e-10 will be added to it.")
-            self._cov += 1e-10
-
-        if is_vector:
-            try:
-                self._inv_cov = np.linalg.inv(self._cov)
-            except LinAlgError:
-                self._inv_cov = np.linalg.pinv(self._cov)
-        else:
-            self._inv_cov = 1 / self._cov
+            print_step("Start to compute the threshold")
         
         match self.threshold_computation:
             case "gaussian" | "mahalanobis":
                 scores = self._compute_scores(errors)
-                self._threshold = np.max(scores)
+                scores = np.ma.array(scores, mask=np.isnan(scores))
+                self._threshold = np.ma.max(scores)
                 
             case "custom":
                 self._threshold = self.threshold_function(errors)

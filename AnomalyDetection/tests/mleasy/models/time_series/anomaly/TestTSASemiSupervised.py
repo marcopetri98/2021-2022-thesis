@@ -24,11 +24,11 @@ def my_threshold(errors):
 class TestTSASemiSupervised(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.gt_points = np.array([5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]).reshape((-1, 1))
-        cls.pr_points = np.array([2, 6, 5, 2, 3, 4, 6, 7, 8, 5, 5, 1, 5]).reshape((-1, 1))
+        cls.gt_points = np.random.rand(100, 1)
+        cls.pr_points = np.random.rand(100, 1)
         
-        cls.gt_vectors = np.array([[5, 5, 5], [5, 5, 5], [5, 5, 5], [5, 5, 5], [5, 5, 5]])
-        cls.pr_vectors = np.array([[3, 6, 4], [4, 6, 6], [5, 5, 5], [3, 4, 7], [1, 1, 8]])
+        cls.gt_vectors = np.random.rand(100, 3)
+        cls.pr_vectors = np.random.rand(100, 3)
     
     def test_compute_errors(self):
         ssm_difference = TSASemiSupervisedChild(error_method="difference")
@@ -72,29 +72,39 @@ class TestTSASemiSupervised(unittest.TestCase):
         vector_errors = ssm_custom._compute_errors(self.gt_vectors, self.pr_vectors)
 
         # Check score computation for scalars
+        ssm_custom._compute_mean_and_cov(point_errors)
+        ssm_gaussian._compute_mean_and_cov(point_errors)
+        ssm_mahalanobis._compute_mean_and_cov(point_errors)
         ssm_custom._learn_threshold(point_errors)
         ssm_gaussian._learn_threshold(point_errors)
         ssm_mahalanobis._learn_threshold(point_errors)
         np.testing.assert_array_equal(ssm_custom._compute_scores(point_errors),
                                       my_scores(point_errors))
-        np.testing.assert_array_equal(ssm_gaussian._compute_scores(point_errors),
-                                      1 / multivariate_normal.pdf(point_errors,
-                                                                  mean=ssm_gaussian._mean,
-                                                                  cov=ssm_gaussian._cov))
+        self.assertEqual(np.sum(ssm_gaussian._compute_scores(point_errors) -
+                                (1 / (multivariate_normal.pdf(point_errors,
+                                                              mean=ssm_gaussian._mean,
+                                                              cov=ssm_gaussian._cov,
+                                                              allow_singular=True) + 1e-10))),
+                         0)
         np.testing.assert_array_equal(ssm_mahalanobis._compute_scores(point_errors),
                                       [mahalanobis(point, ssm_mahalanobis._mean, ssm_mahalanobis._inv_cov)
                                        for point in point_errors])
 
         # Check score computation for vectors
+        ssm_custom._compute_mean_and_cov(vector_errors)
+        ssm_gaussian._compute_mean_and_cov(vector_errors)
+        ssm_mahalanobis._compute_mean_and_cov(vector_errors)
         ssm_custom._learn_threshold(vector_errors)
         ssm_gaussian._learn_threshold(vector_errors)
         ssm_mahalanobis._learn_threshold(vector_errors)
         np.testing.assert_array_equal(ssm_custom._compute_scores(vector_errors),
                                       my_scores(vector_errors))
-        np.testing.assert_array_equal(ssm_gaussian._compute_scores(vector_errors),
-                                      1 / multivariate_normal.pdf(vector_errors,
-                                                                  mean=ssm_gaussian._mean,
-                                                                  cov=ssm_gaussian._cov))
+        self.assertEqual(np.sum(ssm_gaussian._compute_scores(vector_errors) -
+                                (1 / (multivariate_normal.pdf(vector_errors,
+                                                              mean=ssm_gaussian._mean,
+                                                              cov=ssm_gaussian._cov,
+                                                              allow_singular=True) + 1e-10))),
+                         0)
         np.testing.assert_array_equal(ssm_mahalanobis._compute_scores(vector_errors),
                                       [mahalanobis(point, ssm_mahalanobis._mean, ssm_mahalanobis._inv_cov)
                                        for point in vector_errors])
@@ -112,11 +122,13 @@ class TestTSASemiSupervised(unittest.TestCase):
         point_errors = ssm_custom._compute_errors(self.gt_points, points_pr)
         vector_errors = ssm_custom._compute_errors(self.gt_vectors, vector_pt)
 
+        ssm_custom._compute_mean_and_cov(point_errors)
         ssm_custom._learn_threshold(point_errors)
         np.testing.assert_array_equal(ssm_custom._mean, np.mean(point_errors, axis=0))
         np.testing.assert_array_equal(ssm_custom._cov, np.std(point_errors, axis=0, ddof=1) + 1e-10)
         np.testing.assert_array_equal(ssm_custom._inv_cov, 1 / (np.std(point_errors, axis=0, ddof=1) + 1e-10))
 
+        ssm_custom._compute_mean_and_cov(vector_errors)
         ssm_custom._learn_threshold(vector_errors)
         np.testing.assert_array_equal(ssm_custom._mean, np.mean(vector_errors, axis=0))
         np.testing.assert_array_equal(ssm_custom._cov, np.cov(vector_errors, rowvar=False, ddof=1) + 1e-10)
@@ -127,25 +139,31 @@ class TestTSASemiSupervised(unittest.TestCase):
 
         # Test that the error computation works both for scalar and vectors.
         # Then, test that the mean vector and covariance matrix are correct.
+        ssm_custom._compute_mean_and_cov(point_errors)
         ssm_custom._learn_threshold(point_errors)
         np.testing.assert_array_equal(ssm_custom._threshold, np.min(point_errors[:, 0]))
         np.testing.assert_array_equal(ssm_custom._mean, np.mean(point_errors, axis=0))
         np.testing.assert_array_equal(ssm_custom._cov, np.std(point_errors, axis=0, ddof=1))
         np.testing.assert_array_equal(ssm_custom._inv_cov, 1 / np.std(point_errors, axis=0, ddof=1))
 
+        ssm_custom._compute_mean_and_cov(vector_errors)
         ssm_custom._learn_threshold(vector_errors)
         np.testing.assert_array_equal(ssm_custom._threshold, np.min(vector_errors[:, 0]))
-        np.testing.assert_array_equal(ssm_custom._mean, np.mean(vector_errors, axis=0))
-        np.testing.assert_array_equal(ssm_custom._cov, np.cov(vector_errors, rowvar=False, ddof=1))
-        np.testing.assert_array_equal(ssm_custom._inv_cov, np.linalg.inv(np.cov(vector_errors, rowvar=False, ddof=1)))
+        np.testing.assert_array_equal(ssm_custom._mean, np.ma.mean(vector_errors, axis=0))
+        np.testing.assert_array_equal(ssm_custom._cov, np.ma.cov(vector_errors, rowvar=False, ddof=1))
+        np.testing.assert_array_equal(ssm_custom._inv_cov, np.linalg.inv(np.ma.cov(vector_errors, rowvar=False, ddof=1)))
 
         # Check learning threshold with gaussian method
+        ssm_gaussian._compute_mean_and_cov(point_errors)
+        ssm_mahalanobis._compute_mean_and_cov(point_errors)
         ssm_gaussian._learn_threshold(point_errors)
         ssm_mahalanobis._learn_threshold(point_errors)
         self.assertEqual(ssm_gaussian._threshold, np.max(ssm_gaussian._compute_scores(point_errors)))
         self.assertEqual(ssm_mahalanobis._threshold, np.max(ssm_mahalanobis._compute_scores(point_errors)))
 
         # Check learning threshold with mahalanobis method
+        ssm_gaussian._compute_mean_and_cov(vector_errors)
+        ssm_mahalanobis._compute_mean_and_cov(vector_errors)
         ssm_gaussian._learn_threshold(vector_errors)
         ssm_mahalanobis._learn_threshold(vector_errors)
         self.assertEqual(ssm_gaussian._threshold, np.max(ssm_gaussian._compute_scores(vector_errors)))
@@ -158,6 +176,7 @@ class TestTSASemiSupervised(unittest.TestCase):
 
         # check save and load with scalars
         with TemporaryDirectory() as temp_dir:
+            ssm._compute_mean_and_cov(point_errors)
             ssm._learn_threshold(point_errors)
 
             ssm.save(temp_dir)
@@ -183,6 +202,7 @@ class TestTSASemiSupervised(unittest.TestCase):
 
         # check save and load with scalars
         with TemporaryDirectory() as temp_dir:
+            ssm._compute_mean_and_cov(vector_errors)
             ssm._learn_threshold(vector_errors)
 
             ssm.save(temp_dir)

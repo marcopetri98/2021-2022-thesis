@@ -139,7 +139,7 @@ if __name__ == "__main__":
             is_multivariate, series_cols = get_series_columns(series)
             train_series, train_labels, test_series, test_labels = get_train_test_models(series, series_cols)
             
-            row_idx = ser_idx + (sum([[len(all_readers[i]) for i in range(idx)]]) if idx > 0 else 0)
+            row_idx = ser_idx + sum([len(all_readers[i]) for i in range(idx)]) if idx > 0 else ser_idx
             
             for mod_idx, model in enumerate(models_to_use):
                 for version in ["normal", "diff", "absdiff"]:

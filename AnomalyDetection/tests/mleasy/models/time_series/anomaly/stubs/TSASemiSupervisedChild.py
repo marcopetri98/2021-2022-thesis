@@ -23,7 +23,7 @@ class TSASemiSupervisedChild(TSASemiSupervised):
     def classify(self, x, *args, **kwargs) -> np.ndarray:
         pass
 
-    def predict(self, X, *args, **kwargs) -> np.ndarray:
+    def predict(self, x, *args, **kwargs) -> np.ndarray:
         pass
 
     def fit(self, x, y=None, *args, **kwargs) -> None:
