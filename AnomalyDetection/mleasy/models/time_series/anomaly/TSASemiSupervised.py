@@ -1,3 +1,4 @@
+import os
 from abc import ABC
 from pathlib import Path
 from typing import Callable
@@ -128,11 +129,15 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
         self._inv_cov = None
         self._threshold = None
 
+        self.__skip_checks_for_loading = False
+
         self.__check_parameters()
 
     def set_params(self, **params) -> None:
         super().set_params(**params)
-        self.__check_parameters()
+
+        if not self.__skip_checks_for_loading:
+            self.__check_parameters()
 
     def save(self, path: str,
              *args,
@@ -163,11 +168,12 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
                 json_objects[key] = "warning"
         save_py_json(json_objects, str(path_obj / self.__json_file))
 
-        np.savez_compressed(str(path_obj / self.__numpy_file),
-                            _mean=self._mean,
-                            _cov=self._cov,
-                            _inv_cov=self._inv_cov,
-                            _threshold=np.array(self._threshold))
+        if self._mean is not None:
+            np.savez_compressed(str(path_obj / self.__numpy_file),
+                                _mean=self._mean,
+                                _cov=self._cov,
+                                _inv_cov=self._inv_cov,
+                                _threshold=np.array(self._threshold))
 
     def load(self, path: str,
              *args,
@@ -179,13 +185,15 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
             The path to the dir in which the model has been saved previously
             using method `save`.
         """
+        self.__skip_checks_for_loading = True
+
         path_obj = Path(path)
 
         if not path_obj.is_dir():
             raise ValueError("path must point to a valid directory")
-        elif not path_obj.joinpath(self.__json_file).is_file() or not path_obj.joinpath(self.__numpy_file).is_file():
-            raise ValueError("path directory is not valid. It must contain all "
-                             f"these files: {self.__numpy_file} and {self.__json_file}")
+        elif not path_obj.joinpath(self.__json_file).is_file():
+            raise ValueError("path directory is not valid. It must contain "
+                             f"these files: {self.__numpy_file}")
 
         json_objects: dict = load_py_json(str(path_obj / self.__json_file))
         self.set_params(**json_objects)
@@ -195,11 +203,14 @@ class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, S
                 print_warning(f"{key} was a callable. Set the callable to the "
                               "same callable used in the saved model.")
 
-        with np.load(str(path_obj / self.__numpy_file)) as data:
-            self._mean = data["_mean"]
-            self._cov = data["_cov"]
-            self._inv_cov = data["_inv_cov"]
-            self._threshold = data["_threshold"]
+        if self.__numpy_file in os.listdir(str(path_obj)):
+            with np.load(str(path_obj / self.__numpy_file)) as data:
+                self._mean = data["_mean"]
+                self._cov = data["_cov"]
+                self._inv_cov = data["_inv_cov"]
+                self._threshold = data["_threshold"]
+
+        self.__skip_checks_for_loading = False
 
     def _compute_errors(self, gt, pred, verbose: bool = True, *args, **kwargs):
         """Compute the errors made from the prediction.

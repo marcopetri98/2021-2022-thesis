@@ -174,6 +174,16 @@ class TestTSASemiSupervised(unittest.TestCase):
         point_errors = ssm._compute_errors(self.gt_points, self.pr_points)
         vector_errors = ssm._compute_errors(self.gt_vectors, self.pr_vectors)
 
+        # test callable are not saved using pickle
+        with TemporaryDirectory() as temp_dir:
+            callable_ssm = TSASemiSupervisedChild(error_method="custom", error_function=lambda x: x)
+            callable_ssm.save(temp_dir)
+
+            new_ssm = TSASemiSupervisedChild()
+            new_ssm.load(temp_dir)
+
+            self.assertIsNone(new_ssm.error_function)
+
         # check save and load with scalars
         with TemporaryDirectory() as temp_dir:
             ssm._compute_mean_and_cov(point_errors)
