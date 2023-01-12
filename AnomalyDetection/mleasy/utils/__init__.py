@@ -2,6 +2,7 @@ from .json import save_py_json
 from .json import load_py_json
 
 from .lists import all_indices
+from .lists import concat_list_array
 
 from .moving_functions import mov_avg
 from .moving_functions import mov_std
