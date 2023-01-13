@@ -1,8 +1,18 @@
 # Anomaly detection in time series for energy efficiency
 This is the repository containing all the codes related to my Master of Science thesis in Computer Science and Engineering at Politecnico di Milano. The description of the thesis and of the repository structure and code structure is postponed to next sections to keep the first sections short. The first components I will describe are the ones needed to reproduce the experiments and to download and set up the datasets using automated scripts. I don't want you to lose time, most of the things just involve just running a script.
 
-# Get the python packages
-In my thesis I used several different packages. To get all the needed packages, make sure you use python 3.10 and create the virtual environment using:
+# How to reproduce the experiments
+In my thesis I use some external libraries, public datasets and state-of-the-art methods. If you want to do one of the following:
+
+* Use the code of the repository
+* Download all the datasets used in this thesis
+* Download all the methods to which this thesis is compared
+* Reproduce the results of the thesis by running scripts
+
+This section explains everything you need from downloading the required packages to execute the scripts (including the scripts used to download datasets and methods).
+
+## Get the python packages
+In my thesis I used several packages. To get all the needed packages, make sure you use python 3.10 and create the virtual environment using:
 
 ```
 conda create -n <env-name> python=3.10
@@ -12,7 +22,7 @@ pip install -r ./requirements.txt
 
 If you don't have conda or you don't know what conda is, I invite you to follow this link: https://docs.conda.io/en/latest/miniconda.html
 
-# Get the datasets
+## Get the datasets
 In my thesis I use several public datasets. To increase reproducibility, you can find the script ``setup_datasets.py``. The script accepts some arguments. By default the script downloads, extracts and rename folders. The usage with all default settings is:
 
 ```
@@ -37,8 +47,23 @@ The script is a program as any other linux program. You can call the man page wi
 python ./setup_datasets.py -h
 ```
 
+## Get the repositories for comparison
+In my thesis I compare my methods with several state-of-the-art methods. Many of those methods have a public repository available, from which we can download their code of their model. The script ``setup_repos.py`` is a utility similar to ``setup_datasets.py``. It can be used to download all the repos in their folder. The default usage is:
+
+```
+python ./setup_repos.py
+```
+
+The methods can also be downloaded to a different location with respect to the standard one. However, scripts are thought to work with default locations. If you change it, you may need to adjust paths in scripts you are going to execute.
+
+This script is a program as any other linux program. You can call the man page with the following (if you want to know about the optional parameters and their usage):
+
+```
+python ./setup_repos.py -h
+```
+
 # Datasets description
-In my thesis I used many different datasets to evaluate the methods I developed and state-of-the-art methods against each other. The datasets I used are: Yahoo Webscope S5, UCR, SMD, NASA-MSL, NASA-SMAP, NAB, MGAB, Kitsune, GHL and Exathlon. Here you can find a table with the datasets, reference to the paper presenting them and the link to the dataset.
+In my thesis I used many datasets to evaluate the methods I developed and state-of-the-art methods against each other. The datasets I used are: Yahoo Webscope S5, UCR, SMD, NASA-MSL, NASA-SMAP, NAB, MGAB, Kitsune, GHL and Exathlon. Here you can find a table with the datasets, reference to the paper presenting them and the link to the dataset.
 
 | Dataset | Paper | Repository |
 | ------- | ----- | ---------- |
