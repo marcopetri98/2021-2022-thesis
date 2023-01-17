@@ -5,8 +5,8 @@ import os
 
 import pandas as pd
 
-from mleasy.reader.time_series import TSBenchmarkReader, rts_config
-from mleasy.utils import print_header, print_step
+from .. import TSBenchmarkReader, rts_config
+from ....utils import print_header, print_step
 
 
 class YahooS5Iterator(object):

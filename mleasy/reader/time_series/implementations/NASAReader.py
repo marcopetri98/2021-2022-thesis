@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from mleasy.reader.time_series import TSReader, rts_config
-from mleasy.utils import print_header, print_step
+from .. import TSReader, rts_config
+from ....utils import print_header, print_step
 
 
 class NASAIterator(object):

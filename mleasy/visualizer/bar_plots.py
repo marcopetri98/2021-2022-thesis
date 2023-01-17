@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 
-from mleasy.input_validation import check_argument_types
-from mleasy.input_validation import is_matplotlib_color
+from ..input_validation import check_argument_types
+from ..input_validation import is_matplotlib_color
 
 
 def bar_plot(x_pos,

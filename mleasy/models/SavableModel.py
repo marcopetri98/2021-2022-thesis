@@ -1,6 +1,6 @@
 import pickle
 
-from mleasy.models import ISavable, BaseModel
+from . import ISavable, BaseModel
 
 
 class SavableModel(ISavable, BaseModel):

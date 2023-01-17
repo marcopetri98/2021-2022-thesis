@@ -2,7 +2,7 @@ import abc
 
 import numpy as np
 
-from mleasy.models.IRegressor import IRegressor
+from .IRegressor import IRegressor
 
 
 class IAnomalyRegressor(IRegressor):

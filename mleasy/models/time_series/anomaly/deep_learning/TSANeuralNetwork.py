@@ -8,9 +8,9 @@ import numpy as np
 import tensorflow as tf
 from sklearn.utils import check_array
 
-from mleasy.models import IMultipleParametric
-from mleasy.models.time_series.anomaly import TSASemiSupervised
-from mleasy.utils import print_warning, print_header, print_step, save_py_json, load_py_json, concat_list_array
+from .. import TSASemiSupervised
+from .... import IMultipleParametric
+from .....utils import print_warning, print_header, print_step, save_py_json, load_py_json, concat_list_array
 
 
 class StatesResetAtSpecifiedBatches(tf.keras.callbacks.Callback):

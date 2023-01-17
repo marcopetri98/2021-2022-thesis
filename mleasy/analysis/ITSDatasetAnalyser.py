@@ -4,7 +4,7 @@ from typing import Tuple
 
 import numpy as np
 
-from mleasy.analysis import IDatasetAnalyser, StationarityTest, DecompositionMethod
+from . import IDatasetAnalyser, StationarityTest, DecompositionMethod
 
 
 class ITSDatasetAnalyser(IDatasetAnalyser, ABC):

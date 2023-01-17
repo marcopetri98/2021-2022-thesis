@@ -4,8 +4,8 @@ import numpy as np
 from scipy.optimize import brute
 from sklearn.metrics import f1_score
 
-from mleasy.models import IAnomalyClassifier, IParametric
-from mleasy.utils import mov_avg, mov_std, print_header, print_step
+from .... import IAnomalyClassifier, IParametric
+from .....utils import mov_avg, mov_std, print_header, print_step
 
 
 class TSAConstAvgStd(IAnomalyClassifier, IParametric):

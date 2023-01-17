@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from statsmodels.tsa.holtwinters import ExponentialSmoothing, HoltWintersResults
 
-from mleasy.models.time_series.anomaly.statistical import TSAStatistical
-from mleasy.utils import save_py_json, load_py_json
+from . import TSAStatistical
+from .....utils import save_py_json, load_py_json
 
 
 class TSAES(TSAStatistical):

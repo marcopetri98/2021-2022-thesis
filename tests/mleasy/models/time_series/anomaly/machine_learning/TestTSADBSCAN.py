@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from models.time_series.anomaly.machine_learning import TSADBSCAN
+from mleasy.models.time_series.anomaly.machine_learning import TSADBSCAN
 
 
 class TestTSADBSCAN(unittest.TestCase):

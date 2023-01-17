@@ -4,7 +4,7 @@ from typing import Callable
 import numpy as np
 from statsmodels.tsa.arima.model import ARIMA, ARIMAResults
 
-from mleasy.models.time_series.anomaly.statistical import TSAStatistical
+from . import TSAStatistical
 
 
 class TSAARIMA(TSAStatistical):

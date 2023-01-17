@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from models.time_series.anomaly.machine_learning import TSAOCSVMPhase
+from mleasy.models.time_series.anomaly.machine_learning import TSAOCSVMPhase
 
 
 class TestTSAOCSVMPhase(unittest.TestCase):

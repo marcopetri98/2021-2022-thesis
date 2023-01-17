@@ -5,8 +5,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from mleasy.reader.time_series import TSBenchmarkReader, rts_config
-from mleasy.utils import print_header, print_step
+from .. import TSBenchmarkReader, rts_config
+from ....utils import print_header, print_step
 
 
 class UCRIterator(object):
@@ -70,7 +70,7 @@ class UCRReader(TSBenchmarkReader):
         path : str or bytes or PathLike or int
             It is a path to the txt file containing the time series formatted
             as it is formatted in the benchmark or an integer representing the
-            time series to load from the benchmark.
+            time series to load from the benchmark (indexed from 0).
         """
         if not os.path.isfile(path) and not isinstance(path, int):
             raise ValueError("path must be a path to a file or an int")
@@ -91,13 +91,13 @@ class UCRReader(TSBenchmarkReader):
         with open(path, "r") as f:
             contents = f.read()
             is_multiline = contents.count('\n') != 1
-            
+
             if is_multiline:
                 numbers = contents.split("\n")
             else:
                 numbers = contents.split(" ")
             numbers = [e.strip() for e in numbers if len(e.strip()) != 0]
-            
+
             for number in numbers:
                 data.append(float(number))
         data = np.array(data)

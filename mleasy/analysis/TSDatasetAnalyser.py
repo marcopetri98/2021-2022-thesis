@@ -5,9 +5,9 @@ import numpy as np
 from statsmodels.tsa.seasonal import STL, DecomposeResult, seasonal_decompose
 from statsmodels.tsa.stattools import adfuller, kpss, acf, pacf
 
-from mleasy.analysis import ITSDatasetAnalyser, StationarityTest, DecompositionMethod
-from mleasy.utils.printing import print_header, print_step
-from mleasy.visualizer.time_series import plot_correlation_functions, plot_time_series_decomposition
+from . import ITSDatasetAnalyser, StationarityTest, DecompositionMethod
+from ..utils.printing import print_header, print_step
+from ..visualizer.time_series import plot_correlation_functions, plot_time_series_decomposition
 
 
 class TSDatasetAnalyser(ITSDatasetAnalyser):

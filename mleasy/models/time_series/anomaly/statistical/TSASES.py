@@ -3,7 +3,7 @@ from typing import Callable
 import numpy as np
 from statsmodels.tsa.holtwinters import SimpleExpSmoothing
 
-from mleasy.models.time_series.anomaly.statistical.TSAES import TSAES
+from .TSAES import TSAES
 
 
 class TSASES(TSAES):

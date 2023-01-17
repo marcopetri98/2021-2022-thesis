@@ -27,6 +27,7 @@ def check_attributes_exists(estimator,
                 raise ValueError("%s does not have attribute %s" %
                                  (estimator.__class__, attribute))
 
+
 def check_not_default_attributes(estimator,
                                  attributes: dict,
                                  error: str = "Train the model before calling this method") -> None:
@@ -60,6 +61,7 @@ def check_not_default_attributes(estimator,
         else:
             if attr_val == value:
                 raise RuntimeError(error)
+
 
 def check_argument_types(arguments: list,
                          expected_types: list,

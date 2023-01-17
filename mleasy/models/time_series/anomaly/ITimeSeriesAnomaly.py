@@ -1,7 +1,7 @@
 from abc import ABC
 
-from mleasy.models.IAnomalyClassifier import IAnomalyClassifier
-from mleasy.models.IAnomalyRegressor import IAnomalyRegressor
+from ...IAnomalyClassifier import IAnomalyClassifier
+from ...IAnomalyRegressor import IAnomalyRegressor
 
 
 class ITimeSeriesAnomaly(IAnomalyRegressor, IAnomalyClassifier, ABC):

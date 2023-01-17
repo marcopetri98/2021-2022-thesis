@@ -4,9 +4,9 @@ import os.path
 
 import pandas as pd
 
-from mleasy.input_validation.attribute_checks import check_not_default_attributes
-from mleasy.reader import IDataReader
-from mleasy.utils.printing import print_header, print_step
+from .. import IDataReader
+from ...input_validation.attribute_checks import check_not_default_attributes
+from ...utils.printing import print_header, print_step
 
 
 class TSReader(IDataReader):

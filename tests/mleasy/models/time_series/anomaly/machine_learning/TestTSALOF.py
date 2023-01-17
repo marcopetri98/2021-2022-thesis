@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from models.time_series.anomaly.machine_learning import TSALOF
+from mleasy.models.time_series.anomaly.machine_learning import TSALOF
 
 
 class TestTSALOF(unittest.TestCase):

@@ -3,7 +3,7 @@ from typing import Tuple, Callable
 import numpy as np
 import tensorflow as tf
 
-from mleasy.models.time_series.anomaly.deep_learning import TSANNStandard
+from . import TSANNStandard
 
 
 class TSANNPredictor(TSANNStandard):

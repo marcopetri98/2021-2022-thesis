@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from models.time_series.anomaly.machine_learning import TSAOCSVM
+from mleasy.models.time_series.anomaly.machine_learning import TSAOCSVM
 
 
 class TestTSAOCSVM(unittest.TestCase):

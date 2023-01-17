@@ -4,8 +4,8 @@ from typing import Callable, Tuple
 import numpy as np
 from sklearn.utils import check_array
 
-from mleasy.models.time_series.anomaly import TSASemiSupervised
-from mleasy.utils.printing import print_step, print_header
+from .. import TSASemiSupervised
+from .....utils.printing import print_step, print_header
 
 
 class TSAStatistical(TSASemiSupervised):

@@ -7,13 +7,12 @@ import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.utils import check_X_y
 
-from mleasy.input_validation import check_array_general
-from mleasy.utils.json import load_py_json, save_py_json
-from mleasy.utils.printing import print_header, print_step
-from mleasy.utils.lists import all_indices
-from mleasy.tuning.hyperparameter.HyperparameterSearchResults import HyperparameterSearchResults
-from mleasy.tuning.hyperparameter.IHyperparameterSearch import IHyperparameterSearch
-from mleasy.tuning.hyperparameter.IHyperparameterSearchResults import IHyperparameterSearchResults
+from .HyperparameterSearchResults import HyperparameterSearchResults
+from .IHyperparameterSearch import IHyperparameterSearch
+from .IHyperparameterSearchResults import IHyperparameterSearchResults
+from ...utils.json import load_py_json, save_py_json
+from ...utils.lists import all_indices
+from ...utils.printing import print_header, print_step
 
 
 class HyperparameterSearch(IHyperparameterSearch, ABC):

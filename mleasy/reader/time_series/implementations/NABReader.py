@@ -7,8 +7,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from mleasy.reader.time_series import TSBenchmarkReader, rts_config
-from mleasy.utils.printing import print_header, print_step
+from .. import TSBenchmarkReader, rts_config
+from ....utils.printing import print_header, print_step
 
 
 class NABIterator(object):

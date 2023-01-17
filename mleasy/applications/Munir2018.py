@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from mleasy.applications.Interfaces import ILoader
-from mleasy.reader.time_series import TSReader, YahooS5Reader
+from .Interfaces import ILoader
+from ..reader.time_series import TSReader, YahooS5Reader
 
 
 class Munir2018Loader(ILoader):

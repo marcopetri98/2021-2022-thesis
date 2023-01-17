@@ -1,6 +1,6 @@
 import numpy as np
 
-from mleasy.tuning.hyperparameter.IHyperparameterSearchResults import IHyperparameterSearchResults
+from .IHyperparameterSearchResults import IHyperparameterSearchResults
 
 
 class HyperparameterSearchResults(IHyperparameterSearchResults):

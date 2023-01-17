@@ -5,9 +5,9 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from mleasy.reader import MissingStrategy
-from mleasy.reader.time_series import TSReader
-from mleasy.utils.printing import print_header, print_step
+from .. import TSReader
+from ... import MissingStrategy
+from ....utils.printing import print_header, print_step
 
 
 class ODINTSReader(TSReader):

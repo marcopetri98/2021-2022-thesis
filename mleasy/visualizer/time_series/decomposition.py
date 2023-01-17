@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 from matplotlib import pyplot as plt, gridspec
 
-from mleasy.visualizer import line_plot
+from .. import line_plot
 
 
 def plot_time_series_decomposition(original,

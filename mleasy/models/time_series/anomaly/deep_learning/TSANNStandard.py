@@ -4,8 +4,8 @@ from typing import Tuple, Callable
 import numpy as np
 import tensorflow as tf
 
-from mleasy.models.time_series.anomaly.deep_learning import TSANeuralNetwork
-from mleasy.utils import concat_list_array, print_warning
+from . import TSANeuralNetwork
+from .....utils import concat_list_array, print_warning
 
 
 class TSANNStandard(TSANeuralNetwork):

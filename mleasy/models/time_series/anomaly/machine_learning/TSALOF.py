@@ -3,11 +3,11 @@ from typing import Union, Callable
 import numpy as np
 from sklearn.neighbors import LocalOutlierFactor
 
-from mleasy.input_validation.attribute_checks import check_not_default_attributes
-from mleasy.models.time_series.anomaly.machine_learning import TSAMultipleParametric
+from . import TSAMultipleParametric
+from .....input_validation.attribute_checks import check_not_default_attributes
 
 
-# FIXME: is LOF really parametric?
+# FIXME: is LOF really parametric? It has hyper-parameters, but parameters?
 class TSALOF(TSAMultipleParametric):
     """LOF adapter for time series.
 

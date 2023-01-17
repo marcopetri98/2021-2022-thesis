@@ -4,8 +4,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from mleasy.reader.time_series import TSBenchmarkReader, rts_config
-from mleasy.utils import print_step, print_header
+from .. import TSBenchmarkReader, rts_config
+from ....utils import print_step, print_header
 
 
 class KitsuneIterator(object):

@@ -5,10 +5,10 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import check_array
 
-from mleasy.input_validation.array_checks import check_x_y_smaller_1d
-from mleasy.models.BaseModel import BaseModel
-from mleasy.models.time_series.anomaly.machine_learning import ITimeSeriesAnomalyWindow
-from mleasy.utils import print_warning
+from . import ITimeSeriesAnomalyWindow
+from ....BaseModel import BaseModel
+from .....input_validation.array_checks import check_x_y_smaller_1d
+from .....utils import print_warning
 
 
 class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):

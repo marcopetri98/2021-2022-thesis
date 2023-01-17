@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.svm import OneClassSVM
 
-from mleasy.models.time_series.anomaly.machine_learning.TSAOCSVM import TSAOCSVM
+from .TSAOCSVM import TSAOCSVM
 
 
 class TSAOCSVMPhase(TSAOCSVM):

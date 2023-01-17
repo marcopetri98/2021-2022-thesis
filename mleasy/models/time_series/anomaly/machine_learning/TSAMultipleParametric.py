@@ -3,9 +3,8 @@ from abc import ABC
 import numpy as np
 from sklearn.utils import check_array
 
-from mleasy.input_validation import check_array_general
-from mleasy.models import IMultipleParametric
-from mleasy.models.time_series.anomaly.machine_learning import TSAWindowWrapper
+from . import TSAWindowWrapper
+from .... import IMultipleParametric
 
 
 class TSAMultipleParametric(TSAWindowWrapper, IMultipleParametric, ABC):

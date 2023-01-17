@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pandas as pd
 
-from mleasy.input_validation import check_not_default_attributes
-from mleasy.reader import IDataMultipleReader
-from mleasy.reader.time_series import TSReader
-from mleasy.utils import print_header, print_step
+from . import TSReader
+from .. import IDataMultipleReader
+from ...input_validation import check_not_default_attributes
+from ...utils import print_header, print_step
 
 
 class TSMultipleReader(TSReader, IDataMultipleReader):

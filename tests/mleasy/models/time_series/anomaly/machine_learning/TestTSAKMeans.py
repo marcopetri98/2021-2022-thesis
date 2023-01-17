@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from models.time_series.anomaly.machine_learning import TSAKMeans
+from mleasy.models.time_series.anomaly.machine_learning import TSAKMeans
 
 
 class TestTSAKMeans(unittest.TestCase):

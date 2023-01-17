@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.cluster import DBSCAN
 
-from mleasy.models.time_series.anomaly.machine_learning.TSAWindowWrapper import TSAWindowWrapper
+from .TSAWindowWrapper import TSAWindowWrapper
 
 
 class TSADBSCAN(TSAWindowWrapper):

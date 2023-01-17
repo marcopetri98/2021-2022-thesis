@@ -4,7 +4,7 @@ import numpy as np
 from numpy.random import RandomState
 from sklearn.ensemble import IsolationForest
 
-from mleasy.models.time_series.anomaly.machine_learning import TSAMultipleParametric
+from . import TSAMultipleParametric
 
 
 class TSAIsolationForest(TSAMultipleParametric):

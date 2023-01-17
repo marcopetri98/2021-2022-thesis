@@ -1,6 +1,6 @@
 from abc import ABC
 
-from mleasy.models import IPredictor
+from ... import IPredictor
 
 
 class ITimeSeriesPredictor(IPredictor, ABC):

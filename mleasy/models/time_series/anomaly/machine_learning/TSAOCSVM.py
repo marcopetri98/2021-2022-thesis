@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn.svm import OneClassSVM
 
-from mleasy.input_validation.attribute_checks import check_not_default_attributes
-from mleasy.models.time_series.anomaly.machine_learning import TSAMultipleParametric
+from . import TSAMultipleParametric
+from .....input_validation.attribute_checks import check_not_default_attributes
 
 
 class TSAOCSVM(TSAMultipleParametric):

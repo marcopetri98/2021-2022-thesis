@@ -1,6 +1,6 @@
 import abc
 
-from mleasy.models import IParametric
+from . import IParametric
 
 
 class IMultipleParametric(IParametric):
@@ -16,28 +16,28 @@ class IMultipleParametric(IParametric):
     @abc.abstractmethod
     def fit_multiple(self, x: list, y: list = None, *args, **kwargs) -> None:
         """Fits the model to the given training data.
-		
-		Parameters
-		----------
-		x : list
-			The training data representing containing the features. It must be
-			a list of array-like objects with shape (n_samples, n_features).
-			Otherwise an exception will be triggered.
+        
+        Parameters
+        ----------
+        x : list
+            The training data representing containing the features. It must be
+            a list of array-like objects with shape (n_samples, n_features).
+            Otherwise an exception will be triggered.
 
-		y : list, default=None
-			The target for the training data which may be used by either
-			classification or regression models. It must be a list of array-like
-			objects with shape (n_samples, n_features). Otherwise an exception
-			will be triggered.
-			
-		args
-			Not used, present to allow multiple inheritance and signature change.
-			
-		kwargs
-			Not used, present to allow multiple inheritance and signature change.
+        y : list, default=None
+            The target for the training data which may be used by either
+            classification or regression models. It must be a list of array-like
+            objects with shape (n_samples, n_features). Otherwise an exception
+            will be triggered.
+            
+        args
+            Not used, present to allow multiple inheritance and signature change.
+            
+        kwargs
+            Not used, present to allow multiple inheritance and signature change.
 
-		Returns
-		-------
-		None
-		"""
+        Returns
+        -------
+        None
+        """
         pass

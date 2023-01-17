@@ -9,10 +9,10 @@ from scipy.spatial.distance import mahalanobis
 from scipy.stats import multivariate_normal
 from sklearn.utils import check_array
 
-from mleasy.input_validation import check_argument_types
-from mleasy.models import IParametric, SavableModel
-from mleasy.models.time_series.anomaly import ITimeSeriesAnomaly, ITimeSeriesPredictor
-from mleasy.utils import print_step, print_warning, save_py_json, load_py_json
+from . import ITimeSeriesAnomaly, ITimeSeriesPredictor
+from ... import IParametric, SavableModel
+from ....input_validation import check_argument_types
+from ....utils import print_step, print_warning, save_py_json, load_py_json
 
 
 class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, SavableModel, ABC):
