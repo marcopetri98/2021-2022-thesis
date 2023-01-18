@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score, precision_score, recall_score
 
-from mleasy.models.time_series.anomaly.naive import TSAConstant, TSAMovAvgStd, TSAConstAvgStd
+from mleasy.algorithms.models.time_series import TSAConstant, TSAMovAvgStd, TSAConstAvgStd
 from mleasy.reader.time_series import YahooS5Reader, NASAReader, NABReader, UCRReader, MGABReader, SMDReader, \
     KitsuneReader, GHLReader, ExathlonReader, rts_config
 

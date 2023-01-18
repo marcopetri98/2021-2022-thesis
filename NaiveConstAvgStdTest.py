@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import f1_score
 
-from mleasy.models.time_series.anomaly.naive import TSAConstAvgStd
+from mleasy.algorithms.models.time_series import TSAConstAvgStd
 from mleasy.reader.time_series import ODINTSReader
 from mleasy.visualizer import line_plot
 

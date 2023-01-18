@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 from mleasy.applications import Zangrando2022Loader
-from mleasy.models.time_series.anomaly.machine_learning import TSAIsolationForest
+from mleasy.algorithms.models.time_series.anomaly.machine_learning import TSAIsolationForest
 from mleasy.utils import print_header, print_step, load_py_json
 
 

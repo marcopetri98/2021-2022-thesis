@@ -7,9 +7,9 @@ import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 
-from mleasy.applications.Interfaces import ILoader
-from mleasy.reader.time_series import TSMultipleReader, ODINTSReader
-from mleasy.utils import print_header, print_step
+from .Interfaces import ILoader
+from ..reader.time_series import TSMultipleReader, ODINTSReader
+from ..utils import print_header, print_step
 
 
 class Zangrando2022Loader(ILoader):
