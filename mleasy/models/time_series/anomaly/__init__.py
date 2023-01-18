@@ -1,3 +1,3 @@
 from .ITimeSeriesAnomaly import ITimeSeriesAnomaly
 from .ITimeSeriesPredictor import ITimeSeriesPredictor
-from .TSASemiSupervised import TSASemiSupervised
+from .TSAErrorBased import TSAErrorBased

@@ -4,11 +4,11 @@ from typing import Callable, Tuple
 import numpy as np
 from sklearn.utils import check_array
 
-from .. import TSASemiSupervised
+from .. import TSAErrorBased
 from .....utils.printing import print_step, print_header
 
 
-class TSAStatistical(TSASemiSupervised):
+class TSAStatistical(TSAErrorBased):
     """Abstract class for statistical models doing anomaly detection.
 
     This class includes all the classical statistical approaches based on

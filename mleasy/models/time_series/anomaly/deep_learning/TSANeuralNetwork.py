@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.utils import check_array
 
-from .. import TSASemiSupervised
+from .. import TSAErrorBased
 from .... import IMultipleParametric
 from .....utils import print_warning, print_header, print_step, save_py_json, load_py_json, concat_list_array
 
@@ -37,7 +37,7 @@ class StatesResetAtSpecifiedBatches(tf.keras.callbacks.Callback):
             self.model.reset_states()
 
 
-class TSANeuralNetwork(TSASemiSupervised, IMultipleParametric):
+class TSANeuralNetwork(TSAErrorBased, IMultipleParametric):
     """Abstract class grouping common anomaly detection deep pieces.
     
     It is important to keep in mind that this class does not set a seed! If you

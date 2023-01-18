@@ -1,1 +1,1 @@
-from .TSASemiSupervisedChild import TSASemiSupervisedChild
+from .TSAErrorBasedChild import TSAErrorBasedChild

@@ -2,10 +2,10 @@ from typing import Callable
 
 import numpy as np
 
-from mleasy.models.time_series.anomaly import TSASemiSupervised
+from mleasy.models.time_series.anomaly import TSAErrorBased
 
 
-class TSASemiSupervisedChild(TSASemiSupervised):
+class TSAErrorBasedChild(TSAErrorBased):
     def __init__(self, error_method: str = "difference",
                  error_function: Callable[[np.ndarray, np.ndarray], np.ndarray] | None = None,
                  threshold_computation: str = "gaussian",

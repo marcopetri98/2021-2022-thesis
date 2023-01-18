@@ -15,7 +15,7 @@ from ....input_validation import check_argument_types
 from ....utils import print_step, print_warning, save_py_json, load_py_json
 
 
-class TSASemiSupervised(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, SavableModel, ABC):
+class TSAErrorBased(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, SavableModel, ABC):
     """Abstract class for models performing anomaly detection based on errors
 
     This class describes a type of semi-supervised learning framework for

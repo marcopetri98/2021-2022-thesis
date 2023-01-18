@@ -6,7 +6,7 @@ import numpy as np
 from scipy.spatial.distance import mahalanobis
 from scipy.stats import multivariate_normal
 
-from tests.mleasy.models.time_series.anomaly.stubs import TSASemiSupervisedChild
+from tests.mleasy.models.time_series.anomaly.stubs import TSAErrorBasedChild
 
 
 def my_diff(gt, pred):
@@ -31,11 +31,11 @@ class TestTSASemiSupervised(unittest.TestCase):
         cls.pr_vectors = np.random.rand(100, 3)
     
     def test_compute_errors(self):
-        ssm_difference = TSASemiSupervisedChild(error_method="difference")
-        ssm_abs_difference = TSASemiSupervisedChild(error_method="abs_difference")
-        ssm_norm = TSASemiSupervisedChild(error_method="norm")
-        ssm_custom = TSASemiSupervisedChild(error_method="custom", error_function=my_diff)
-        ssm_wrong = TSASemiSupervisedChild()
+        ssm_difference = TSAErrorBasedChild(error_method="difference")
+        ssm_abs_difference = TSAErrorBasedChild(error_method="abs_difference")
+        ssm_norm = TSAErrorBasedChild(error_method="norm")
+        ssm_custom = TSAErrorBasedChild(error_method="custom", error_function=my_diff)
+        ssm_wrong = TSAErrorBasedChild()
         
         np.testing.assert_array_equal(ssm_difference._compute_errors(self.gt_points, self.pr_points, False),
                                       self.gt_points - self.pr_points)
@@ -62,11 +62,11 @@ class TestTSASemiSupervised(unittest.TestCase):
                                       np.full(self.gt_points.shape, fill_value=np.nan))
     
     def test_compute_scores(self):
-        ssm_gaussian = TSASemiSupervisedChild(threshold_computation="gaussian")
-        ssm_mahalanobis = TSASemiSupervisedChild(threshold_computation="mahalanobis")
-        ssm_custom = TSASemiSupervisedChild(threshold_computation="custom",
-                                            threshold_function=my_threshold,
-                                            scoring_function=my_scores)
+        ssm_gaussian = TSAErrorBasedChild(threshold_computation="gaussian")
+        ssm_mahalanobis = TSAErrorBasedChild(threshold_computation="mahalanobis")
+        ssm_custom = TSAErrorBasedChild(threshold_computation="custom",
+                                        threshold_function=my_threshold,
+                                        scoring_function=my_scores)
 
         point_errors = ssm_custom._compute_errors(self.gt_points, self.pr_points)
         vector_errors = ssm_custom._compute_errors(self.gt_vectors, self.pr_vectors)
@@ -110,11 +110,11 @@ class TestTSASemiSupervised(unittest.TestCase):
                                        for point in vector_errors])
     
     def test_learn_threshold(self):
-        ssm_gaussian = TSASemiSupervisedChild(threshold_computation="gaussian")
-        ssm_mahalanobis = TSASemiSupervisedChild(threshold_computation="mahalanobis")
-        ssm_custom = TSASemiSupervisedChild(threshold_computation="custom",
-                                            threshold_function=my_threshold,
-                                            scoring_function=my_scores)
+        ssm_gaussian = TSAErrorBasedChild(threshold_computation="gaussian")
+        ssm_mahalanobis = TSAErrorBasedChild(threshold_computation="mahalanobis")
+        ssm_custom = TSAErrorBasedChild(threshold_computation="custom",
+                                        threshold_function=my_threshold,
+                                        scoring_function=my_scores)
 
         # Test edge cases for mean and covariance computation
         points_pr = self.gt_points
@@ -170,16 +170,16 @@ class TestTSASemiSupervised(unittest.TestCase):
         self.assertEqual(ssm_mahalanobis._threshold, np.max(ssm_mahalanobis._compute_scores(vector_errors)))
 
     def test_save_and_load(self):
-        ssm = TSASemiSupervisedChild()
+        ssm = TSAErrorBasedChild()
         point_errors = ssm._compute_errors(self.gt_points, self.pr_points)
         vector_errors = ssm._compute_errors(self.gt_vectors, self.pr_vectors)
 
         # test callable are not saved using pickle
         with TemporaryDirectory() as temp_dir:
-            callable_ssm = TSASemiSupervisedChild(error_method="custom", error_function=lambda x: x)
+            callable_ssm = TSAErrorBasedChild(error_method="custom", error_function=lambda x: x)
             callable_ssm.save(temp_dir)
 
-            new_ssm = TSASemiSupervisedChild()
+            new_ssm = TSAErrorBasedChild()
             new_ssm.load(temp_dir)
 
             self.assertIsNone(new_ssm.error_function)
@@ -196,7 +196,7 @@ class TestTSASemiSupervised(unittest.TestCase):
             self.assertIn(ssm._TSASemiSupervised__json_file, contents)
             self.assertIn(ssm._TSASemiSupervised__numpy_file, contents)
 
-            new_ssm = TSASemiSupervisedChild()
+            new_ssm = TSAErrorBasedChild()
             new_ssm.load(temp_dir)
 
             self.assertEqual(new_ssm.error_method, ssm.error_method)
@@ -222,7 +222,7 @@ class TestTSASemiSupervised(unittest.TestCase):
             self.assertIn(ssm._TSASemiSupervised__json_file, contents)
             self.assertIn(ssm._TSASemiSupervised__numpy_file, contents)
 
-            new_ssm = TSASemiSupervisedChild()
+            new_ssm = TSAErrorBasedChild()
             new_ssm.load(temp_dir)
 
             self.assertEqual(new_ssm.error_method, ssm.error_method)
