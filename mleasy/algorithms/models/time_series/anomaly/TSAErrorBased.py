@@ -9,13 +9,12 @@ from scipy.spatial.distance import mahalanobis
 from scipy.stats import multivariate_normal
 from sklearn.utils import check_array
 
-from . import ITimeSeriesAnomaly, ITimeSeriesPredictor
-from ... import IParametric, SavableModel
-from mleasy.input_validation import check_argument_types
-from mleasy.utils import print_step, print_warning, save_py_json, load_py_json
+from .... import IParametric, SavableModel
+from .....input_validation import check_argument_types
+from .....utils import print_step, print_warning, save_py_json, find_or_create_dir, load_py_json
 
 
-class TSAErrorBased(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, SavableModel, ABC):
+class TSAErrorBased(IParametric, SavableModel, ABC):
     """Abstract class for models performing anomaly detection based on errors
 
     This class describes a type of semi-supervised learning framework for
@@ -149,17 +148,8 @@ class TSAErrorBased(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, Savab
             The path to the dir in which the model and all its related files
             must be saved.
         """
+        find_or_create_dir(path)
         path_obj = Path(path)
-
-        if path_obj.name.find(".") != -1:
-            raise ValueError("path must point to a directory")
-        elif not path_obj.is_dir() and path_obj.exists():
-            raise ValueError("path must point to an existing directory or to a "
-                             "non existing directory")
-
-        # if the directory does not exist, create it
-        if not path_obj.exists():
-            path_obj.mkdir(parents=True)
 
         # create files to save the model parameters and attributes
         json_objects = self.get_params(deep=False)
@@ -189,11 +179,9 @@ class TSAErrorBased(ITimeSeriesAnomaly, ITimeSeriesPredictor, IParametric, Savab
 
         path_obj = Path(path)
 
-        if not path_obj.is_dir():
-            raise ValueError("path must point to a valid directory")
-        elif not path_obj.joinpath(self.__json_file).is_file():
+        if not path_obj.joinpath(self.__json_file).is_file():
             raise ValueError("path directory is not valid. It must contain "
-                             f"these files: {self.__numpy_file}")
+                             f"these files: {self.__json_file}")
 
         json_objects: dict = load_py_json(str(path_obj / self.__json_file))
         self.set_params(**json_objects)

@@ -9,12 +9,12 @@ class ICluster(ABC):
     """
     
     @abc.abstractmethod
-    def cluster(self, X, *args, **kwargs) -> np.ndarray:
+    def cluster(self, x, *args, **kwargs) -> np.ndarray:
         """Clusters the data.
         
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
+        x : array-like of shape (n_samples, n_features)
             The data to be clustered.
             
         args

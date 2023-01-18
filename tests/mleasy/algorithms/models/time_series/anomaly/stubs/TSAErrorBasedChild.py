@@ -16,15 +16,6 @@ class TSAErrorBasedChild(TSAErrorBased):
                          threshold_computation=threshold_computation,
                          threshold_function=threshold_function,
                          scoring_function=scoring_function)
-    
-    def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
-        pass
-
-    def classify(self, x, *args, **kwargs) -> np.ndarray:
-        pass
-
-    def predict(self, x, *args, **kwargs) -> np.ndarray:
-        pass
 
     def fit(self, x, y=None, *args, **kwargs) -> None:
         pass

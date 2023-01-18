@@ -12,15 +12,11 @@ class IClassifier(ABC):
     def classify(self, x, *args, **kwargs) -> np.ndarray:
         """Computes the labels for the given points.
         
-        If a point has 1 as label it is classified as anomaly while if it has
-        0 as label it is classified as normal. **Please, note that** if the
-        model is parametric (inherits from IParametric) you must first perform
-        fit on training data.
-        
         Parameters
         ----------
-        x : array-like of shape (n_samples, n_features)
-            The points for which we must compute the anomaly score.
+        x : array-like
+            The data to be classified. Data must have at least two dimensions in
+            which the first dimension represent the number of samples.
             
         args
             Not used, present to allow multiple inheritance and signature change.
@@ -30,7 +26,9 @@ class IClassifier(ABC):
 
         Returns
         -------
-        anomaly_labels : ndarray of shape (n_samples,)
-            The scores of the points.
+        labels : ndarray
+            The labels resulted from the classification. The array must have at
+            least 2 dimensions in which the first is equal to the first
+            dimension of `x` (usually, it has 2 dimensions and the second is 1).
         """
         pass

@@ -1,6 +1,5 @@
 import abc
 from abc import ABC
-from typing import IO
 
 
 class ISavable(ABC):
@@ -11,15 +10,12 @@ class ISavable(ABC):
     def save(self, path: str,
              *args,
              **kwargs) -> None:
-        """Saves all the parameters of the model.
+        """Saves the objects state.
         
         Parameters
         ----------
         path : str
-            It is the path where to save the model. All the file paths are
-            extended to be saved in a file with extensions ".pickle", i.e., if
-            the path does not end with ".pickle", the string ".pickle" will be
-            added to it.
+            It is the path of the folder in which the object will be saved.
 
         args
             Not used, present to allow multiple inheritance and signature change.
@@ -42,7 +38,7 @@ class ISavable(ABC):
         Parameters
         ----------
         path : str
-            It is the path of the file to read containing the model.
+            It is the path of the directory in which the object has been saved.
 
         args
             Not used, present to allow multiple inheritance and signature change.

@@ -7,12 +7,10 @@ import numpy as np
 class IForecaster(ABC):
     """Interface identifying a forecaster of a time-series.
     """
-    _ALLOWED_METHODS = ["autoregressive"]
     
     @abc.abstractmethod
     def forecast(self, x,
                  steps: int = 1,
-                 method: str = "autoregressive",
                  *args,
                  **kwargs) -> np.ndarray:
         """Forecast values for the time-series.
@@ -24,9 +22,6 @@ class IForecaster(ABC):
             
         steps : int, default=1
             The number of forecasting steps to perform.
-            
-        method : str, default="autoregressive"
-            The method used for forecasting future values.
         
         args
             Not used, present to allow multiple inheritance and signature change.
@@ -36,7 +31,7 @@ class IForecaster(ABC):
 
         Returns
         -------
-        forecasted_values : ndarray
-            The forecasted values for the time series.
+        forecasted_values : ndarray of shape (steps, n_features)
+            The forecasted values for the time series points.
         """
         pass

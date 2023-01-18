@@ -193,8 +193,8 @@ class TestTSASemiSupervised(unittest.TestCase):
             contents = os.listdir(temp_dir)
             self.assertNotEqual(len(contents), 0)
             self.assertEqual(len(contents), 2)
-            self.assertIn(ssm._TSASemiSupervised__json_file, contents)
-            self.assertIn(ssm._TSASemiSupervised__numpy_file, contents)
+            self.assertIn(ssm._TSAErrorBased__json_file, contents)
+            self.assertIn(ssm._TSAErrorBased__numpy_file, contents)
 
             new_ssm = TSAErrorBasedChild()
             new_ssm.load(temp_dir)
@@ -219,8 +219,8 @@ class TestTSASemiSupervised(unittest.TestCase):
             contents = os.listdir(temp_dir)
             self.assertNotEqual(len(contents), 0)
             self.assertEqual(len(contents), 2)
-            self.assertIn(ssm._TSASemiSupervised__json_file, contents)
-            self.assertIn(ssm._TSASemiSupervised__numpy_file, contents)
+            self.assertIn(ssm._TSAErrorBased__json_file, contents)
+            self.assertIn(ssm._TSAErrorBased__numpy_file, contents)
 
             new_ssm = TSAErrorBasedChild()
             new_ssm.load(temp_dir)

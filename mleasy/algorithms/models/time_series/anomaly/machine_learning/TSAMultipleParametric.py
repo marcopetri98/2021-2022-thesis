@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.utils import check_array
 
 from . import TSAWindowWrapper
-from .... import IMultipleParametric
+from .....IMultipleParametric import IMultipleParametric
 
 
 class TSAMultipleParametric(TSAWindowWrapper, IMultipleParametric, ABC):

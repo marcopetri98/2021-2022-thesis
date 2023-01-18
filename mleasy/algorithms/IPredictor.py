@@ -14,8 +14,9 @@ class IPredictor(ABC):
         
         Parameters
         ----------
-        x : array-like of shape (n_samples, n_features)
-            The training data representing containing the features.
+        x : array-like
+            The data used for fitting. Data must have at least two dimensions in
+            which the first dimension represent the number of samples.
             
         args
             Not used, present to allow multiple inheritance and signature change.
@@ -25,8 +26,9 @@ class IPredictor(ABC):
 
         Returns
         -------
-        predictions : ndarray of shape (n_samples, n_features, n_predictions)
-            The prediction for each of the samples given in input. If a point is
-            predicted multiple times `n_predictions` will be greater than 1.
+        predictions : ndarray
+            The predictions for the points in input. The predictions must have
+            at least two dimensions in which the first is the number of samples,
+            and it is identical to the first dimension of `x`.
         """
         pass

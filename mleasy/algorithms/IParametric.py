@@ -4,6 +4,8 @@ from abc import ABC
 
 class IParametric(ABC):
     """Interface identifying a machine learning parametric model.
+    
+    Such a model has some parameters to be learned from data.
     """
     
     @abc.abstractmethod
@@ -12,12 +14,15 @@ class IParametric(ABC):
         
         Parameters
         ----------
-        x : array-like of shape (n_samples, n_features)
-            The training data representing containing the features.
+        x : array-like
+            The data used for fitting. Data must have at least two dimensions in
+            which the first dimension represent the number of samples.
 
-        y : array-like of shape (n_samples, n_label_features), default=None
-            The target for the training data which may be used by either
-            classification or regression models.
+        y : array-like, default=None
+            The target for the fitting data. Data must have at least two
+            dimensions in which the first dimension represent the number of
+            samples. Moreover, if not `None`, the first dimension must be the
+            same as that of `x`.
             
         args
             Not used, present to allow multiple inheritance and signature change.

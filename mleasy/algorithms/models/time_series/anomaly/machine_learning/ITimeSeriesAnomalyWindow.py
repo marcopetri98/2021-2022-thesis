@@ -2,10 +2,10 @@ import abc
 
 import numpy as np
 
-from ..ITimeSeriesAnomaly import ITimeSeriesAnomaly
+from .... import IAnomalyScorer, IAnomalyClassifier
 
 
-class ITimeSeriesAnomalyWindow(ITimeSeriesAnomaly):
+class ITimeSeriesAnomalyWindow(IAnomalyScorer, IAnomalyClassifier):
     """Interface for sliding window univariate time series anomaly detection.
     """
     

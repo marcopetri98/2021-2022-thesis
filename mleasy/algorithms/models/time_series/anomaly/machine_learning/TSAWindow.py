@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils import check_array
 
 from . import ITimeSeriesAnomalyWindow
-from ....BaseModel import BaseModel
+from mleasy.algorithms.BaseModel import BaseModel
 from mleasy.input_validation.array_checks import check_x_y_smaller_1d
 from mleasy.utils import print_warning
 

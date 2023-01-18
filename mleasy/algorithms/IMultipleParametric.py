@@ -10,7 +10,6 @@ class IMultipleParametric(IParametric):
     a model that can be trained on multiple datasets at the same time. E.g.,
     if we want to train on two different datasets the model we should use the
     function :meth:`models.IMultipleParametric.IMultipleParametric.fit_multiple`.
-    Otherwise, we should learn the inherited method.
     """
     
     @abc.abstractmethod
@@ -20,15 +19,13 @@ class IMultipleParametric(IParametric):
         Parameters
         ----------
         x : list
-            The training data representing containing the features. It must be
-            a list of array-like objects with shape (n_samples, n_features).
-            Otherwise an exception will be triggered.
+            The list of the fitting data to be used. The elements of the list
+            must respect the requirements of :meth:`algorithms.IParametric.fit`.
 
         y : list, default=None
-            The target for the training data which may be used by either
-            classification or regression models. It must be a list of array-like
-            objects with shape (n_samples, n_features). Otherwise an exception
-            will be triggered.
+            The target for the fitting data. The list must have the same
+            dimension as `x`. Moreover, `y` elements are pairwise constrained to
+            `x` elements as stated in :meth:`algorithms.IParametric.fit`.
             
         args
             Not used, present to allow multiple inheritance and signature change.

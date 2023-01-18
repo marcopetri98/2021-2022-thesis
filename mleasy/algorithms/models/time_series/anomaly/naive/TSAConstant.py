@@ -4,8 +4,9 @@ import numpy as np
 from scipy.optimize import brute
 from sklearn.metrics import f1_score
 
-from .... import IParametric, IAnomalyClassifier
-from mleasy.utils import print_header, print_step
+from .... import IAnomalyClassifier
+from ..... import IParametric
+from ......utils import print_header, print_step
 
 
 class TSAConstant(IAnomalyClassifier, IParametric):

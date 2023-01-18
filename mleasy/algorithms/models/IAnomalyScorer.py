@@ -2,10 +2,8 @@ import abc
 
 import numpy as np
 
-from .IRegressor import IRegressor
 
-
-class IAnomalyRegressor(IRegressor):
+class IAnomalyScorer(object):
     """Interface identifying a machine learning algorithm giving anomaly scores.
     """
 
@@ -34,7 +32,3 @@ class IAnomalyRegressor(IRegressor):
             The scores of the points.
         """
         pass
-
-    def regress(self, x, *args, **kwargs) -> np.ndarray:
-        """Proxy for anomaly_score"""
-        return self.anomaly_score(x, *args, **kwargs)

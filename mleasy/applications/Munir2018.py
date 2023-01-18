@@ -78,7 +78,7 @@ class Munir2018Loader(ILoader):
         self.train_perc = train_perc
         self.valid_perc = valid_perc
         self.test_perc = test_perc
-        self._reader: UTSReader = None
+        self._reader = None
         self._swap_setting = None
         
         self.__check_parameters()

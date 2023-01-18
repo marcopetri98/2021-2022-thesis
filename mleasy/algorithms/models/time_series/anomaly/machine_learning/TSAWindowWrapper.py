@@ -34,10 +34,6 @@ class TSAWindowWrapper(TSAWindow, ITimeSeriesAnomalyWrapper, ABC):
 
         self._wrapped_model = None
 
-    def regress(self, x, *args, **kwargs) -> np.ndarray:
-        """Alias for anomaly_score."""
-        return self.anomaly_score(x)
-
     def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
         # Input validation
         check_array(x)
