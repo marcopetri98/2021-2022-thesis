@@ -4,9 +4,8 @@ from typing import Callable
 import numpy as np
 from skopt.space import Categorical, Integer
 
-from .HyperparameterSearch import HyperparameterSearch
-from .HyperparameterSearchSaver import HyperparameterSearchSaver
-from mleasy.utils.printing import print_step, print_warning
+from . import HyperparameterSearch, HyperparameterSearchSaver
+from ....utils.printing import print_step, print_warning
 
 
 class TimeSeriesGridSearch(HyperparameterSearch):

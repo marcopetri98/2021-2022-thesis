@@ -14,6 +14,6 @@ will be carried on with the dataset. Therefore, a general time series reader
 will be simply usable for all the time series.
 """
 
-from .IDataReader import IDataReader
 from .IDataMultipleReader import IDataMultipleReader
+from .IDataReader import IDataReader
 from .MissingStrategy import MissingStrategy

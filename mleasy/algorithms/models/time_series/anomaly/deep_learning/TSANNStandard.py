@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from . import TSANeuralNetwork
-from mleasy.utils import concat_list_array, print_warning
+from ......utils import concat_list_array, print_warning
 
 
 class TSANNStandard(TSANeuralNetwork):

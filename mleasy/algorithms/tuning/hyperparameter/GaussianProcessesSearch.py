@@ -8,9 +8,8 @@ from scipy.optimize import OptimizeResult
 from skopt.callbacks import CheckpointSaver
 from skopt.space import Categorical, Integer, Real
 
-from . import HyperparameterSearchSaver
-from .HyperparameterSearch import HyperparameterSearch
-from mleasy.utils.printing import print_step, print_warning
+from . import HyperparameterSearchSaver, HyperparameterSearch
+from ....utils.printing import print_step, print_warning
 
 
 class GaussianProcessesSearch(HyperparameterSearch):

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import abc
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -11,7 +12,8 @@ from sklearn.utils import check_array
 from .. import TSAErrorBased
 from .... import IAnomalyScorer, IAnomalyClassifier
 from ..... import IMultipleParametric
-from ......utils import print_warning, print_header, print_step, save_py_json, load_py_json, concat_list_array
+from ......utils import print_warning, print_header, print_step, save_py_json, \
+    load_py_json, concat_list_array
 
 
 class StatesResetAtSpecifiedBatches(tf.keras.callbacks.Callback):

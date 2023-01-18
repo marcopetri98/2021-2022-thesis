@@ -1,6 +1,6 @@
 import os
 
-from mleasy.utils.json import save_py_json, load_py_json
+from ....utils.json import save_py_json, load_py_json
 
 
 class HyperparameterSearchSaver(object):

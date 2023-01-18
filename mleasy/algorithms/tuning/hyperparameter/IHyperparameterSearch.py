@@ -4,7 +4,7 @@ from typing import Callable
 
 import numpy as np
 
-from .IHyperparameterSearchResults import IHyperparameterSearchResults
+from . import IHyperparameterSearchResults
 
 
 class IHyperparameterSearch(ABC):

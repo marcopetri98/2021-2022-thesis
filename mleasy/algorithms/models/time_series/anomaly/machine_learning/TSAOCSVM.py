@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.svm import OneClassSVM
 
 from . import TSAMultipleParametric
-from mleasy.input_validation.attribute_checks import check_not_default_attributes
+from ......input_validation.attribute_checks import check_not_default_attributes
 
 
 class TSAOCSVM(TSAMultipleParametric):

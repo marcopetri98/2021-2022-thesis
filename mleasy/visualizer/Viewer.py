@@ -1,10 +1,10 @@
 import json
 from typing import Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sn
-import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, precision_recall_curve
 
 

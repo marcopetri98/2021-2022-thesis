@@ -9,7 +9,7 @@ from scipy.spatial.distance import mahalanobis
 from scipy.stats import truncnorm, norm, chi2
 from sklearn.utils import check_X_y
 
-from mleasy.utils.printing import print_warning
+from ......utils.printing import print_warning
 
 
 class TimeSeriesAnomalyWindowDL(ABC):

@@ -1,6 +1,6 @@
 import numpy as np
 
-from .IHyperparameterSearchResults import IHyperparameterSearchResults
+from . import IHyperparameterSearchResults
 
 
 class HyperparameterSearchResults(IHyperparameterSearchResults):

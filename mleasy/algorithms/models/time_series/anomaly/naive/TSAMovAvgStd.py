@@ -5,7 +5,7 @@ from scipy.optimize import brute
 from sklearn.metrics import f1_score
 
 from . import TSAConstant
-from mleasy.utils import print_header, print_step, mov_avg, mov_std
+from ......utils import print_header, print_step, mov_avg, mov_std
 
 
 class TSAMovAvgStd(TSAConstant):

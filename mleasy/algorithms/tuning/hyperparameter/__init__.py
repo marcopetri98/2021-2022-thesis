@@ -3,5 +3,5 @@ from .IHyperparameterSearchResults import IHyperparameterSearchResults
 from .HyperparameterSearch import HyperparameterSearch
 from .HyperparameterSearchResults import HyperparameterSearchResults
 from .HyperparameterSearchSaver import HyperparameterSearchSaver
-from .TimeSeriesGridSearch import TimeSeriesGridSearch
 from .GaussianProcessesSearch import GaussianProcessesSearch
+from .TimeSeriesGridSearch import TimeSeriesGridSearch

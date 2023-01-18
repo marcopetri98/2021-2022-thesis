@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.utils import check_array
 
 from .. import TSAErrorBased
-from mleasy.utils.printing import print_step, print_header
+from ......utils.printing import print_step, print_header
 
 
 class TSAStatistical(TSAErrorBased):

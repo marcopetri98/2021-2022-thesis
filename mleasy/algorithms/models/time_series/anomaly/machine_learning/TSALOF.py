@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.neighbors import LocalOutlierFactor
 
 from . import TSAMultipleParametric
-from mleasy.input_validation.attribute_checks import check_not_default_attributes
+from ......input_validation.attribute_checks import check_not_default_attributes
 
 
 # FIXME: is LOF really parametric? It has hyper-parameters, but parameters?
