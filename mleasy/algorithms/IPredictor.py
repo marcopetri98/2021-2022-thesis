@@ -1,10 +1,9 @@
 import abc
-from abc import ABC
 
 import numpy as np
 
 
-class IPredictor(ABC):
+class IPredictor(abc.ABC):
     """Interface identifying a machine learning predictor.
     """
     
@@ -15,8 +14,8 @@ class IPredictor(ABC):
         Parameters
         ----------
         x : array-like
-            The data used for fitting. Data must have at least two dimensions in
-            which the first dimension represent the number of samples.
+            The data used for prediction. Data must have at least two dimensions
+            in which the first dimension represent the number of samples.
             
         args
             Not used, present to allow multiple inheritance and signature change.

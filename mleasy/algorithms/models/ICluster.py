@@ -14,8 +14,9 @@ class ICluster(ABC):
         
         Parameters
         ----------
-        x : array-like of shape (n_samples, n_features)
-            The data to be clustered.
+        x : array-like
+            The data used for clustering. Data must have at least two dimensions
+            in which the first dimension represent the number of samples.
             
         args
             Not used, present to allow multiple inheritance and signature change.
