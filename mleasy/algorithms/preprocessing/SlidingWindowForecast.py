@@ -3,6 +3,7 @@ from typing import Tuple, Any
 
 import numpy as np
 from sklearn.utils import check_array
+from skopt.space import Integer
 
 from .. import IShapeChanger, SavableModel
 from ...utils import save_py_json, load_py_json
@@ -46,6 +47,14 @@ class SlidingWindowForecast(IShapeChanger, SavableModel):
     @property
     def points_seen(self):
         return self._points_seen
+
+    def get_hyperparameters(self, *args, **kwargs) -> dict:
+        return {"window": {"value": self.window, "set": Integer(1, np.inf)},
+                "stride": {"value": self.stride, "set": Integer(1, np.inf)},
+                "forecast": {"value": self.forecast, "set": Integer(1, np.inf)}}
+
+    def set_hyperparameters(self, hyperparameters: dict, *args, **kwargs) -> None:
+        self.set_params(**hyperparameters)
         
     def __repr__(self):
         return f"SlidingWindowForecast(window={self.window}, stride={self.stride}, forecast={self.forecast})"
@@ -58,6 +67,9 @@ class SlidingWindowForecast(IShapeChanger, SavableModel):
             return False
         
         return (self.window, self.stride, self.forecast) == (other.window, other.stride, other.forecast)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def copy(self):
         """Copies the object.

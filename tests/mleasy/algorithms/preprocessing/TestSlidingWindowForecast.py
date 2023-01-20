@@ -3,6 +3,7 @@ import unittest
 from tempfile import TemporaryDirectory
 
 import numpy as np
+from skopt.space import Integer
 
 from mleasy.algorithms.preprocessing import SlidingWindowForecast
 
@@ -12,7 +13,33 @@ class TestSlidingWindowForecast(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.series_uni = np.random.rand(1000, 1)
         cls.series_multi = np.random.rand(1000, 6)
-        
+
+    def test_get_hyperparameters(self):
+        shape_changer1 = SlidingWindowForecast(window=10, stride=1, forecast=1)
+        hyper = shape_changer1.get_hyperparameters()
+
+        self.assertEqual(3, len(hyper))
+        for key, value in hyper.items():
+            self.assertIsInstance(value, dict)
+            self.assertEqual(2, len(value))
+            self.assertIn("value", value)
+            self.assertIn("set", value)
+
+        self.assertEqual(10, hyper["window"]["value"])
+        self.assertEqual(Integer(1, np.inf), hyper["window"]["set"])
+        self.assertEqual(1, hyper["stride"]["value"])
+        self.assertEqual(Integer(1, np.inf), hyper["stride"]["set"])
+        self.assertEqual(1, hyper["forecast"]["value"])
+        self.assertEqual(Integer(1, np.inf), hyper["forecast"]["set"])
+
+    def test_set_hyperparameters(self):
+        shape_changer1 = SlidingWindowForecast(window=10, stride=1, forecast=1)
+        shape_changer1.set_hyperparameters({"window": 5, "stride": 10, "forecast": 10})
+
+        self.assertEqual(5, shape_changer1.window)
+        self.assertEqual(10, shape_changer1.stride)
+        self.assertEqual(10, shape_changer1.forecast)
+
     def test_equality(self):
         shape_changer1 = SlidingWindowForecast(window=10, stride=1, forecast=1)
         shape_changer2 = SlidingWindowForecast(window=10, stride=1, forecast=1)

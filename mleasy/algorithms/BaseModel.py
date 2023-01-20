@@ -4,6 +4,52 @@ class BaseModel(object):
     def __init__(self):
         super().__init__()
 
+    def get_hyperparameters(self, *args, **kwargs) -> dict:
+        """Gets all the hyperparameters of the model and their allowed values.
+
+        Parameters
+        ----------
+        args
+            Not used, present to allow multiple inheritance and signature change.
+
+        kwargs
+            Not used, present to allow multiple inheritance and signature change.
+
+        Returns
+        -------
+        hyperparameters : dict
+            A dictionary with all the hyperparameters and the set of their
+            possible values. Every key of the dictionary is the name of the
+            hyperparameter. Each value of the dictionary is another dictionary
+            with two keys: "value" and "set". The former key identifies the
+            current value of the hyperparameter, the latter identifies the
+            allowed values for the model. The allowed values for the model may
+            be one of `Categorical`, `Integer` or `Real` classes from `skopt`.
+        """
+        return dict()
+
+    def set_hyperparameters(self, hyperparameters: dict, *args, **kwargs) -> None:
+        """Sets the hyperparameters of the model.
+
+        Parameters
+        ----------
+        hyperparameters : dict
+            A dictionary with all the hyperparameters values. Each key is the
+            name of a hyperparameter and the value is the value assumed by the
+            parameter.
+
+        args
+            Not used, present to allow multiple inheritance and signature change.
+
+        kwargs
+            Not used, present to allow multiple inheritance and signature change.
+
+        Returns
+        -------
+        None
+        """
+        pass
+
     def set_params(self, **params) -> None:
         """Modify the parameters of the object.
 

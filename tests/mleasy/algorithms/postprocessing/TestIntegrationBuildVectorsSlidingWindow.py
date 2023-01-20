@@ -14,7 +14,22 @@ class TestIntegrationBuildVectorsSlidingWindow(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.series_uni = np.random.rand(1000, 1)
         cls.series_multi = np.random.rand(1000, 6)
-        
+
+    def test_get_hyperparameters(self):
+        shape_changer = SlidingWindowForecast(window=10)
+        error_vectors1 = BuildVectorsSlidingWindow(sliding_window=shape_changer)
+        hyper = error_vectors1.get_hyperparameters()
+
+        self.assertIsInstance(hyper, dict)
+        self.assertEqual(0, len(hyper))
+
+    def test_set_hyperparameters(self):
+        shape_changer = SlidingWindowForecast(window=10)
+        error_vectors1 = BuildVectorsSlidingWindow(sliding_window=shape_changer)
+        error_vectors1.set_hyperparameters({"false_att": "Ezio Auditore"})
+
+        self.assertIs(shape_changer, error_vectors1.sliding_window)
+
     def test_equal(self):
         shape_changer = SlidingWindowForecast(window=10)
         error_vectors1 = BuildVectorsSlidingWindow(sliding_window=shape_changer)

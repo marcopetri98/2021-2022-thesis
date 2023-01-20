@@ -3,6 +3,7 @@ from typing import Tuple, Any
 
 import numpy as np
 from sklearn.utils import check_array
+from skopt.space import Integer
 
 from .. import SavableModel, IShapeChanger
 from ...utils import save_py_json, load_py_json
@@ -41,6 +42,13 @@ class SlidingWindowReconstruct(IShapeChanger, SavableModel):
     @property
     def points_seen(self):
         return self._points_seen
+
+    def get_hyperparameters(self, *args, **kwargs) -> dict:
+        return {"window": {"value": self.window, "set": Integer(1, np.inf)},
+                "stride": {"value": self.stride, "set": Integer(1, np.inf)}}
+
+    def set_hyperparameters(self, hyperparameters: dict, *args, **kwargs) -> None:
+        self.set_params(**hyperparameters)
         
     def __repr__(self):
         return f"SlidingWindowReconstruct(window={self.window}, stride={self.stride})"
@@ -53,6 +61,9 @@ class SlidingWindowReconstruct(IShapeChanger, SavableModel):
             return False
         
         return (self.window, self.stride) == (other.window, other.stride)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def copy(self):
         """Copies the object.

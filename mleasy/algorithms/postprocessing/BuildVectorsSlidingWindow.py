@@ -38,7 +38,11 @@ class BuildVectorsSlidingWindow(IShapeChanger, SavableModel):
         super().__init__()
         
         self._sliding_window = sliding_window
-        
+
+    @property
+    def sliding_window(self):
+        return self._sliding_window
+
     def __repr__(self):
         return f"ErrorVectorsSlidingWindow(sliding_window={repr(self._sliding_window)})"
     
@@ -50,6 +54,9 @@ class BuildVectorsSlidingWindow(IShapeChanger, SavableModel):
             return False
         
         return self._sliding_window is other._sliding_window
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def copy(self):
         """Copies the object.
