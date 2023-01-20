@@ -78,6 +78,30 @@ class BuildVectorsSlidingWindow(IShapeChanger, SavableModel):
                      y=None,
                      *args,
                      **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+        """Builds the vectors from model's predictions.
+        
+        Parameters
+        ----------
+        x : array-like of shape (n_windows, window/forecast, n_features)
+            These are the values predicted by the model. Their appropriate name
+            should be `y_hat`, but for API consistency `x` is left.
+        
+        y : array-like of shape (n_windows, window/forecast, n_features)
+            The targets for the model outputs.
+
+        Returns
+        -------
+        x_new : array-like
+            The vectors with the predictions for each timestamp. It has two
+            dimensions and the first is the number of points seen while building
+            the sliding windows. The second dimension is the product between
+            the features predicted/reconstructed and the window/forecasting.
+            
+        y_new : array-like
+            An array with the same shape as `x_new` containing the true values
+            for the predictions.
+        """
+        
         window = self._sliding_window.window
         stride = self._sliding_window.stride
         points = self._sliding_window.points_seen
