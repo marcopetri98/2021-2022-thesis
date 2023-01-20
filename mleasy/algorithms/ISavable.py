@@ -1,5 +1,6 @@
 import abc
 from abc import ABC
+from typing import Any
 
 
 class ISavable(ABC):
@@ -9,7 +10,7 @@ class ISavable(ABC):
     @abc.abstractmethod
     def save(self, path: str,
              *args,
-             **kwargs) -> None:
+             **kwargs) -> Any:
         """Saves the objects state.
         
         Parameters
@@ -25,14 +26,15 @@ class ISavable(ABC):
 
         Returns
         -------
-        None
+        self
+            Instance to itself to allow chain calls.
         """
         pass
     
     @abc.abstractmethod
     def load(self, path: str,
              *args,
-             **kwargs) -> None:
+             **kwargs) -> Any:
         """Loads all the parameters of the model.
         
         Parameters
@@ -48,6 +50,7 @@ class ISavable(ABC):
 
         Returns
         -------
-        None
+        self
+            Instance to itself to allow chain calls.
         """
         pass

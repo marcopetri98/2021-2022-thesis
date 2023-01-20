@@ -1,9 +1,11 @@
-from typing import Tuple
+from pathlib import Path
+from typing import Tuple, Any
 
 import numpy as np
 from sklearn.utils import check_array
 
 from .. import IShapeChanger, SavableModel
+from ...utils import save_py_json, load_py_json
 
 
 class SlidingWindowForecast(IShapeChanger, SavableModel):
@@ -22,7 +24,14 @@ class SlidingWindowForecast(IShapeChanger, SavableModel):
         
     forecast : int, default=1
         It is the number of forecast to consider in building the sliding windows.
+        
+    Attributes
+    ----------
+    _points_seen : int
+        It is the number of points seen during the last `shape_change` call.
     """
+    __json_file = "sliding_window_forecast.json"
+    
     def __init__(self, window: int,
                  stride: int = 1,
                  forecast: int = 1):
@@ -32,10 +41,67 @@ class SlidingWindowForecast(IShapeChanger, SavableModel):
         self.stride = stride
         self.forecast = forecast
         
-    def shape_change(self, x, y=None, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+        self._points_seen = None
+        
+    @property
+    def points_seen(self):
+        return self._points_seen
+        
+    def __repr__(self):
+        return f"SlidingWindowForecast(window={self.window}, stride={self.stride}, forecast={self.forecast})"
+    
+    def __str__(self):
+        return f"Sliding window for forecasting with window {self.window}, stride {self.stride} and forecast {self.forecast}"
+    
+    def __eq__(self, other):
+        if not isinstance(other, SlidingWindowForecast):
+            return False
+        
+        return (self.window, self.stride, self.forecast) == (other.window, other.stride, other.forecast)
+    
+    def copy(self):
+        """Copies the object.
+        
+        Returns
+        -------
+        new_obj : SlidingWindowForecast
+            A new object identical to this.
         """
+        new = SlidingWindowForecast(window=self.window,
+                                    stride=self.stride,
+                                    forecast=self.forecast)
+        new._points_seen = self._points_seen
+        return new
+    
+    def save(self, path: str,
+             *args,
+             **kwargs) -> Any:
+        super().save(path=path)
+        path_obj = Path(path)
+        
+        save_py_json({"_points_seen": self._points_seen}, str(path_obj / self.__json_file))
+        return self
+    
+    def load(self, path: str,
+             *args,
+             **kwargs) -> Any:
+        super().load(path=path)
+        path_obj = Path(path)
+        
+        self._points_seen = load_py_json(str(path_obj / self.__json_file))["_points_seen"]
+        return self
+        
+    def shape_change(self, x, y=None, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+        """Builds input and target vectors doing sliding window.
+        
+        The sliding window is performed such that a window has as targets the
+        following `forecast` points.
+        
         Parameters
         ----------
+        x : array-like of shape (n_samples, n_features)
+            It is the data to be reshaped using the sliding window approach.
+            
         y
             Ignored.
             
@@ -50,6 +116,7 @@ class SlidingWindowForecast(IShapeChanger, SavableModel):
         check_array(x)
         x = np.array(x)
     
+        self._points_seen = x.shape[0]
         window_data = None
         window_target = None
         for i in range(0, x.shape[0] - self.window - self.forecast + 1, self.stride):

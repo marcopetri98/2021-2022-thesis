@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from . import ISavable, BaseModel
 from ..utils import save_py_json, find_or_create_dir, load_py_json
@@ -18,16 +19,18 @@ class SavableModel(ISavable, BaseModel):
 
     def save(self, path: str,
              *args,
-             **kwargs) -> None:
+             **kwargs) -> Any:
         find_or_create_dir(path)
         path_obj = Path(path)
             
         json_objects = self.get_params(deep=False)
         save_py_json(json_objects, str(path_obj / self.__json_file))
+        
+        return self
 
     def load(self, path: str,
              *args,
-             **kwargs) -> None:
+             **kwargs) -> Any:
         path_obj = Path(path)
 
         if not path_obj.joinpath(self.__json_file).is_file():
@@ -36,3 +39,5 @@ class SavableModel(ISavable, BaseModel):
 
         json_objects: dict = load_py_json(str(path_obj / self.__json_file))
         self.set_params(**json_objects)
+        
+        return self

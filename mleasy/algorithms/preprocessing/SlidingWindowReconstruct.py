@@ -1,9 +1,11 @@
-from typing import Tuple
+from pathlib import Path
+from typing import Tuple, Any
 
 import numpy as np
 from sklearn.utils import check_array
 
 from .. import SavableModel, IShapeChanger
+from ...utils import save_py_json, load_py_json
 
 
 class SlidingWindowReconstruct(IShapeChanger, SavableModel):
@@ -19,7 +21,14 @@ class SlidingWindowReconstruct(IShapeChanger, SavableModel):
     
     stride : int, default=1
         It is the stride to be used while doing the sliding window.
+        
+    Attributes
+    ----------
+    _points_seen : int
+        It is the number of points seen during the last `shape_change` call.
     """
+    __json_file = "sliding_window_reconstruct.json"
+    
     def __init__(self, window: int,
                  stride: int = 1):
         super().__init__()
@@ -27,10 +36,65 @@ class SlidingWindowReconstruct(IShapeChanger, SavableModel):
         self.window = window
         self.stride = stride
         
-    def shape_change(self, x, y=None, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+        self._points_seen = None
+        
+    @property
+    def points_seen(self):
+        return self._points_seen
+        
+    def __repr__(self):
+        return f"SlidingWindowReconstruct(window={self.window}, stride={self.stride})"
+    
+    def __str__(self):
+        return f"Sliding window for reconstruction with window {self.window}, stride {self.stride}"
+    
+    def __eq__(self, other):
+        if not isinstance(other, SlidingWindowReconstruct):
+            return False
+        
+        return (self.window, self.stride) == (other.window, other.stride)
+    
+    def copy(self):
+        """Copies the object.
+        
+        Returns
+        -------
+        new_obj : SlidingWindowReconstruct
+            A new object identical to this.
         """
+        new = SlidingWindowReconstruct(window=self.window,
+                                       stride=self.stride)
+        new._points_seen = self._points_seen
+        return new
+        
+    def save(self, path: str,
+             *args,
+             **kwargs) -> Any:
+        super().save(path=path)
+        path_obj = Path(path)
+        
+        save_py_json({"_points_seen": self._points_seen}, str(path_obj / self.__json_file))
+        return self
+    
+    def load(self, path: str,
+             *args,
+             **kwargs) -> Any:
+        super().load(path=path)
+        path_obj = Path(path)
+        
+        self._points_seen = load_py_json(str(path_obj / self.__json_file))["_points_seen"]
+        return self
+        
+    def shape_change(self, x, y=None, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+        """Builds input and target vectors doing sliding window.
+        
+        The sliding window is performed such that a window has as targets itself.
+        
         Parameters
         ----------
+        x : array-like of shape (n_samples, n_features)
+            It is the data to be reshaped using the sliding window approach.
+        
         y
             Ignored.
             
@@ -46,6 +110,7 @@ class SlidingWindowReconstruct(IShapeChanger, SavableModel):
         check_array(x)
         x = np.array(x)
     
+        self._points_seen = x.shape[0]
         window_data = None
         for i in range(0, x.shape[0] - self.window + 1, self.stride):
             new_data = x[i:i + self.window].reshape((1, self.window, x.shape[1]))
