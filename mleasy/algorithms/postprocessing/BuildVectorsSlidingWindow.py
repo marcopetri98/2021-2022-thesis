@@ -14,7 +14,12 @@ class BuildVectorsSlidingWindow(IShapeChanger, SavableModel):
     vdl]`, where `vij` the prediction of feature `i` at time `t-j`. For the
     target vectors, for each `j != k` we have `vij` = `vik`. For reconstruction
     approaches `vij` is the reconstructed feature `i` by the window starting at
-    time `t - j`.
+    time `t - j`. Also for reconstruction, the target vectors are such that for
+    each `j != k` we have `vij` = `vik`.
+    
+    These two vectors can be used to compute an error vector and further compute
+    a score for each timestamp as done in Malhotra et al.
+    (https://sites.google.com/site/icmlworkshoponanomalydetection/accepted-papers).
     
     Parameters
     ----------
