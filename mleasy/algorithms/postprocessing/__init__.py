@@ -1,1 +1,1 @@
-from .BuildVectorsSlidingWindow import BuildVectorsSlidingWindow
+from .BuilderVectorsSlidingWindow import BuilderVectorsSlidingWindow

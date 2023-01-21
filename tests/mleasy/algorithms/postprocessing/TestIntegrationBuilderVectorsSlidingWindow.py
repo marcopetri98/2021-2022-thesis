@@ -4,12 +4,11 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
-from mleasy.algorithms.postprocessing import BuildVectorsSlidingWindow
-from mleasy.algorithms.preprocessing import SlidingWindowForecast, \
-    SlidingWindowReconstruct
+from mleasy.algorithms.postprocessing import BuilderVectorsSlidingWindow
+from mleasy.algorithms.preprocessing import SlidingWindowForecast, SlidingWindowReconstruct
 
 
-class TestIntegrationBuildVectorsSlidingWindow(unittest.TestCase):
+class TestIntegrationBuilderVectorsSlidingWindow(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.series_uni = np.random.rand(1000, 1)
@@ -17,7 +16,7 @@ class TestIntegrationBuildVectorsSlidingWindow(unittest.TestCase):
 
     def test_get_hyperparameters(self):
         shape_changer = SlidingWindowForecast(window=10)
-        error_vectors1 = BuildVectorsSlidingWindow(sliding_window=shape_changer)
+        error_vectors1 = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
         hyper = error_vectors1.get_hyperparameters()
 
         self.assertIsInstance(hyper, dict)
@@ -25,23 +24,23 @@ class TestIntegrationBuildVectorsSlidingWindow(unittest.TestCase):
 
     def test_set_hyperparameters(self):
         shape_changer = SlidingWindowForecast(window=10)
-        error_vectors1 = BuildVectorsSlidingWindow(sliding_window=shape_changer)
+        error_vectors1 = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
         error_vectors1.set_hyperparameters({"false_att": "Ezio Auditore"})
 
         self.assertIs(shape_changer, error_vectors1.sliding_window)
 
     def test_equal(self):
         shape_changer = SlidingWindowForecast(window=10)
-        error_vectors1 = BuildVectorsSlidingWindow(sliding_window=shape_changer)
-        error_vectors2 = BuildVectorsSlidingWindow(sliding_window=shape_changer)
-        error_vectors3 = BuildVectorsSlidingWindow(sliding_window=shape_changer.copy())
+        error_vectors1 = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
+        error_vectors2 = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
+        error_vectors3 = BuilderVectorsSlidingWindow(sliding_window=shape_changer.copy())
         
         self.assertEqual(error_vectors1, error_vectors2)
         self.assertNotEqual(error_vectors1, error_vectors3)
     
     def test_copy(self):
         shape_changer = SlidingWindowForecast(window=10)
-        error_vectors = BuildVectorsSlidingWindow(sliding_window=shape_changer)
+        error_vectors = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
         new = error_vectors.copy()
         
         self.assertEqual(error_vectors, new)
@@ -50,14 +49,14 @@ class TestIntegrationBuildVectorsSlidingWindow(unittest.TestCase):
     def test_save_and_load(self):
         shape_changer1 = SlidingWindowForecast(window=10)
         shape_changer2 = SlidingWindowForecast(window=10)
-        error_vectors = BuildVectorsSlidingWindow(sliding_window=shape_changer1)
+        error_vectors = BuilderVectorsSlidingWindow(sliding_window=shape_changer1)
         
         self.assertIs(error_vectors._sliding_window, shape_changer1)
         
         with TemporaryDirectory() as tmp_dir:
             error_vectors.save(tmp_dir)
             
-            error_vectors = BuildVectorsSlidingWindow(sliding_window=shape_changer2).load(tmp_dir)
+            error_vectors = BuilderVectorsSlidingWindow(sliding_window=shape_changer2).load(tmp_dir)
         
             # When loading from file, it is impossible to keep track of the
             # reference between objects. However, the object should be created
@@ -71,7 +70,7 @@ class TestIntegrationBuildVectorsSlidingWindow(unittest.TestCase):
             shape_changer = SlidingWindowForecast(window=window,
                                                   stride=stride,
                                                   forecast=forecast)
-            error_vectors = BuildVectorsSlidingWindow(sliding_window=shape_changer)
+            error_vectors = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
             
             new_x, new_y = shape_changer.shape_change(series)
             new_y_hat = new_y * -1
@@ -94,7 +93,7 @@ class TestIntegrationBuildVectorsSlidingWindow(unittest.TestCase):
             print(f"test error vectors for reconstruction building with window={window}, stride={stride} and series={series.shape}")
             shape_changer = SlidingWindowReconstruct(window=window,
                                                      stride=stride)
-            error_vectors = BuildVectorsSlidingWindow(sliding_window=shape_changer)
+            error_vectors = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
             
             new_x, new_y = shape_changer.shape_change(series)
             new_y_hat = new_y * -1

@@ -6,7 +6,7 @@ from .. import IShapeChanger, SavableModel
 from ..preprocessing import SlidingWindowForecast, SlidingWindowReconstruct
 
 
-class BuildVectorsSlidingWindow(IShapeChanger, SavableModel):
+class BuilderVectorsSlidingWindow(IShapeChanger, SavableModel):
     """Compute the vectors from the output of a model working on sliding windows.
     
     There is one vector for each timestamp of the original time series. The
@@ -19,7 +19,7 @@ class BuildVectorsSlidingWindow(IShapeChanger, SavableModel):
     
     These two vectors can be used to compute an error vector and further compute
     a score for each timestamp as done in Malhotra et al.
-    (https://sites.google.com/site/icmlworkshoponanomalydetection/accepted-papers).
+    (https://www.esann.org/sites/default/files/proceedings/legacy/es2015-56.pdf).
     
     Parameters
     ----------
@@ -50,7 +50,7 @@ class BuildVectorsSlidingWindow(IShapeChanger, SavableModel):
         return f"Error vectors computation from {str(self._sliding_window)}"
         
     def __eq__(self, other):
-        if not isinstance(other, BuildVectorsSlidingWindow):
+        if not isinstance(other, BuilderVectorsSlidingWindow):
             return False
         
         return self._sliding_window is other._sliding_window
@@ -63,10 +63,10 @@ class BuildVectorsSlidingWindow(IShapeChanger, SavableModel):
         
         Returns
         -------
-        new_obj : BuildVectorsSlidingWindow
+        new_obj : BuilderVectorsSlidingWindow
             A new object identical to this.
         """
-        new = BuildVectorsSlidingWindow(sliding_window=self._sliding_window)
+        new = BuilderVectorsSlidingWindow(sliding_window=self._sliding_window)
         return new
         
     def save(self, path: str,
