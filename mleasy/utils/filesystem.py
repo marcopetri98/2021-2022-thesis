@@ -12,12 +12,15 @@ def find_or_create_dir(path: str) -> None:
     Returns
     -------
     None
+    
+    Raises
+    ------
+    ValueError
+        If the given path points to a file and not to a directory.
     """
     path_obj = Path(path)
 
-    if path_obj.name.find(".") != -1:
-        raise ValueError("path must point to a directory")
-    elif not path_obj.is_dir() and path_obj.exists():
+    if not path_obj.is_dir() and path_obj.exists():
         raise ValueError("path must point to an existing directory or to a "
                          "non existing directory")
 

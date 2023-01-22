@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Tuple, Any
 
@@ -5,11 +7,11 @@ import numpy as np
 from sklearn.utils import check_array
 from skopt.space import Integer
 
-from .. import IShapeChanger, SavableModel
+from .. import IShapeChanger, SavableModel, ICopyable
 from ...utils import save_py_json, load_py_json
 
 
-class SlidingWindowForecast(IShapeChanger, SavableModel):
+class SlidingWindowForecast(ICopyable, IShapeChanger, SavableModel):
     """Preprocessing object transforming the input using the sliding window technique.
     
     The object takes as input a time series, thus an array-like with two
@@ -71,7 +73,7 @@ class SlidingWindowForecast(IShapeChanger, SavableModel):
     def __ne__(self, other):
         return not self.__eq__(other)
     
-    def copy(self):
+    def copy(self) -> SlidingWindowForecast:
         """Copies the object.
         
         Returns

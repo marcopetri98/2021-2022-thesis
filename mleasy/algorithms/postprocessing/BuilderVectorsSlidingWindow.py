@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 from typing import Any, Tuple
 
 import numpy as np
 
-from .. import IShapeChanger, SavableModel
+from .. import IShapeChanger, SavableModel, ICopyable
 from ..preprocessing import SlidingWindowForecast, SlidingWindowReconstruct
 
 
-class BuilderVectorsSlidingWindow(IShapeChanger, SavableModel):
+class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
     """Compute the vectors from the output of a model working on sliding windows.
     
     There is one vector for each timestamp of the original time series. The
@@ -58,7 +60,7 @@ class BuilderVectorsSlidingWindow(IShapeChanger, SavableModel):
     def __ne__(self, other):
         return not self.__eq__(other)
     
-    def copy(self):
+    def copy(self) -> BuilderVectorsSlidingWindow:
         """Copies the object.
         
         Returns

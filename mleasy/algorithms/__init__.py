@@ -1,4 +1,5 @@
 from .BaseModel import BaseModel
+from .ICopyable import ICopyable
 from .IParametric import IParametric
 from .IMultipleParametric import IMultipleParametric
 from .IPredictor import IPredictor
