@@ -1,6 +1,6 @@
 from abc import ABC
 
-from .IClassifier import IClassifier
+from ..IClassifier import IClassifier
 
 
 class IAnomalyClassifier(IClassifier, ABC):
