@@ -1,6 +1,32 @@
 from typing import Union
 
 
+def is_var_of_type(variable,
+                   allowed_types: list) -> bool:
+    """Checks if a variable is of at least one of the specified types
+    
+    Parameters
+    ----------
+    variable
+        The variable over which the type must be checked.
+    
+    allowed_types : list
+        The list of the allowed type for the variable. Eventually including None.
+
+    Returns
+    -------
+    is_type_ok : bool
+        True when the variable has an allowed type, False otherwise.
+    """
+    for type_ in allowed_types:
+        if variable is None and type_ is None:
+            return True
+        elif isinstance(variable, type_):
+            return True
+        
+    return False
+
+
 def check_attributes_exists(estimator,
                             attributes: Union[str, list[str]]) -> None:
     """Checks is the attributes are defined in estimator.
