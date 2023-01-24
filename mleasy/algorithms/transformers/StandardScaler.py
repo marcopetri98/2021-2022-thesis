@@ -1,0 +1,148 @@
+from __future__ import annotations
+
+import pickle
+from copy import deepcopy
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+from sklearn.preprocessing import StandardScaler as scikitStandardScaler
+
+from .. import ICopyable, ITransformer, IParametric, SavableModel
+from ...exceptions import InvalidInputShape
+from ...utils import find_or_create_dir
+
+
+class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
+    """Standard scaler wrapper for `scikit-learn`.
+    
+    Attributes
+    ----------
+    _standard_scaler : scikit-learn StandardScaler
+        It is an instance of the scikit-learn `StandardScaler`.
+    """
+    __scikit_file = "standard_scaler.pickle"
+    
+    def __init__(self, copy: bool = True,
+                 with_mean: bool = True,
+                 with_std: bool = True):
+        super().__init__()
+        
+        self._standard_scaler = scikitStandardScaler(copy=copy,
+                                                     with_mean=with_mean,
+                                                     with_std=with_std)
+        
+    @property
+    def copy_attribute(self):
+        return self._standard_scaler.copy
+    
+    @copy_attribute.setter
+    def copy_attribute(self, value):
+        self._standard_scaler.copy = value
+        
+    @property
+    def with_mean(self):
+        return self._standard_scaler.with_mean
+    
+    @with_mean.setter
+    def with_mean(self, value):
+        self._standard_scaler.with_mean = value
+        
+    @property
+    def with_std(self):
+        return self._standard_scaler.with_std
+    
+    @with_std.setter
+    def with_std(self, value):
+        self._standard_scaler.with_std = value
+        
+    @property
+    def seen_scale(self):
+        try:
+            return self._standard_scaler.scale_
+        except AttributeError:
+            return None
+        
+    @property
+    def seen_mean(self):
+        try:
+            return self._standard_scaler.mean_
+        except AttributeError:
+            return None
+        
+    @property
+    def seen_var(self):
+        try:
+            return self._standard_scaler.var_
+        except AttributeError:
+            return None
+    
+    @property
+    def seen_features_in(self):
+        try:
+            return self._standard_scaler.n_features_in_
+        except AttributeError:
+            return None
+    
+    @property
+    def seen_samples_in(self):
+        try:
+            return self._standard_scaler.n_samples_seen_
+        except AttributeError:
+            return None
+    
+    @property
+    def seen_features_names_in(self):
+        try:
+            return self._standard_scaler.feature_names_in_
+        except AttributeError:
+            return None
+        
+    def __repr__(self):
+        return f"StandardScaler(copy={self.copy_attribute},with_mean={self.with_mean},with_std={self.with_std})"
+    
+    def __str__(self):
+        return "StandardScaler"
+    
+    def copy(self) -> StandardScaler:
+        """Copies the object.
+        
+        Note that since scikit-learn does not provide standard `save` and `load`
+        methods for objects, and it does not provide a complete copy method,
+        deepcopy will be used.
+        
+        Returns
+        -------
+        new_object : MinMaxScaler
+            The copied object.
+        """
+        new = StandardScaler(self.copy_attribute, self.with_mean, self.with_std)
+        new._standard_scaler = deepcopy(self._standard_scaler)
+        return new
+    
+    def save(self, path: str,
+             *args,
+             **kwargs) -> Any:
+        find_or_create_dir(path)
+        path_obj = Path(path)
+        
+        with open(str(path_obj / self.__scikit_file), "wb") as f:
+            pickle.dump(self._standard_scaler, f)
+    
+    def load(self, path: str,
+             *args,
+             **kwargs) -> Any:
+        find_or_create_dir(path)
+        path_obj = Path(path)
+        
+        with open(str(path_obj / self.__scikit_file), "rb") as f:
+            self._standard_scaler = pickle.load(f)
+    
+    def fit(self, x, y=None, *args, **kwargs) -> None:
+        self._standard_scaler.fit(x)
+    
+    def transform(self, x, *args, **kwargs) -> np.ndarray:
+        if x.shape[1] != self.seen_mean.shape[0]:
+            raise InvalidInputShape(("n_points", self.seen_mean.shape[0]), x.shape)
+        
+        return self._standard_scaler.transform(x)

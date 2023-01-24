@@ -3,7 +3,6 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 from scipy.spatial.distance import mahalanobis
-from scipy.stats import multivariate_normal
 
 from mleasy.algorithms.postprocessing import ScorerMahalanobis
 from mleasy.utils import estimate_mean_covariance
