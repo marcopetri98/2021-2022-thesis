@@ -62,7 +62,7 @@ class SlidingWindowForecast(ICopyable, IShapeChanger, SavableModel):
         return f"SlidingWindowForecast(window={self.window}, stride={self.stride}, forecast={self.forecast})"
     
     def __str__(self):
-        return f"Sliding window for forecasting with window {self.window}, stride {self.stride} and forecast {self.forecast}"
+        return f"SlidingWindowForecast"
     
     def __eq__(self, other):
         if not isinstance(other, SlidingWindowForecast):

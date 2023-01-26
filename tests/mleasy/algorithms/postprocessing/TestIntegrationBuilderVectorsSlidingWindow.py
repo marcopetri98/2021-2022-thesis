@@ -31,12 +31,13 @@ class TestIntegrationBuilderVectorsSlidingWindow(unittest.TestCase):
 
     def test_equal(self):
         shape_changer = SlidingWindowForecast(window=10)
+        shape_changer2 = SlidingWindowForecast(window=10)
         error_vectors1 = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
         error_vectors2 = BuilderVectorsSlidingWindow(sliding_window=shape_changer)
-        error_vectors3 = BuilderVectorsSlidingWindow(sliding_window=shape_changer.copy())
+        error_vectors3 = BuilderVectorsSlidingWindow(sliding_window=shape_changer2)
         
         self.assertEqual(error_vectors1, error_vectors2)
-        self.assertNotEqual(error_vectors1, error_vectors3)
+        self.assertEqual(error_vectors1, error_vectors3)
     
     def test_copy(self):
         shape_changer = SlidingWindowForecast(window=10)
@@ -48,7 +49,24 @@ class TestIntegrationBuilderVectorsSlidingWindow(unittest.TestCase):
     
     def test_save_and_load(self):
         shape_changer1 = SlidingWindowForecast(window=10)
-        shape_changer2 = SlidingWindowForecast(window=10)
+        shape_changer2 = SlidingWindowForecast(window=30)
+        error_vectors = BuilderVectorsSlidingWindow(sliding_window=shape_changer1)
+        
+        self.assertIs(error_vectors._sliding_window, shape_changer1)
+        
+        with TemporaryDirectory() as tmp_dir:
+            error_vectors.save(tmp_dir)
+            
+            error_vectors = BuilderVectorsSlidingWindow(sliding_window=shape_changer2).load(tmp_dir)
+        
+            # When loading from file, it is impossible to keep track of the
+            # reference between objects. However, the object should be created
+            # such that it has a reference to an object equal to that at the time
+            # of saving
+            self.assertEqual(error_vectors._sliding_window, shape_changer1)
+            
+        shape_changer1 = SlidingWindowReconstruct(window=10)
+        shape_changer2 = SlidingWindowReconstruct(window=30)
         error_vectors = BuilderVectorsSlidingWindow(sliding_window=shape_changer1)
         
         self.assertIs(error_vectors._sliding_window, shape_changer1)

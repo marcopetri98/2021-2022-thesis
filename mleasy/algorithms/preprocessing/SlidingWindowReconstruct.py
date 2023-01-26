@@ -56,7 +56,7 @@ class SlidingWindowReconstruct(ICopyable, IShapeChanger, SavableModel):
         return f"SlidingWindowReconstruct(window={self.window}, stride={self.stride})"
     
     def __str__(self):
-        return f"Sliding window for reconstruction with window {self.window}, stride {self.stride}"
+        return f"SlidingWindowReconstruct"
     
     def __eq__(self, other):
         if not isinstance(other, SlidingWindowReconstruct):

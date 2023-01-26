@@ -49,19 +49,22 @@ class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
         return f"ErrorVectorsSlidingWindow(sliding_window={repr(self._sliding_window)})"
     
     def __str__(self):
-        return f"Error vectors computation from {str(self._sliding_window)}"
+        return f"ErrorVectorsSlidingWindow"
         
     def __eq__(self, other):
         if not isinstance(other, BuilderVectorsSlidingWindow):
             return False
         
-        return self._sliding_window is other._sliding_window
+        return self._sliding_window == other._sliding_window
 
     def __ne__(self, other):
         return not self.__eq__(other)
     
     def copy(self) -> BuilderVectorsSlidingWindow:
         """Copies the object.
+        
+        It does not copy the sliding window object, it copies the reference to
+        the sliding window object.
         
         Returns
         -------
@@ -77,6 +80,7 @@ class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
         self._sliding_window.save(path)
         return self
     
+    # TODO: fixme, all sliding window approaches must be loadable with a single method
     def load(self, path: str,
              *args,
              **kwargs) -> Any:
