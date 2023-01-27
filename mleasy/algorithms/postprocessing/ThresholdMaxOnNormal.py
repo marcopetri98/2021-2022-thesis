@@ -6,6 +6,7 @@ from typing import Any
 import numpy as np
 
 from .. import ICopyable, ITransformer, SavableModel, IParametric
+from ...exceptions import NotTrainedError
 from ...input_validation import check_array_1d
 from ...utils import find_or_create_dir, save_py_json, load_py_json
 
@@ -50,7 +51,7 @@ class ThresholdMaxOnNormal(ICopyable, IParametric, ITransformer, SavableModel):
         new._threshold = self._threshold
         return new
     
-    def save(self, path: str,
+    def save(self, path,
              *args,
              **kwargs) -> Any:
         find_or_create_dir(path)
@@ -111,10 +112,10 @@ class ThresholdMaxOnNormal(ICopyable, IParametric, ITransformer, SavableModel):
         ValueError
             If the transform is called before the fit has been called.
         """
-        check_array_1d(x, "x", True)
-        x = np.array(x)
+        check_array_1d(x, "x", "allow-nan")
+        x = np.ma.array(x, mask=np.isnan(x))
         
         if self._threshold is None:
-            raise ValueError("fit the threshold before using it")
+            raise NotTrainedError()
         
-        return x > self._threshold
+        return (x > self._threshold).filled(np.nan)

@@ -16,3 +16,6 @@ from .moving_functions import mov_std
 from .printing import print_header
 from .printing import print_step
 from .printing import print_warning
+
+from .scikit import are_numpy_attr_equal
+from .scikit import are_normal_attr_equal

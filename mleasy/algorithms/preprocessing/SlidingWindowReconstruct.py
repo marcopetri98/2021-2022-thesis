@@ -80,7 +80,7 @@ class SlidingWindowReconstruct(ICopyable, IShapeChanger, SavableModel):
         new._points_seen = self._points_seen
         return new
         
-    def save(self, path: str,
+    def save(self, path,
              *args,
              **kwargs) -> Any:
         super().save(path=path)

@@ -13,18 +13,21 @@ class SavableModel(ISavable, BaseModel):
     present, a model must not be savable.
     """
     __json_file = "savable_model.json"
+    __json_signature = "signature.json"
 
     def __init__(self):
         super().__init__()
 
-    def save(self, path: str,
+    def save(self, path,
              *args,
              **kwargs) -> Any:
         find_or_create_dir(path)
         path_obj = Path(path)
-            
+        
         json_objects = self.get_params(deep=False)
         save_py_json(json_objects, str(path_obj / self.__json_file))
+        
+        save_py_json({"signature": self.__class__.__name__}, str(path_obj / self.__json_signature))
         
         return self
 

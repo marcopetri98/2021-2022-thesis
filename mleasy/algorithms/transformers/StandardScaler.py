@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pickle
 from copy import deepcopy
+from numbers import Number
 from pathlib import Path
 from typing import Any
 
@@ -9,8 +10,9 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler as scikitStandardScaler
 
 from .. import ICopyable, ITransformer, IParametric, SavableModel
-from ...exceptions import InvalidInputShape
-from ...utils import find_or_create_dir
+from ...exceptions import InvalidInputShape, NotTrainedError
+from ...utils import find_or_create_dir, are_numpy_attr_equal, \
+    are_normal_attr_equal
 
 
 class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
@@ -104,6 +106,32 @@ class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
     def __str__(self):
         return "StandardScaler"
     
+    def __eq__(self, other):
+        if not isinstance(other, StandardScaler):
+            return False
+        
+        numpy_properties = ["seen_scale", "seen_mean", "seen_var", "seen_features_names_in"]
+        normal_properties = ["copy_attribute", "with_mean", "with_std", "seen_features_in"]
+        if not are_numpy_attr_equal(self, other, numpy_properties):
+            return False
+        if not are_normal_attr_equal(self, other, normal_properties):
+            return False
+
+        if (self.seen_samples_in is None) != (self.seen_samples_in is None):
+            return False
+        
+        if isinstance(self.seen_samples_in, np.ndarray):
+            if self.seen_samples_in is not None and not np.array_equal(self.seen_samples_in, other.seen_samples_in):
+                return False
+        elif isinstance(self.seen_samples_in, Number):
+            if self.seen_samples_in is not None and self.seen_samples_in != other.seen_samples_in:
+                return False
+        
+        return True
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
     def copy(self) -> StandardScaler:
         """Copies the object.
         
@@ -120,7 +148,7 @@ class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
         new._standard_scaler = deepcopy(self._standard_scaler)
         return new
     
-    def save(self, path: str,
+    def save(self, path,
              *args,
              **kwargs) -> Any:
         find_or_create_dir(path)
@@ -142,6 +170,9 @@ class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
         self._standard_scaler.fit(x)
     
     def transform(self, x, *args, **kwargs) -> np.ndarray:
+        if self.seen_mean is None:
+            raise NotTrainedError()
+        
         if x.shape[1] != self.seen_mean.shape[0]:
             raise InvalidInputShape(("n_points", self.seen_mean.shape[0]), x.shape)
         

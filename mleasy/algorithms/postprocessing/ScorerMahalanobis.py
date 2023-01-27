@@ -9,6 +9,7 @@ from scipy.spatial.distance import mahalanobis
 from sklearn.utils import check_array
 
 from .. import IShapeChanger, IParametric, SavableModel, ICopyable
+from ...exceptions import NotTrainedError
 from ...utils import estimate_mean_covariance, get_rows_without_nan, find_or_create_dir
 
 
@@ -88,7 +89,7 @@ class ScorerMahalanobis(ICopyable, IShapeChanger, IParametric, SavableModel):
         new._inv_cov = self._inv_cov.copy() if self._inv_cov is not None else None
         return new
         
-    def save(self, path: str,
+    def save(self, path,
              *args,
              **kwargs) -> Any:
         find_or_create_dir(path)
@@ -174,6 +175,10 @@ class ScorerMahalanobis(ICopyable, IShapeChanger, IParametric, SavableModel):
             Empty numpy array to respect API.
         """
         check_array(x, force_all_finite="allow-nan")
+        
+        if self._mean is None:
+            raise NotTrainedError()
+        
         rows_without_nan = get_rows_without_nan(x)
         
         scores = np.full(x.shape[0], fill_value=np.nan)

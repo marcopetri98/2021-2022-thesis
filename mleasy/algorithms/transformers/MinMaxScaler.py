@@ -10,8 +10,9 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler as scikitMinMaxScaler
 
 from .. import ITransformer, IParametric, SavableModel, ICopyable
-from ...exceptions import InvalidInputShape
-from ...utils import find_or_create_dir
+from ...exceptions import InvalidInputShape, NotTrainedError
+from ...utils import find_or_create_dir, are_numpy_attr_equal, \
+    are_normal_attr_equal
 
 
 class MinMaxScaler(ICopyable, ITransformer, IParametric, SavableModel):
@@ -119,6 +120,22 @@ class MinMaxScaler(ICopyable, ITransformer, IParametric, SavableModel):
     def __str__(self):
         return "MinMaxScaler"
     
+    def __eq__(self, other):
+        if not isinstance(other, MinMaxScaler):
+            return False
+        
+        numpy_properties = ["scale_adjustment", "min_adjustment", "seen_data_min", "seen_data_max", "seen_data_range", "seen_features_names_in"]
+        normal_properties = ["feature_range", "copy_attribute", "clip", "seen_features_in", "seen_samples_in"]
+        if not are_numpy_attr_equal(self, other, numpy_properties):
+            return False
+        if not are_normal_attr_equal(self, other, normal_properties):
+            return False
+        
+        return True
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
     def copy(self) -> MinMaxScaler:
         """Copies the object.
         
@@ -135,7 +152,7 @@ class MinMaxScaler(ICopyable, ITransformer, IParametric, SavableModel):
         new._min_max_scaler = deepcopy(self._min_max_scaler)
         return new
         
-    def save(self, path: str,
+    def save(self, path,
              *args,
              **kwargs) -> Any:
         find_or_create_dir(path)
@@ -157,6 +174,9 @@ class MinMaxScaler(ICopyable, ITransformer, IParametric, SavableModel):
         self._min_max_scaler.fit(x)
         
     def transform(self, x, *args, **kwargs) -> np.ndarray:
+        if self.seen_data_max is None:
+            raise NotTrainedError()
+            
         if x.shape[1] != self.seen_data_max.shape[0]:
             raise InvalidInputShape(("n_points", self.seen_data_max.shape[0]), x.shape)
         

@@ -8,14 +8,14 @@ class ISavable(ABC):
     """
     
     @abc.abstractmethod
-    def save(self, path: str,
+    def save(self, path,
              *args,
              **kwargs) -> Any:
         """Saves the objects state.
         
         Parameters
         ----------
-        path : str
+        path : path-like
             It is the path of the folder in which the object will be saved.
 
         args

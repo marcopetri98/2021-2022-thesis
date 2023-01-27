@@ -74,7 +74,7 @@ class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
         new = BuilderVectorsSlidingWindow(sliding_window=self._sliding_window)
         return new
         
-    def save(self, path: str,
+    def save(self, path,
              *args,
              **kwargs) -> Any:
         self._sliding_window.save(path)
