@@ -11,16 +11,27 @@ In my thesis I use some external libraries, public datasets and state-of-the-art
 
 This section explains everything you need from downloading the required packages to execute the scripts (including the scripts used to download datasets and methods).
 
-## Get the python packages
-In my thesis I used several packages. To get all the needed packages, make sure you use python 3.10 and create the virtual environment using:
+## Get the library
+In my thesis I used several packages. To get all the needed packages to install `anomalearn`, make sure you use python 3.10 and create the virtual environment using:
 
 ```
 conda create -n <env-name> python=3.10
 conda activate <env-name>
-pip install -r ./requirements.txt
+pip install -e .
 ```
 
-If you don't have conda or you don't know what conda is, I invite you to follow this link: https://docs.conda.io/en/latest/miniconda.html
+The reason why the installation uses the editable option `-e` is that the library is still in development at the moment, and there isn't a stable release. The API are subject to abrupt change, and it is not still published on PyPI. Sooner the installation will become available through PyPI as any other library by running `pip install anomalearn`. However, for the moment this is the workaround to be used to install the library. The advantage is that with the editable option you can git clone the repository and pull the latest updates without needing to reinstall the library if the requirements did not change.
+
+If either you don't have conda or you don't know what conda is, I invite you to follow this link: https://docs.conda.io/en/latest/miniconda.html
+
+## Run the tests
+Every library must be tested before being distributed. Especially, if the library is published on PyPI it should have automated testing providing a good coverage level. Assume you have downloaded the repository at `/usr/yourname/repositories/anomalearn`, you need to follow these steps to test the library:
+
+```
+cd /usr/yourname/repositories/anomalearn
+conda activate <env/name>
+python -m unittest discover
+```
 
 ## Get the datasets
 In my thesis I use several public datasets. To increase reproducibility, you can find the script ``setup_datasets.py``. The script accepts some arguments. By default the script downloads, extracts and rename folders. The usage with all default settings is:

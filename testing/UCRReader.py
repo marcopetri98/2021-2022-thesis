@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt, gridspec
 from anomalearn.reader.time_series import UCRReader
 from anomalearn.visualizer import line_plot
 
-reader = UCRReader("data/anomaly_detection/ucr")
+reader = UCRReader("../data/anomaly_detection/ucr")
 
 for ds in reader:
     fig = plt.figure(figsize=(8, 8), tight_layout=True)

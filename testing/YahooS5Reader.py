@@ -8,7 +8,7 @@ BENCHMARK = "A4"
 SERIES = 1
 
 for SERIES in range(100):
-    reader = YahooS5Reader("data/anomaly_detection/yahoo_s5/")
+    reader = YahooS5Reader("../data/anomaly_detection/yahoo_s5/")
     ds = reader.read(SERIES, benchmark=BENCHMARK).get_dataframe()
 
     fig = plt.figure(figsize=(8, 8), tight_layout=True)

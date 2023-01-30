@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt, gridspec
 from anomalearn.reader.time_series import SMDReader
 from anomalearn.visualizer import line_plot
 
-reader = SMDReader("data/anomaly_detection/smd")
+reader = SMDReader("../data/anomaly_detection/smd")
 
 for ds in reader:
     fig = plt.figure(figsize=(8, 8), tight_layout=True)

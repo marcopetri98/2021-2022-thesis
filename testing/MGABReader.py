@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt, gridspec
 from anomalearn.reader.time_series import MGABReader
 from anomalearn.visualizer import line_plot
 
-reader = MGABReader("data/anomaly_detection/mgab/")
+reader = MGABReader("../data/anomaly_detection/mgab/")
 
 for ds in reader:
     fig = plt.figure(figsize=(8, 8), tight_layout=True)
