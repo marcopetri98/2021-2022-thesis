@@ -32,7 +32,7 @@ WINDOW_SIZE = [21]
 SCORINGS = ["left", "centre", "right", "min", "max", "average", "non_overlapping"]
 BENCHMARKS_SERIES = {"a1": range(67), "a2": range(100), "a3": range(100), "a4": range(100)}
 TRAIN_LENGTH = [0.5, 0.33, 0.22, 0.11, 0.095, 0.079, 0.063, 0.048, 0.032, 0.016]
-SAVE_DIR = "output/experiments_scoring/yahoo"
+SAVE_DIR = "../output/experiments_scoring/yahoo"
 
 for model_name in MODELS:
     print_header("Doing scoring experiments with {}".format(model_name))

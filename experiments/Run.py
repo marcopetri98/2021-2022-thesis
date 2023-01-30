@@ -32,7 +32,7 @@ MAX_THRESHOLD = 23
 # kmeans, dbscan, lof, osvm, phase osvm, iforest, AR, MA, ARIMA, SES, ES
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
-DATASET_PATH = "data/anomaly_detection/private_fridge/fridge1/"
+DATASET_PATH = "../data/anomaly_detection/private_fridge/fridge1/"
 DATASET = "fridge1.csv"
 PHASE = "validation"
 PURE_DATA_KEY = "realKnownCause/ambient_temperature_system_failure.csv"

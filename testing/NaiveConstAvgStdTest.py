@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import f1_score
 
-from anomalearn.algorithms.models.time_series import TSAMovAvgStd
+from anomalearn.algorithms.models.time_series.anomaly.naive import TSAConstAvgStd
 from anomalearn.reader.time_series import ODINTSReader
 from anomalearn.visualizer import line_plot
 
 
-def train_evaluate_plot(values, targets, first_print, classifier, test_perc, verbose=False):
+def train_evaluate_plot(values, targets, first_print, classifier, test_perc, verbose=True):
     print(first_print)
 
     last_train_point = int(values.shape[0] * test_perc)
@@ -15,11 +15,11 @@ def train_evaluate_plot(values, targets, first_print, classifier, test_perc, ver
                           targets[0:last_train_point],
                    verbose=verbose)
     predictions = classifier.classify(values)
-    half = int((classifier.get_window() - 1) / 2)
+    half = int((classifier.get_w() - 1) / 2)
 
-    print(f"The constant learned is {classifier.get_constant()}, the window learned is {classifier.get_window()}, and the comparison is {classifier.get_comparison()}")
-    print(f"The f1 score of the method is: {f1_score(targets[half:-half], predictions[half:-half])}")
-    print(f"The f1 score of the method on test set is: {f1_score(targets[last_train_point:][half:-half], predictions[last_train_point:][half:-half])}")
+    print(f"The model learnt is {classifier.get_a()} * movavg(x, {classifier.get_w()}) + {classifier.get_b()} * movstd(x, {classifier.get_w()}) + {classifier.get_c()} < x")
+    print(f"The f1 score of the method is: {f1_score(targets[half:-half], predictions)}")
+    print(f"The f1 score of the method on test set is: {f1_score(targets[last_train_point:][half:-half], predictions[last_train_point:])}")
 
     fig = plt.figure(figsize=(8, 8))
     gs = plt.GridSpec(2, 1)
@@ -28,7 +28,11 @@ def train_evaluate_plot(values, targets, first_print, classifier, test_perc, ver
               values,
               ax=ax)
     line_plot(range(predictions.shape[0] - half * 2),
-              classifier.get_moving_series(),
+              classifier.get_upper_series().flatten(),
+              colors="green",
+              ax=ax)
+    line_plot(range(predictions.shape[0] - half * 2),
+              classifier.get_lower_series().flatten(),
               colors="green",
               ax=ax)
 
@@ -48,7 +52,7 @@ if __name__ == "__main__":
     FRIDGE = 1
     TEST_PERC = 0.5
     
-    constant_function = TSAMovAvgStd(learning="supervised", max_window=200, method="movavg")
+    constant_function = TSAConstAvgStd(max_window=200)
     reader = ODINTSReader(f"data/anomaly_detection/private_fridge/fridge{FRIDGE}/anomalies_fridge{FRIDGE}.csv",
                           "ctime",
                           "device_consumption")

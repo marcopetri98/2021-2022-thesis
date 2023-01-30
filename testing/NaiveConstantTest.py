@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import f1_score
 
-from anomalearn.algorithms.models.time_series import TSAConstant
+from anomalearn.algorithms.models.time_series.anomaly.naive import TSAConstant
 from anomalearn.reader.time_series import ODINTSReader
 from anomalearn.visualizer import line_plot
 

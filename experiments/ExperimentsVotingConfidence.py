@@ -30,7 +30,7 @@ WINDOW_SIZE = [21]
 TRAIN_LENGTH = ["1m", "3w", "2w", "1w", "6d", "5d", "4d", "3d", "2d", "1d"]
 VOTINGS = ["left", "centre", "right", "majority_voting", "byzantine_voting", "unanimity", "voting"]
 VOTING_STEP = 0.01
-SAVE_DIR = "output/experiments_voting/confidence"
+SAVE_DIR = "../output/experiments_voting/confidence"
 # never put a value less than 1
 BASE_TO_ADD = 1
 REPETITIONS = 25

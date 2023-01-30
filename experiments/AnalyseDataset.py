@@ -9,7 +9,7 @@ USE_STL = False
 LAG = 1
 NLAGS = 10
 
-DATASET_PATH = "data/anomaly_detection/private_fridge/fridge1/"
+DATASET_PATH = "../data/anomaly_detection/private_fridge/fridge1/"
 DATASET = "fridge1.csv"
 ANOMALIES_PREFIX = "anomalies_"
 RESAMPLE = False

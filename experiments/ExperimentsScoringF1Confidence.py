@@ -32,7 +32,7 @@ DATASETS = ["fridge1", "fridge2", "fridge3"]
 WINDOW_SIZE = [21]
 TRAIN_LENGTH = ["1m", "3w", "2w", "1w", "6d", "5d", "4d", "3d", "2d", "1d"]
 SCORINGS = ["left", "centre", "right", "min", "max", "average", "non_overlapping"]
-SAVE_DIR = "output/experiments_scoring/confidence"
+SAVE_DIR = "../output/experiments_scoring/confidence"
 THRESHOLDS = 41
 # never put a value less than 1
 BASE_TO_ADD = 1
