@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt, gridspec
 
-from mleasy.reader.time_series import ExathlonReader
-from mleasy.visualizer import line_plot
+from anomalearn.reader.time_series import ExathlonReader
+from anomalearn.visualizer import line_plot
 
 reader = ExathlonReader("data/anomaly_detection/exathlon", "train")
 

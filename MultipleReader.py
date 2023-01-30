@@ -1,6 +1,6 @@
 import os
 
-from mleasy.reader.time_series import TSMultipleReader
+from anomalearn.reader.time_series import TSMultipleReader
 
 multiple_reader = TSMultipleReader()
 all_paths = list()

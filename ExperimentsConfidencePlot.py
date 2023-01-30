@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt, gridspec
 
-from mleasy.visualizer import confidence_line_plot
+from anomalearn.visualizer import confidence_line_plot
 
 # which and at which significance level to do the normality tests
 EXPERIMENT = "scoring"

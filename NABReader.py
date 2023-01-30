@@ -1,8 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt, gridspec
 
-from mleasy.reader.time_series import NABReader
-from mleasy.visualizer import line_plot
+from anomalearn.reader.time_series import NABReader
+from anomalearn.visualizer import line_plot
 
 reader = NABReader("data/anomaly_detection/nab")
 

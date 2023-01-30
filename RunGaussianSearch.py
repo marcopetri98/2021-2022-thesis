@@ -8,16 +8,16 @@ from sklearn.metrics import f1_score
 from sklearn.preprocessing import StandardScaler
 from skopt.space import Categorical
 
-from mleasy.algorithms.models.time_series.anomaly.machine_learning import TSAIsolationForest, TSALOF, TSAOCSVM
-from mleasy.algorithms.models.time_series.anomaly.statistical import TSAARIMA
-from mleasy.reader.time_series.univariate import ODINTSReader
-from mleasy.algorithms.tuning.hyperparameter import GaussianProcessesSearch
+from anomalearn.algorithms.models.time_series.anomaly.machine_learning import TSAIsolationForest, TSALOF, TSAOCSVM
+from anomalearn.algorithms.models.time_series.anomaly.statistical import TSAARIMA
+from anomalearn.reader.time_series.univariate import ODINTSReader
+from anomalearn.algorithms.tuning.hyperparameter import GaussianProcessesSearch
 
 # DATASET 1: ambient_temperature_system_failure
 # DATASET 2: nyc_taxi
 
 # ODIN TS
-from mleasy.utils import print_warning, print_step
+from anomalearn.utils import print_warning, print_step
 
 ANOMALIES_PREFIX = "anomalies_"
 

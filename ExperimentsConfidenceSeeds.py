@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from mleasy.utils import load_py_json, save_py_json, print_step, print_warning
+from anomalearn.utils import load_py_json, save_py_json, print_step, print_warning
 
 SEEDS_PATH = "ExperimentsConfidenceSeeds.json"
 NUM_SEEDS = 50

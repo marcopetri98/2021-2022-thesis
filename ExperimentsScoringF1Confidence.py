@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
 
-from mleasy.applications import Zangrando2022Threshold, Zangrando2022Loader
-from mleasy.utils import print_header, print_step, load_py_json
+from anomalearn.applications import Zangrando2022Threshold, Zangrando2022Loader
+from anomalearn.utils import print_header, print_step, load_py_json
 
 
 def cut_true_pred_labels(true, pred, cutting, window):

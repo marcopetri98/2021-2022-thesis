@@ -1,8 +1,8 @@
 import numpy as np
 
-from mleasy.analysis import TSDatasetAnalyser, StationarityTest, DecompositionMethod
-from mleasy.reader.time_series import ODINTSReader
-from mleasy.reader import MissingStrategy
+from anomalearn.analysis import TSDatasetAnalyser, StationarityTest, DecompositionMethod
+from anomalearn.reader.time_series import ODINTSReader
+from anomalearn.reader import MissingStrategy
 
 MATPLOT_PRINT = True
 USE_STL = False

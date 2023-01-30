@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt, gridspec
 
-from mleasy.reader.time_series import NASAReader
-from mleasy.visualizer import line_plot
+from anomalearn.reader.time_series import NASAReader
+from anomalearn.visualizer import line_plot
 
 reader = NASAReader("data/anomaly_detection/nasa_msl_smap/labeled_anomalies.csv")
 

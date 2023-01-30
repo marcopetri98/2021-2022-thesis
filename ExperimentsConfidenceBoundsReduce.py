@@ -2,7 +2,7 @@ import itertools
 
 import pandas as pd
 
-from mleasy.utils import print_header, print_step
+from anomalearn.utils import print_header, print_step
 
 # which and at which significance level to do the normality tests
 EXPERIMENT = "voting"

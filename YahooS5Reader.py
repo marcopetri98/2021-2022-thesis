@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 
-from mleasy.reader.time_series import YahooS5Reader
-from mleasy.visualizer import line_plot
+from anomalearn.reader.time_series import YahooS5Reader
+from anomalearn.visualizer import line_plot
 
 BENCHMARK = "A4"
 SERIES = 1

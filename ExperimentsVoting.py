@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
 
-from mleasy.applications import Zangrando2022Loader
-from mleasy.algorithms.models.time_series.anomaly.machine_learning import TSAIsolationForest, TSALOF, TSAOCSVM
-from mleasy.utils import print_header, print_step
+from anomalearn.applications import Zangrando2022Loader
+from anomalearn.algorithms.models.time_series.anomaly.machine_learning import TSAIsolationForest, TSALOF, TSAOCSVM
+from anomalearn.utils import print_header, print_step
 
 
 def cut_true_pred_labels(true, pred, cutting, window):

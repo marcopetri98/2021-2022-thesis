@@ -5,11 +5,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from mleasy import visualizer as vw
-from mleasy.algorithms.models.time_series.anomaly.machine_learning import TSAKMeans, TSADBSCAN, TSAIsolationForest, TSALOF, TSAOCSVM, TSAOCSVMPhase
-from mleasy.algorithms.models.time_series.anomaly.statistical import TSAARIMA, TSAES, TSASES
-from mleasy.reader import MissingStrategy
-from mleasy.reader.time_series.univariate import ODINTSReader
+from anomalearn import visualizer as vw
+from anomalearn.algorithms.models.time_series.anomaly.machine_learning import TSAKMeans, TSADBSCAN, TSAIsolationForest, TSALOF, TSAOCSVM, TSAOCSVMPhase
+from anomalearn.algorithms.models.time_series.anomaly.statistical import TSAARIMA, TSAES, TSASES
+from anomalearn.reader import MissingStrategy
+from anomalearn.reader.time_series.univariate import ODINTSReader
 
 #################################
 #								#

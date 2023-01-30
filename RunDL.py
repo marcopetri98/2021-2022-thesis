@@ -7,16 +7,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from Metrics import compute_metrics, make_metric_plots
-from mleasy.algorithms.models.time_series.anomaly import BraeiCNN
-from mleasy.algorithms.models.time_series.anomaly import BraeiCNNBatch
-from mleasy.algorithms.models.time_series.anomaly.deep_learning.BraeiDenseAutoencoder import BraeiDenseAutoencoder
-from mleasy.algorithms.models.time_series.anomaly import BraeiGRU
-from mleasy.algorithms.models.time_series.anomaly.deep_learning.BraeiLSTM import BraeiLSTM
-from mleasy.algorithms.models.time_series.anomaly import CNNAutoencoder
-from mleasy.algorithms.models.time_series import GRUAutoencoder
-from mleasy.algorithms.models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
-from mleasy.reader.time_series.univariate import NABReader
-from mleasy.visualizer.Viewer import plot_time_series_forecast, plot_time_series_with_predicitons_bars, get_bars_indices_on_test_df
+from anomalearn.algorithms.models.time_series.anomaly import BraeiCNN
+from anomalearn.algorithms.models.time_series.anomaly import BraeiCNNBatch
+from anomalearn.algorithms.models.time_series.anomaly.deep_learning.BraeiDenseAutoencoder import BraeiDenseAutoencoder
+from anomalearn.algorithms.models.time_series.anomaly import BraeiGRU
+from anomalearn.algorithms.models.time_series.anomaly.deep_learning.BraeiLSTM import BraeiLSTM
+from anomalearn.algorithms.models.time_series.anomaly import CNNAutoencoder
+from anomalearn.algorithms.models.time_series import GRUAutoencoder
+from anomalearn.algorithms.models.time_series.anomaly.deep_learning.LSTMAutoencoder import LSTMAutoencoder
+from anomalearn.reader.time_series.univariate import NABReader
+from anomalearn.visualizer.Viewer import plot_time_series_forecast, plot_time_series_with_predicitons_bars, get_bars_indices_on_test_df
 
 ALGORITHM = "cnn"
 

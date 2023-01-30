@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score, precision_score, recall_score
 
-from mleasy.algorithms.models.time_series import TSAConstant, TSAMovAvgStd, TSAConstAvgStd
-from mleasy.reader.time_series import YahooS5Reader, NASAReader, NABReader, UCRReader, MGABReader, SMDReader, \
+from anomalearn.algorithms.models.time_series import TSAConstant, TSAMovAvgStd, TSAConstAvgStd
+from anomalearn.reader.time_series import YahooS5Reader, NASAReader, NABReader, UCRReader, MGABReader, SMDReader, \
     KitsuneReader, GHLReader, ExathlonReader, rts_config
 
 TEST_PERC = 0.2
