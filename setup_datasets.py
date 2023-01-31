@@ -19,7 +19,7 @@ _PUBLIC_DATASETS = ["exathlon",
                     "smd",
                     "ucr"]
 _AVAILABLE_DATASETS = ["yahoo_s5"]
-_DEFAULT_FOLDER = "./data/"
+_DEFAULT_FOLDER = "./data/anomaly_detection/"
 _DATASET_LOCATIONS = {
     "exathlon": "https://api.github.com/repos/exathlonbenchmark/exathlon/zipball",
     "ghl": "https://kas.pr/ics-research/dataset_ghl_1",
@@ -588,10 +588,10 @@ def process_arguments(argv) -> dict:
                         help="specifies the location of the folder where the "
                              "user wants to download, relocate and process the "
                              "datasets. Thus, this is the final folder that the"
-                             " user will se after the whole process will have "
+                             " user will sse after the whole process will have "
                              "finished. If this value is passed, the download "
                              "folder option and relocation folder option will "
-                             "be ignored")
+                             "be ignored. The default value is " + _DEFAULT_FOLDER)
     parser.add_argument("--download-folder",
                         help="specifies the folder in which the datasets must "
                              "be downloaded. If specified, the relocation "
@@ -606,12 +606,12 @@ def process_arguments(argv) -> dict:
     output = parser.parse_args(argv[1:])
     arguments = vars(output)
 
-    if arguments["folder"] is not None and not os.path.exists(arguments["folder"]):
-        parser.error("The folder must be a valid path")
-    if arguments["download_folder"] is not None and not os.path.exists(arguments["download_folder"]):
-        parser.error("The download_folder must be a valid path")
-    if arguments["relocate_folder"] is not None and not os.path.exists(arguments["relocate_folder"]):
-        parser.error("The relocate_folder must be a valid path")
+    if arguments["folder"] is not None and Path(arguments["folder"]).is_file():
+        parser.error("The folder must be a valid path. It must not be a file.")
+    if arguments["download_folder"] is not None and Path(arguments["download_folder"]).is_file():
+        parser.error("The download_folder must be a valid path. It must not be a file.")
+    if arguments["relocate_folder"] is not None and Path(arguments["relocate_folder"]).is_file():
+        parser.error("The relocate_folder must be a valid path. It must not be a file.")
 
     return arguments
 
