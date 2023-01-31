@@ -91,8 +91,8 @@ class ScorerMahalanobis(ICopyable, IShapeChanger, IParametric, SavableModel):
         
     def save(self, path,
              *args,
-             **kwargs) -> Any:
-        find_or_create_dir(path)
+             **kwargs) -> ScorerMahalanobis:
+        super().save(path=path)
         path_obj = Path(path)
 
         if self._mean is not None:
@@ -100,8 +100,13 @@ class ScorerMahalanobis(ICopyable, IShapeChanger, IParametric, SavableModel):
                                 _mean=self._mean,
                                 _cov=self._cov,
                                 _inv_cov=self._inv_cov)
+        
+        return self
 
-    def load(self, path: str, *args, **kwargs) -> Any:
+    def load(self, path: str,
+             *args,
+             **kwargs) -> ScorerMahalanobis:
+        super().load(path=path)
         path_obj = Path(path)
 
         if not path_obj.is_dir():
@@ -116,6 +121,16 @@ class ScorerMahalanobis(ICopyable, IShapeChanger, IParametric, SavableModel):
             self._mean = None
             self._cov = None
             self._inv_cov = None
+        
+        return self
+    
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> ScorerMahalanobis:
+        obj = ScorerMahalanobis()
+        obj.load(path)
+        return obj
     
     def fit(self, x, y=None, *args, **kwargs) -> None:
         """Learns the mean vector and the covariance matrix.

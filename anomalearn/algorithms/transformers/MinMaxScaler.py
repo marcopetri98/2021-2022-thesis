@@ -154,21 +154,33 @@ class MinMaxScaler(ICopyable, ITransformer, IParametric, SavableModel):
         
     def save(self, path,
              *args,
-             **kwargs) -> Any:
-        find_or_create_dir(path)
+             **kwargs) -> MinMaxScaler:
+        super().save(path=path)
         path_obj = Path(path)
         
         with open(str(path_obj / self.__scikit_file), "wb") as f:
             pickle.dump(self._min_max_scaler, f)
+            
+        return self
     
     def load(self, path: str,
              *args,
-             **kwargs) -> Any:
-        find_or_create_dir(path)
+             **kwargs) -> MinMaxScaler:
+        super().load(path=path)
         path_obj = Path(path)
         
         with open(str(path_obj / self.__scikit_file), "rb") as f:
             self._min_max_scaler = pickle.load(f)
+            
+        return self
+    
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> MinMaxScaler:
+        obj = MinMaxScaler()
+        obj.load(path)
+        return obj
         
     def fit(self, x, y=None, *args, **kwargs) -> None:
         self._min_max_scaler.fit(x)

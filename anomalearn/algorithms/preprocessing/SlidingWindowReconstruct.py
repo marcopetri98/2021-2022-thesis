@@ -32,7 +32,7 @@ class SlidingWindowReconstruct(ICopyable, IShapeChanger, SavableModel):
     """
     __json_file = "sliding_window_reconstruct.json"
     
-    def __init__(self, window: int,
+    def __init__(self, window: int = 10,
                  stride: int = 1):
         super().__init__()
         
@@ -82,7 +82,7 @@ class SlidingWindowReconstruct(ICopyable, IShapeChanger, SavableModel):
         
     def save(self, path,
              *args,
-             **kwargs) -> Any:
+             **kwargs) -> SlidingWindowReconstruct:
         super().save(path=path)
         path_obj = Path(path)
         
@@ -91,12 +91,20 @@ class SlidingWindowReconstruct(ICopyable, IShapeChanger, SavableModel):
     
     def load(self, path: str,
              *args,
-             **kwargs) -> Any:
+             **kwargs) -> SlidingWindowReconstruct:
         super().load(path=path)
         path_obj = Path(path)
         
         self._points_seen = load_py_json(str(path_obj / self.__json_file))["_points_seen"]
         return self
+    
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> SlidingWindowReconstruct:
+        obj = SlidingWindowReconstruct()
+        obj.load(path)
+        return obj
         
     def shape_change(self, x, y=None, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         """Builds input and target vectors doing sliding window.

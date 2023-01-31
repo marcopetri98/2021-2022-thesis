@@ -11,8 +11,7 @@ from sklearn.preprocessing import StandardScaler as scikitStandardScaler
 
 from .. import ICopyable, ITransformer, IParametric, SavableModel
 from ...exceptions import InvalidInputShape, NotTrainedError
-from ...utils import find_or_create_dir, are_numpy_attr_equal, \
-    are_normal_attr_equal
+from ...utils import are_numpy_attr_equal, are_normal_attr_equal
 
 
 class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
@@ -150,21 +149,33 @@ class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
     
     def save(self, path,
              *args,
-             **kwargs) -> Any:
-        find_or_create_dir(path)
+             **kwargs) -> StandardScaler:
+        super().save(path=path)
         path_obj = Path(path)
         
         with open(str(path_obj / self.__scikit_file), "wb") as f:
             pickle.dump(self._standard_scaler, f)
+        
+        return self
     
     def load(self, path: str,
              *args,
-             **kwargs) -> Any:
-        find_or_create_dir(path)
+             **kwargs) -> StandardScaler:
+        super().load(path=path)
         path_obj = Path(path)
         
         with open(str(path_obj / self.__scikit_file), "rb") as f:
             self._standard_scaler = pickle.load(f)
+        
+        return self
+    
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> StandardScaler:
+        obj = StandardScaler()
+        obj.load(path)
+        return obj
     
     def fit(self, x, y=None, *args, **kwargs) -> None:
         self._standard_scaler.fit(x)

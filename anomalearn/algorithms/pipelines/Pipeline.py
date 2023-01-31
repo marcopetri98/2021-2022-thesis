@@ -286,8 +286,8 @@ class Pipeline(ICopyable, IPipeline, SavableModel):
             
             if i != len(self._elements) - 1:
                 representation += ",\n          "
-            else:
-                representation += "])"
+                
+        representation += "])"
                 
         return representation
     
@@ -435,6 +435,14 @@ class Pipeline(ICopyable, IPipeline, SavableModel):
             for layer_name, member in refs.items():
                 pointer = self.pipeline_layers[self.pipeline_names.index(layer_name)]
                 setattr(pointer, member, obj)
+                
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> Pipeline:
+        obj = Pipeline([])
+        obj.load(path)
+        return obj
         
     def get_hyperparameters(self, *args, **kwargs) -> dict:
         """Gets the hyperparameters present in the pipeline.

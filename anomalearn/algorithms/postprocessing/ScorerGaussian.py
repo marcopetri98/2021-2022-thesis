@@ -80,16 +80,22 @@ class ScorerGaussian(ICopyable, IShapeChanger, IParametric, SavableModel):
         new._cov = self._cov.copy() if self._cov is not None else None
         return new
 
-    def save(self, path, *args, **kwargs) -> Any:
-        find_or_create_dir(path)
+    def save(self, path,
+             *args,
+             **kwargs) -> ScorerGaussian:
+        super().save(path=path)
         path_obj = Path(path)
 
         if self._mean is not None:
             np.savez_compressed(str(path_obj / self.__numpy_file),
                                 _mean=self._mean,
                                 _cov=self._cov)
+        return self
 
-    def load(self, path: str, *args, **kwargs) -> Any:
+    def load(self, path: str,
+             *args,
+             **kwargs) -> ScorerGaussian:
+        super().load(path=path)
         path_obj = Path(path)
 
         if not path_obj.is_dir():
@@ -102,6 +108,16 @@ class ScorerGaussian(ICopyable, IShapeChanger, IParametric, SavableModel):
         else:
             self._mean = None
             self._cov = None
+        
+        return self
+    
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> ScorerGaussian:
+        obj = ScorerGaussian()
+        obj.load(path)
+        return obj
 
     def fit(self, x, y=None, *args, **kwargs) -> None:
         """Learns the mean vector and the covariance matrix.

@@ -28,6 +28,11 @@ class ISavable(ABC):
         -------
         self
             Instance to itself to allow chain calls.
+    
+        Raises
+        ------
+        ValueError
+            If the given path points to an existing file and not to a directory.
         """
         pass
     
@@ -52,5 +57,10 @@ class ISavable(ABC):
         -------
         self
             Instance to itself to allow chain calls.
+    
+        Raises
+        ------
+        ValueError
+            If the given path does not point to a saved model.
         """
         pass

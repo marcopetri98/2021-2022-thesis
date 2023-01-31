@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Tuple
+from pathlib import Path
+from typing import Tuple
 
 import numpy as np
 
-from .. import IShapeChanger, SavableModel, ICopyable
+from .. import IShapeChanger, SavableModel, ICopyable, load_estimator
 from ..preprocessing import SlidingWindowForecast, SlidingWindowReconstruct
 
 
@@ -36,7 +37,9 @@ class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
         creation. It is not a copy of the object passed since the access to its
         properties are needed process data.
     """
-    def __init__(self, sliding_window: SlidingWindowForecast | SlidingWindowReconstruct):
+    __sliding_window = "sliding_window"
+    
+    def __init__(self, sliding_window: SlidingWindowForecast | SlidingWindowReconstruct = None):
         super().__init__()
         
         self._sliding_window = sliding_window
@@ -76,16 +79,29 @@ class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
         
     def save(self, path,
              *args,
-             **kwargs) -> Any:
-        self._sliding_window.save(path)
+             **kwargs) -> BuilderVectorsSlidingWindow:
+        super().save(path=path)
+        path_obj = Path(path)
+        self._sliding_window.save(str(path_obj / self.__sliding_window))
         return self
     
-    # TODO: fixme, all sliding window approaches must be loadable with a single method
     def load(self, path: str,
              *args,
-             **kwargs) -> Any:
-        self._sliding_window = SlidingWindowForecast(1).load(path)
+             **kwargs) -> BuilderVectorsSlidingWindow:
+        super().load(path=path)
+        path_obj = Path(path)
+        self._sliding_window = load_estimator(str(path_obj / self.__sliding_window),
+                                              [SlidingWindowForecast, SlidingWindowReconstruct],
+                                              exclusive_list=True)
         return self
+    
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> BuilderVectorsSlidingWindow:
+        obj = BuilderVectorsSlidingWindow()
+        obj.load(path)
+        return obj
     
     def shape_change(self, x,
                      y=None,

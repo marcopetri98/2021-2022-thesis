@@ -53,8 +53,8 @@ class ThresholdMaxOnNormal(ICopyable, IParametric, ITransformer, SavableModel):
     
     def save(self, path,
              *args,
-             **kwargs) -> Any:
-        find_or_create_dir(path)
+             **kwargs) -> ThresholdMaxOnNormal:
+        super().save(path=path)
         path_obj = Path(path)
         
         save_py_json(self._threshold, str(path_obj / self.__json_file))
@@ -62,12 +62,20 @@ class ThresholdMaxOnNormal(ICopyable, IParametric, ITransformer, SavableModel):
     
     def load(self, path: str,
              *args,
-             **kwargs) -> Any:
-        find_or_create_dir(path)
+             **kwargs) -> ThresholdMaxOnNormal:
+        super().load(path=path)
         path_obj = Path(path)
         
         self._threshold = load_py_json(str(path_obj / self.__json_file))
         return self
+    
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> ThresholdMaxOnNormal:
+        obj = ThresholdMaxOnNormal()
+        obj.load(path)
+        return obj
         
     def fit(self, x, y=None, *args, **kwargs) -> None:
         """Learns the threshold from an array of anomaly scores.

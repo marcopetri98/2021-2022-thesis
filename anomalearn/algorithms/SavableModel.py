@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Any
 
 from . import ISavable, BaseModel
 from ..utils import save_py_json, find_or_create_dir, load_py_json
@@ -17,10 +18,22 @@ class SavableModel(ISavable, BaseModel):
 
     def __init__(self):
         super().__init__()
+        
+    def __repr__(self):
+        return "SavableModel()"
+    
+    def __str__(self):
+        return "SavableModel"
+    
+    def __eq__(self, other):
+        return isinstance(other, SavableModel)
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def save(self, path,
              *args,
-             **kwargs) -> Any:
+             **kwargs) -> SavableModel:
         find_or_create_dir(path)
         path_obj = Path(path)
         
@@ -33,14 +46,23 @@ class SavableModel(ISavable, BaseModel):
 
     def load(self, path: str,
              *args,
-             **kwargs) -> Any:
+             **kwargs) -> SavableModel:
         path_obj = Path(path)
 
         if not path_obj.joinpath(self.__json_file).is_file():
             raise ValueError("path directory is not valid. It must contain "
-                             f"these files: {self.__json_file}")
+                             f"these files: {self.__json_file}, {self.__json_signature}")
 
         json_objects: dict = load_py_json(str(path_obj / self.__json_file))
+        
         self.set_params(**json_objects)
         
         return self
+    
+    @classmethod
+    def load_model(cls, path: str,
+                   *args,
+                   **kwargs) -> SavableModel:
+        obj = SavableModel()
+        obj.load(path)
+        return obj

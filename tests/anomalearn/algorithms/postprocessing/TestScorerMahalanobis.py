@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
@@ -107,5 +108,7 @@ class TestScorerMahalanobis(unittest.TestCase):
             new_scorer = ScorerMahalanobis()
             new_scorer.load(tmp_dir)
             self.assertEqual(scorer, new_scorer)
-            
-        self.assertRaises(ValueError, scorer.save, "Requirements.txt")
+
+        path = Path(__file__) / "../../../../../requirements.txt"
+        print(path)
+        self.assertRaises(ValueError, scorer.save, str(path))
