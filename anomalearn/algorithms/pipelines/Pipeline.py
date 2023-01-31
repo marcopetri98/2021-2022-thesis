@@ -7,7 +7,8 @@ import numpy as np
 
 from . import IPipeline
 from .. import IPredictor, SavableModel, IShapeChanger, ITransformer, BaseModel, \
-    ICluster, IClassifier, IRegressor, ICopyable, IParametric
+    ICluster, IClassifier, IRegressor, ICopyable, IParametric, load_estimator, \
+    instantiate_estimator
 from ...exceptions import InvalidInputShape
 from ...input_validation import is_var_of_type
 from ...utils import save_py_json, load_py_json
@@ -258,8 +259,8 @@ class Pipeline(ICopyable, IPipeline, SavableModel):
         referencing_members : dict[str: list[str]]
             It is a dictionary containing all the members of the layers pointing
             to `referenced`. The key is the name of the layer pointing to
-            `referenced` and the value is the list of members with a reference
-            to `referenced`.
+            `referenced` and the value is the list of members' names with a
+            reference to `referenced`.
         """
         referencing_members = dict()
         
@@ -389,16 +390,16 @@ class Pipeline(ICopyable, IPipeline, SavableModel):
     def save(self, path,
              *args,
              **kwargs) -> Any:
-        super().save(path)
+        super().save(path=path)
         path_obj = Path(path)
         
         pipeline_structure = []
         layers_references = dict()
         for name, obj, train in self._elements:
             if isinstance(obj, SavableModel):
-                pipeline_structure.append((name, repr(obj), self.__to_load_str, train))
+                pipeline_structure.append((name, obj.__class__.__name__, self.__to_load_str, train))
             else:
-                pipeline_structure.append((name, repr(obj), self.__to_create_str, train))
+                pipeline_structure.append((name, obj.__class__.__name__, self.__to_create_str, train))
                 
             ref_dict = self._get_referencing_layers(name, obj)
             layers_references[name] = ref_dict
@@ -412,9 +413,37 @@ class Pipeline(ICopyable, IPipeline, SavableModel):
                 obj.save(str(path_obj / layer_name))
     
     def load(self, path: str,
+             estimator_classes: list = None,
              *args,
              **kwargs) -> Any:
-        super().load(path)
+        """Loads a serialized pipeline.
+        
+        Parameters
+        ----------
+        path : str
+            It is the path of the directory in which the object has been saved.
+            
+        estimator_classes : list, default=None
+            It is the list of external classes not present in the library that
+            may be loaded or instantiated by the pipeline at some point.
+
+        args
+            Not used, present to allow multiple inheritance and signature change.
+
+        kwargs
+            Not used, present to allow multiple inheritance and signature change.
+
+        Returns
+        -------
+        self
+            Instance to itself to allow chain calls.
+    
+        Raises
+        ------
+        ValueError
+            If the given path does not point to a saved model.
+        """
+        super().load(path=path)
         path_obj = Path(path)
         
         pipeline_structure = load_py_json(str(path_obj / self.__json_file))
@@ -422,10 +451,11 @@ class Pipeline(ICopyable, IPipeline, SavableModel):
         
         # rebuild the pipeline with layers' names and values
         self._elements = []
-        for layer_name, obj_repr, method, train in pipeline_structure:
-            obj = eval(obj_repr)
+        for layer_name, obj_class, method, train in pipeline_structure:
             if method == self.__to_load_str:
-                obj.load(str(path_obj / layer_name))
+                obj = load_estimator(str(path_obj / layer_name), estimator_classes=estimator_classes)
+            else:
+                obj = instantiate_estimator(obj_class, estimator_classes=estimator_classes)
             self.append_layer((layer_name, obj, train))
         
         # rebuild pipeline's layers' references
@@ -434,7 +464,8 @@ class Pipeline(ICopyable, IPipeline, SavableModel):
             
             for layer_name, member in refs.items():
                 pointer = self.pipeline_layers[self.pipeline_names.index(layer_name)]
-                setattr(pointer, member, obj)
+                for m_name in member:
+                    setattr(pointer, m_name, obj)
                 
     @classmethod
     def load_model(cls, path: str,

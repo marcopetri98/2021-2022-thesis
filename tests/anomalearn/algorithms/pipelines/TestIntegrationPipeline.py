@@ -318,7 +318,7 @@ class TestIntegrationPipeline(unittest.TestCase):
             new = Pipeline([])
             self.assertNotEqual(self.pipeline, new)
             
-            new.load(tmp_dir)
+            new.load(tmp_dir, estimator_classes=[FakeModel])
             self.assertTrue(self.pipeline.identical(new, degree=3))
     
     def test_get_hyperparameters(self):
