@@ -4,14 +4,15 @@ from typing import Tuple
 import numpy as np
 from sklearn.utils import check_array
 
-from .. import ICopyable, IShapeChanger, BaseModel
+from .. import IShapeChanger
+from ..pipelines import AbstractPipelineBaseLayer
 
 
-class BuilderErrorVectorsNorm(ICopyable, IShapeChanger, BaseModel):
+class BuilderErrorVectorsNorm(IShapeChanger, AbstractPipelineBaseLayer):
     """Compute the error vectors between true and predicted vectors using absolute difference.
     
     This class computes the error vector as the difference between the ground
-    truth and the prediction, namely, `abs(gt - pred)`.
+    truth and the prediction, namely, `norm(gt - pred)`.
     """
     def __init__(self):
         super().__init__()
@@ -33,6 +34,12 @@ class BuilderErrorVectorsNorm(ICopyable, IShapeChanger, BaseModel):
 
     def copy(self) -> BuilderErrorVectorsNorm:
         return BuilderErrorVectorsNorm()
+    
+    def get_input_shape(self) -> tuple:
+        return "n", "m"
+    
+    def get_output_shape(self) -> tuple:
+        return "n", 1
 
     def shape_change(self, x, y=None, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         """Computes the error vectors using norm over the vector difference.

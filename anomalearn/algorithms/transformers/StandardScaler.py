@@ -4,17 +4,17 @@ import pickle
 from copy import deepcopy
 from numbers import Number
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler as scikitStandardScaler
 
-from .. import ICopyable, ITransformer, IParametric, SavableModel
+from .. import ITransformer, IParametric
+from ..pipelines import AbstractPipelineSavableLayer
 from ...exceptions import InvalidInputShape, NotTrainedError
 from ...utils import are_numpy_attr_equal, are_normal_attr_equal
 
 
-class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
+class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
     """Standard scaler wrapper for `scikit-learn`.
     
     Attributes
@@ -176,6 +176,12 @@ class StandardScaler(ICopyable, ITransformer, IParametric, SavableModel):
         obj = StandardScaler()
         obj.load(path)
         return obj
+    
+    def get_input_shape(self) -> tuple:
+        return "n", "m"
+    
+    def get_output_shape(self) -> tuple:
+        return "n", "m"
     
     def fit(self, x, y=None, *args, **kwargs) -> None:
         self._standard_scaler.fit(x)

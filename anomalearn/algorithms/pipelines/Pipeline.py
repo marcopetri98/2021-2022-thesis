@@ -5,16 +5,16 @@ from typing import Tuple, Any
 
 import numpy as np
 
-from . import IPipeline
+from . import IPipeline, AbstractPipelineSavableLayer
 from .. import IPredictor, SavableModel, IShapeChanger, ITransformer, BaseModel, \
-    ICluster, IClassifier, IRegressor, ICopyable, IParametric, load_estimator, \
+    ICluster, IClassifier, IRegressor, IParametric, load_estimator, \
     instantiate_estimator
 from ...exceptions import InvalidInputShape
 from ...input_validation import is_var_of_type
 from ...utils import save_py_json, load_py_json
 
 
-class Pipeline(ICopyable, IPipeline, SavableModel):
+class Pipeline(IPipeline, AbstractPipelineSavableLayer):
     """The basic pipeline object.
     
     The pipeline object takes a sequence of transformers, shape changer,
@@ -474,6 +474,18 @@ class Pipeline(ICopyable, IPipeline, SavableModel):
         obj = Pipeline([])
         obj.load(path)
         return obj
+    
+    def get_input_shape(self) -> tuple:
+        if len(self._elements) != 0:
+            return self.pipeline_layers[0].get_input_shape()
+        else:
+            return tuple()
+    
+    def get_output_shape(self) -> tuple:
+        if len(self._elements) != 0:
+            return self.pipeline_layers[-1].get_input_shape()
+        else:
+            return tuple()
         
     def get_hyperparameters(self, *args, **kwargs) -> dict:
         """Gets the hyperparameters present in the pipeline.

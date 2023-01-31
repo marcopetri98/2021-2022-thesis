@@ -4,18 +4,18 @@ import pickle
 from copy import deepcopy
 from numbers import Number
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Tuple
 
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler as scikitMinMaxScaler
 
-from .. import ITransformer, IParametric, SavableModel, ICopyable
+from .. import ITransformer, IParametric
+from ..pipelines import AbstractPipelineSavableLayer
 from ...exceptions import InvalidInputShape, NotTrainedError
-from ...utils import find_or_create_dir, are_numpy_attr_equal, \
-    are_normal_attr_equal
+from ...utils import are_numpy_attr_equal, are_normal_attr_equal
 
 
-class MinMaxScaler(ICopyable, ITransformer, IParametric, SavableModel):
+class MinMaxScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
     """Min max scaler wrapper for `scikit-learn`.
     
     Attributes
@@ -181,6 +181,12 @@ class MinMaxScaler(ICopyable, ITransformer, IParametric, SavableModel):
         obj = MinMaxScaler()
         obj.load(path)
         return obj
+    
+    def get_input_shape(self) -> tuple:
+        return "n", "m"
+    
+    def get_output_shape(self) -> tuple:
+        return "n", "m"
         
     def fit(self, x, y=None, *args, **kwargs) -> None:
         self._min_max_scaler.fit(x)

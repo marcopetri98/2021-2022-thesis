@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 
-from .. import ICopyable, ITransformer, SavableModel, IParametric
+from .. import ITransformer, IParametric
+from ..pipelines import AbstractPipelineSavableLayer
 from ...exceptions import NotTrainedError
 from ...input_validation import check_array_1d
-from ...utils import find_or_create_dir, save_py_json, load_py_json
+from ...utils import save_py_json, load_py_json
 
 
-class ThresholdMaxOnNormal(ICopyable, IParametric, ITransformer, SavableModel):
+class ThresholdMaxOnNormal(IParametric, ITransformer, AbstractPipelineSavableLayer):
     """Computes the threshold as the maximum anomaly score considering the input as scores of normal points.
     
     Scores are assumed to be higher for points considered more anomalous. Thus,
@@ -76,6 +76,12 @@ class ThresholdMaxOnNormal(ICopyable, IParametric, ITransformer, SavableModel):
         obj = ThresholdMaxOnNormal()
         obj.load(path)
         return obj
+    
+    def get_input_shape(self) -> tuple:
+        return tuple(["n"])
+    
+    def get_output_shape(self) -> tuple:
+        return tuple(["n"])
         
     def fit(self, x, y=None, *args, **kwargs) -> None:
         """Learns the threshold from an array of anomaly scores.

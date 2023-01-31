@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Tuple, Any
+from typing import Tuple
 
 import numpy as np
 from sklearn.utils import check_array
 from skopt.space import Integer
 
-from .. import IShapeChanger, SavableModel, ICopyable
+from .. import IShapeChanger
+from ..pipelines import AbstractPipelineSavableLayer
 from ...utils import save_py_json, load_py_json
 
 
-class SlidingWindowForecast(ICopyable, IShapeChanger, SavableModel):
+class SlidingWindowForecast(IShapeChanger, AbstractPipelineSavableLayer):
     """Preprocessing object transforming the input using the sliding window technique.
     
     The object takes as input a time series, thus an array-like with two
@@ -112,6 +113,12 @@ class SlidingWindowForecast(ICopyable, IShapeChanger, SavableModel):
         obj = SlidingWindowForecast()
         obj.load(path)
         return obj
+    
+    def get_input_shape(self) -> tuple:
+        return "n", "m"
+    
+    def get_output_shape(self) -> tuple:
+        return "n", self.forecast, "m"
         
     def shape_change(self, x, y=None, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         """Builds input and target vectors doing sliding window.

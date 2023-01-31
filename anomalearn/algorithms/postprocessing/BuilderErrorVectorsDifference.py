@@ -4,10 +4,11 @@ from typing import Tuple
 import numpy as np
 from sklearn.utils import check_array
 
-from .. import IShapeChanger, BaseModel, ICopyable
+from .. import IShapeChanger
+from ..pipelines import AbstractPipelineBaseLayer
 
 
-class BuilderErrorVectorsDifference(ICopyable, IShapeChanger, BaseModel):
+class BuilderErrorVectorsDifference(IShapeChanger, AbstractPipelineBaseLayer):
     """Compute the error vectors between true and predicted vectors using difference.
     
     This class computes the error vector as the difference between the ground
@@ -33,6 +34,12 @@ class BuilderErrorVectorsDifference(ICopyable, IShapeChanger, BaseModel):
         
     def copy(self) -> BuilderErrorVectorsDifference:
         return BuilderErrorVectorsDifference()
+    
+    def get_input_shape(self) -> tuple:
+        return "n", "m"
+    
+    def get_output_shape(self) -> tuple:
+        return "n", "m"
         
     def shape_change(self, x, y=None, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         """Computes the error vectors using difference.

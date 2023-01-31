@@ -2,19 +2,20 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Tuple, Any
+from typing import Tuple
 
 import numpy as np
 from scipy.stats import multivariate_normal
 from sklearn.utils import check_array
 
-from .. import IShapeChanger, IParametric, SavableModel, ICopyable
+from .. import IShapeChanger, IParametric
+from ..pipelines import AbstractPipelineSavableLayer
 from ...exceptions import NotTrainedError
-from ...utils import estimate_mean_covariance, find_or_create_dir
+from ...utils import estimate_mean_covariance
 from ...utils import get_rows_without_nan
 
 
-class ScorerGaussian(ICopyable, IShapeChanger, IParametric, SavableModel):
+class ScorerGaussian(IShapeChanger, IParametric, AbstractPipelineSavableLayer):
     """Score computer using multivariate gaussian distribution based on errors.
 
     As proposed by Malhotra et al. (https://www.esann.org/sites/default/files/proceedings/legacy/es2015-56.pdf),
@@ -118,6 +119,12 @@ class ScorerGaussian(ICopyable, IShapeChanger, IParametric, SavableModel):
         obj = ScorerGaussian()
         obj.load(path)
         return obj
+    
+    def get_input_shape(self) -> tuple:
+        return "n", "m"
+    
+    def get_output_shape(self) -> tuple:
+        return tuple(["n"])
 
     def fit(self, x, y=None, *args, **kwargs) -> None:
         """Learns the mean vector and the covariance matrix.

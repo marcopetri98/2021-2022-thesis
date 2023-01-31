@@ -2,18 +2,19 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Tuple
 
 import numpy as np
 from scipy.spatial.distance import mahalanobis
 from sklearn.utils import check_array
 
-from .. import IShapeChanger, IParametric, SavableModel, ICopyable
+from .. import IShapeChanger, IParametric
+from ..pipelines import AbstractPipelineSavableLayer
 from ...exceptions import NotTrainedError
-from ...utils import estimate_mean_covariance, get_rows_without_nan, find_or_create_dir
+from ...utils import estimate_mean_covariance, get_rows_without_nan
 
 
-class ScorerMahalanobis(ICopyable, IShapeChanger, IParametric, SavableModel):
+class ScorerMahalanobis(IShapeChanger, IParametric, AbstractPipelineSavableLayer):
     """Score computer using mahalanobis distance based on errors.
     
     As proposed by Malhotra et al. (https://sites.google.com/site/icmlworkshoponanomalydetection/accepted-papers),
@@ -131,6 +132,12 @@ class ScorerMahalanobis(ICopyable, IShapeChanger, IParametric, SavableModel):
         obj = ScorerMahalanobis()
         obj.load(path)
         return obj
+    
+    def get_input_shape(self) -> tuple:
+        return "n", "m"
+    
+    def get_output_shape(self) -> tuple:
+        return tuple(["n"])
     
     def fit(self, x, y=None, *args, **kwargs) -> None:
         """Learns the mean vector and the covariance matrix.

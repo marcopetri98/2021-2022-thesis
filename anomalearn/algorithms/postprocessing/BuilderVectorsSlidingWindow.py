@@ -5,11 +5,12 @@ from typing import Tuple
 
 import numpy as np
 
-from .. import IShapeChanger, SavableModel, ICopyable, load_estimator
+from .. import IShapeChanger, load_estimator
+from ..pipelines import AbstractPipelineSavableLayer
 from ..preprocessing import SlidingWindowForecast, SlidingWindowReconstruct
 
 
-class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
+class BuilderVectorsSlidingWindow(IShapeChanger, AbstractPipelineSavableLayer):
     """Compute the vectors from the output of a model working on sliding windows.
     
     There is one vector for each timestamp of the original time series. The
@@ -103,6 +104,12 @@ class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
         obj.load(path)
         return obj
     
+    def get_input_shape(self) -> tuple:
+        return "n", "l", "m"
+    
+    def get_output_shape(self) -> tuple:
+        return "n_points", "l * m"
+    
     def shape_change(self, x,
                      y=None,
                      *args,
@@ -111,22 +118,22 @@ class BuilderVectorsSlidingWindow(ICopyable, IShapeChanger, SavableModel):
         
         Parameters
         ----------
-        x : array-like of shape (n_windows, window/forecast, n_features)
+        x : array-like of shape (n_windows, window or forecast, n_features)
             These are the values predicted by the model. Their appropriate name
             should be `y_hat`, but for API consistency `x` is left.
         
-        y : array-like of shape (n_windows, window/forecast, n_features)
+        y : array-like of shape (n_windows, window or forecast, n_features)
             The targets for the model outputs.
 
         Returns
         -------
-        x_new : array-like
+        x_new : array-like of shape (n_samples, (window or forecast) * n_features)
             The vectors with the predictions for each timestamp. It has two
             dimensions and the first is the number of points seen while building
             the sliding windows. The second dimension is the product between
             the features predicted/reconstructed and the window/forecasting.
             
-        y_new : array-like
+        y_new : array-like of shape (n_samples, (window or forecast) * n_features)
             An array with the same shape as `x_new` containing the true values
             for the predictions.
         """
