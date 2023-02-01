@@ -39,6 +39,7 @@ def setup_package():
             "seaborn>=0.11.2",
             "statsmodels>=0.13.0",
             "tensorflow>=2.11.0",
+            "tqdm>=4.64.1",
             "urllib3>=1.26.9"
             ],
         classifiers=[

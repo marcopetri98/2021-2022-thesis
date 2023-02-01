@@ -1,13 +1,12 @@
 import abc
-from abc import ABC
 from typing import Tuple
 
 import numpy as np
 
-from . import IDatasetAnalyser, StationarityTest, DecompositionMethod
+from . import StationarityTest, DecompositionMethod
 
 
-class ITSDatasetAnalyser(IDatasetAnalyser, ABC):
+class ITSDatasetAnalyser(abc.ABC):
     """An interface for time series dataset analysers.
     """
     

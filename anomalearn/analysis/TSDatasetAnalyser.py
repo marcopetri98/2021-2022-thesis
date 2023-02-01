@@ -28,10 +28,8 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         
         self.time_series = deepcopy(time_series)
         
-        
     def num_samples(self) -> int:
-        return  self.time_series.shape[0]
-        
+        return self.time_series.shape[0]
         
     def analyse_stationarity(self, method: StationarityTest,
                              method_params: dict = None,
@@ -48,7 +46,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         # difference the series if necessary
         analysed_series = self.time_series
         if difference_series:
-            analysed_series = self._difference_series(difference_value, verbose)
+            analysed_series = np.diff(analysed_series, difference_value)
             
         if verbose:
             print_step("Start stationarity test")
@@ -69,8 +67,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         print_step("Computed p-value of {} is: {}".format(method, p_value))
             
         print_header("Stationarity analysis ended")
-
-
+    
     def show_acf_function(self, acf_params: dict = None,
                           difference_series: bool = False,
                           difference_value: int = 1,
@@ -86,7 +83,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         # difference the series if necessary
         analysed_series = self.time_series
         if difference_series:
-            analysed_series = self._difference_series(difference_value, verbose)
+            analysed_series = np.diff(analysed_series, difference_value)
             
         series_acf, series_conf = acf(analysed_series, **acf_params)
         plot_correlation_functions({"PACF": series_acf},
@@ -94,7 +91,6 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
                                    fig_size=fig_size)
         
         print_header("ACF computation ended")
-    
     
     def show_pacf_function(self, pacf_params: dict = None,
                            difference_series: bool = False,
@@ -111,7 +107,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         # difference the series if necessary
         analysed_series = self.time_series
         if difference_series:
-            analysed_series = self._difference_series(difference_value, verbose)
+            analysed_series = np.diff(analysed_series, difference_value)
     
         series_pacf, series_conf = pacf(analysed_series, **pacf_params)
         plot_correlation_functions({"PACF": series_pacf},
@@ -119,7 +115,6 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
                                    fig_size=fig_size)
     
         print_header("PACF computation ended")
-    
     
     def show_acf_pacf_functions(self, acf_params: dict,
                                 pacf_params: dict,
@@ -139,7 +134,7 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         # difference the series if necessary
         analysed_series = self.time_series
         if difference_series:
-            analysed_series = self._difference_series(difference_value, verbose)
+            analysed_series = np.diff(analysed_series, difference_value)
     
         series_acf, series_acf_conf = acf(analysed_series, **acf_params)
         series_pacf, series_pacf_conf = pacf(analysed_series, **pacf_params)
@@ -148,7 +143,6 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
                                    fig_size=fig_size)
     
         print_header("ACF and PACF computation ended")
-    
     
     def decompose_time_series(self, method: DecompositionMethod,
                               method_params: dict = None,
@@ -184,8 +178,8 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         # difference the series if necessary
         analysed_series = self.time_series
         if difference_series:
-            analysed_series = self._difference_series(difference_value, verbose)
-            
+            analysed_series = np.diff(analysed_series, difference_value)
+        
         match method:
             case DecompositionMethod.STL:
                 stl = STL(analysed_series, **method_params)
@@ -210,41 +204,3 @@ class TSDatasetAnalyser(ITSDatasetAnalyser):
         print_header("Decomposition ended")
         
         return trend_cycle, seasonal, residual
-    
-    
-    def _difference_series(self, difference_value: int,
-                           verbose: bool = True) -> np.ndarray:
-        """Performs differencing on the time series.
-        
-        Parameters
-        ----------
-        difference_value : int
-            It is the number of times that the time series must be differenced.
-            
-        verbose : bool, default=True
-            If `True` detailed printing will be shown.
-
-        Returns
-        -------
-        differenced_series : ndarray
-            The differenced time series.
-        """
-        if difference_value < 1:
-            raise ValueError("Difference value must be at least 1")
-        
-        if verbose:
-            print_step("Start to compute differencing.")
-        
-        differenced_series = deepcopy(self.time_series)
-        
-        for i in range(difference_value):
-            if verbose:
-                print_step("Differencing {} completed".format(i+1))
-            
-            differenced_series = np.diff(differenced_series, 1)
-            differenced_series = differenced_series[1:]
-            
-        if verbose:
-            print_step("Differencing completed")
-            
-        return differenced_series[1:]
