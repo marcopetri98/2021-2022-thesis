@@ -296,12 +296,16 @@ class Pipeline(IPipeline, AbstractPipelineSavableLayer):
         names, objs, train = list(zip(*self._elements))
         names = list(names)
         objs_strings = [repr(e) for e in objs]
+        input_shapes = [str(e.get_input_shape()) for e in objs]
+        output_shapes = [str(e.get_output_shape()) for e in objs]
         train_strings = ["True " if e else "False" for e in train]
         
         max_len_names = max([len(e) for e in names] + [len("Layer name")])
         max_len_objs = max([len(e) for e in objs_strings] + [len("Layer")])
+        max_len_in_shapes = max([len(e) for e in input_shapes] + [len("Input shape")])
+        max_len_out_shapes = max([len(e) for e in output_shapes] + [len("Output shape")])
         
-        width = 2 + max_len_names + 3 + max_len_objs + 3 + 5 + 2
+        width = 2 + max_len_names + 3 + max_len_objs + 3 + max_len_in_shapes + 3 + max_len_out_shapes + 3 + 5 + 2
         
         left = (width - 4 - len("Pipeline summary")) // 2
         right = left if left * 2 == width - 4 - len("Pipeline summary") else left + 1
@@ -310,7 +314,11 @@ class Pipeline(IPipeline, AbstractPipelineSavableLayer):
         summary += "| " + " " * left + "Pipeline summary" + " " * right + " |\n"
         summary += "|" + " " * (width - 2) + "|\n"
         summary += "-" * width + "\n"
-        for name, obj, train in zip(["Layer name"] + names, ["Layer"] + objs_strings, ["Train"] + train_strings):
+        for name, obj, in_shape, out_shape, train in zip(["Layer name"] + names,
+                                                         ["Layer"] + objs_strings,
+                                                         ["Input shape"] + input_shapes,
+                                                         ["Output shape"] + output_shapes,
+                                                         ["Train"] + train_strings):
             left = (max_len_names - len(name)) // 2
             right = left if left * 2 == max_len_names - len(name) else left + 1
             summary += "| " + " " * left + name + " " * right
@@ -318,6 +326,14 @@ class Pipeline(IPipeline, AbstractPipelineSavableLayer):
             left = (max_len_objs - len(obj)) // 2
             right = left if left * 2 == max_len_objs - len(obj) else left + 1
             summary += " | " + " " * left + obj + " " * right
+
+            left = (max_len_in_shapes - len(in_shape)) // 2
+            right = left if left * 2 == max_len_in_shapes - len(in_shape) else left + 1
+            summary += " | " + " " * left + in_shape + " " * right
+
+            left = (max_len_out_shapes - len(out_shape)) // 2
+            right = left if left * 2 == max_len_out_shapes - len(out_shape) else left + 1
+            summary += " | " + " " * left + out_shape + " " * right
             
             summary += " | " + train + " |\n"
             summary += "-" * width + "\n"
@@ -483,7 +499,7 @@ class Pipeline(IPipeline, AbstractPipelineSavableLayer):
     
     def get_output_shape(self) -> tuple:
         if len(self._elements) != 0:
-            return self.pipeline_layers[-1].get_input_shape()
+            return self.pipeline_layers[-1].get_output_shape()
         else:
             return tuple()
         

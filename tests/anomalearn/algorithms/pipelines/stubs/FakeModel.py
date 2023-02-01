@@ -1,10 +1,11 @@
 import numpy as np
 
-from anomalearn.algorithms import IParametric, IPredictor, BaseModel, ICopyable
+from anomalearn.algorithms import IParametric, IPredictor
+from anomalearn.algorithms.pipelines import AbstractPipelineBaseLayer
 from anomalearn.exceptions import NotTrainedError
 
 
-class FakeModel(ICopyable, IParametric, IPredictor, BaseModel):
+class FakeModel(IParametric, IPredictor, AbstractPipelineBaseLayer):
     def __init__(self):
         super().__init__()
         
@@ -21,6 +22,12 @@ class FakeModel(ICopyable, IParametric, IPredictor, BaseModel):
     
     def __ne__(self, other):
         return not self.__eq__(other)
+    
+    def get_input_shape(self) -> tuple:
+        return tuple(["any shape"])
+    
+    def get_output_shape(self) -> tuple:
+        return tuple(["any shape"])
     
     def copy(self):
         return FakeModel()

@@ -99,6 +99,9 @@ class TestIntegrationPipeline(unittest.TestCase):
                 standard_names.append(str(e) + "_" + str(i))
             self.assertListEqual(standard_names, pipeline.pipeline_names)
         
+    def test_summary(self):
+        self.pipeline.summary()
+        
     def test_set_name(self):
         self.pipeline.set_name(0, "Giulio er foggiano")
         self.assertEqual("Giulio er foggiano", self.pipeline.pipeline_names[0])
