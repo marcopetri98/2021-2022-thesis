@@ -1,9 +1,8 @@
 import time
 
-from anomalearn.analysis import TSADatasetSimplicityAnalyser
+from anomalearn.analysis import analyse_constant_simplicity
 from anomalearn.reader.time_series import SMDReader
 
-analyser = TSADatasetSimplicityAnalyser()
 reader = SMDReader("../data/anomaly_detection/smd")
 
 for i, series_df in enumerate(reader):
@@ -12,7 +11,7 @@ for i, series_df in enumerate(reader):
     
     print("Start to analyse constant simplicity")
     start = time.time()
-    results = analyser.analyse_constant_simplicity(series, labels)
+    results = analyse_constant_simplicity(series, labels)
     end = time.time()
     print("Ended to analyse constant simplicity")
     

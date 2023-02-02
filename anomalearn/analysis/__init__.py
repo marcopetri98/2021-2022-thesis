@@ -4,5 +4,6 @@ from .StationarityTest import StationarityTest
 from .ITSDatasetAnalyser import ITSDatasetAnalyser
 from .TSDatasetAnalyser import TSDatasetAnalyser
 
-from .ITSADatasetSimplicity import ITSADatasetSimplicity
-from .TSADatasetSimplicityAnalyser import TSADatasetSimplicityAnalyser
+from .dataset_simplicity import analyse_constant_simplicity
+from .dataset_simplicity import analyse_mov_avg_simplicity
+from .dataset_simplicity import analyse_mov_std_simplicity
