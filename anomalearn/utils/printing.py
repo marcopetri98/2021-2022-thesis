@@ -22,6 +22,10 @@ def print_header(heading: str, separator: str = "=", **kwargs) -> None:
 	Returns
 	-------
 	None
+	
+	.. deprecated:: 0.0.1
+		This function is deprecated and will be replaced in favor of built-in
+		python logging method since it is pre-built.
 	"""
 	# Checks assumption
 	if len(separator) != 1:
@@ -53,6 +57,10 @@ def print_step(*args, **kwargs) -> None:
 	Returns
 	-------
 	None
+	
+	.. deprecated:: 0.0.1
+		This function is deprecated and will be replaced in favor of built-in
+		python logging method since it is pre-built.
 	"""
 	if len(args) == 0:
 		raise ValueError("An execution step print must have a text")
@@ -88,6 +96,10 @@ def print_warning(*args, **kwargs) -> None:
 	Returns
 	-------
 	None
+	
+	.. deprecated:: 0.0.1
+		This function is deprecated and will be replaced in favor of built-in
+		python logging method since it is pre-built.
 	"""
 	if len(args) == 0:
 		raise ValueError("The warning must have a text")

@@ -16,6 +16,7 @@ def all_indices(list_: list, arg) -> list[int]:
     -------
     indices : list of int
         It is the list containing all the indices of `list_` containing `arg`.
+        If `arg` is not present in `list_`, an empty list will be returned.
     """
     indices = [idx
                for idx, elem in enumerate(list_) if elem == arg]

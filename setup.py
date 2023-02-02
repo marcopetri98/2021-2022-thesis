@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from Cython.Build import cythonize
 
 
 def long_description():
@@ -30,6 +31,7 @@ def setup_package():
         python_requires=">=3.10",
         install_requires=[
             "colorama>=0.4.4",
+            "Cython>=0.29.33",
             "matplotlib>=3.5.1",
             "numpy>=1.21.5",
             "pandas>=1.4.1",
@@ -55,7 +57,8 @@ def setup_package():
             "Topic :: Software Development",
             "Topic :: Software Development :: Libraries"
             ],
-        url="https://github.com/marcopetri98/2021-2022-thesis-petri"
+        url="https://github.com/marcopetri98/2021-2022-thesis-petri",
+        zip_safe=False
         )
 
 

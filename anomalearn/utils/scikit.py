@@ -24,9 +24,16 @@ def are_numpy_attr_equal(estimator1, estimator2, attributes: list[str]) -> bool:
         True when the attributes in the two estimators are equal.
     """
     for prop_name in attributes:
-        this_prop = getattr(estimator1, prop_name)
-        other_prop = getattr(estimator2, prop_name)
+        try:
+            this_prop = getattr(estimator1, prop_name)
+        except AttributeError:
+            this_prop = None
+        try:
+            other_prop = getattr(estimator2, prop_name)
+        except AttributeError:
+            other_prop = None
     
+        # XOR between this_prop and other_prop being None
         if (this_prop is None) != (other_prop is None):
             return False
     

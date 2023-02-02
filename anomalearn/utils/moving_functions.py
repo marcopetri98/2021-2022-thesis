@@ -2,63 +2,75 @@ import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 
 
-def mov_avg(x, window: int) -> np.ndarray:
+def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
     """Compute the moving average series of `x`.
     
     Parameters
     ----------
-    x : array-like
+    x : array-like of shape (n_samples, n_features)
         The original time series.
 
     window : int
         The window dimension.
+        
+    clip : str, default="right"
+        From which side to have one element less in case the window is even.
 
     Returns
     -------
-    mov_avg : ndarray
-        The moving average time series.
+    mov_avg : ndarray of shape (n_samples, n_features)
+        The moving average time series with same shape as `x`.
     """
     x = np.array(x)
-    is_multivariate = x.ndim != 1 and x.shape[1] > 1
+    if x.ndim == 1:
+        x = x.reshape((-1, 1))
     
-    if is_multivariate:
-        mov_avg_series = np.zeros((x.shape[0] - window + 1, x.shape[1]))
-        for channel in range(mov_avg_series.shape[1]):
-            mov_avg_series[:, channel] = np.convolve(x[:, channel], [1 / window] * window, "valid")
-    else:
-        x = x.flatten()
-        mov_avg_series = np.convolve(x, [1 / window] * window, "valid")
+    left = window // 2
+    right = left - (window % 2 == 0)
+    if clip == "left":
+        left, right = right, left
     
-    return mov_avg_series
+    avg_series = np.zeros_like(x)
+    for i in range(x.shape[0]):
+        start = i - left if i - left >= 0 else 0
+        end = i + 1 + right
+        avg_series[i, :] = np.mean(x[start:end, :], axis=0)
+    
+    return avg_series
 
 
-def mov_std(x, window: int) -> np.ndarray:
+def mov_std(x, window: int, clip: str = "right") -> np.ndarray:
     """Compute the moving average series of `x`.
     
     Parameters
     ----------
-    x : array-like
+    x : array-like of shape (n_samples, n_features)
         The original time series.
 
     window : int
         The window dimension.
+        
+    clip : str, default="right"
+        From which side to have one element less in case the window is even.
 
     Returns
     -------
-    mov_std : ndarray
-        The moving standard deviation time series.
+    mov_std : ndarray of shape (n_samples, n_features)
+        The moving standard deviation time series with same shape as `x`.
     """
     x = np.array(x)
-    is_multivariate = x.ndim != 1 and x.shape[1] > 1
+    if x.ndim == 1:
+        x = x.reshape((-1, 1))
+
+    left = window // 2
+    right = left - (window % 2 == 0)
+    if clip == "left":
+        left, right = right, left
     
-    if is_multivariate:
-        mov_std_series = np.zeros((x.shape[0] - window + 1, x.shape[1]))
-        for channel in range(mov_std_series.shape[1]):
-            sliding_windows = sliding_window_view(x, window, axis=0)
-            mov_std_series[:, channel] = np.array(list(map(lambda w: np.std(w), sliding_windows)))
-    else:
-        x = x.flatten()
-        sliding_windows = sliding_window_view(x, window)
-        mov_std_series = np.array(list(map(lambda w: np.std(w), sliding_windows)))
+    std_series = np.zeros_like(x)
+    for i in range(x.shape[0]):
+        start = i - left if i - left >= 0 else 0
+        end = i + 1 + right
+        std_series[i, :] = np.std(x[start:end, :], axis=0)
     
-    return mov_std_series
+    return std_series
