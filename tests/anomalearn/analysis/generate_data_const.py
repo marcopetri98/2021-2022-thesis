@@ -2,11 +2,15 @@ from pathlib import Path
 
 import numpy as np
 
-from anomalearn.utils import save_py_json, load_py_json
+from anomalearn.utils import save_py_json
 
 
 def reset_series_uni():
     return np.arange(100).reshape(-1, 1), np.zeros(100)
+
+
+def reset_series_multi():
+    return np.concatenate((np.arange(100).reshape(-1, 1), np.arange(100).reshape(-1, 1)), axis=1), np.zeros(100)
 
 
 this = Path(__file__).parent / "test_data" / "constant_simplicity"
@@ -144,3 +148,58 @@ uni_labels[40] = 1
 np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
 np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
 save_py_json({"constant_score": 2/3, "diff_order": 1, "lower_bound": [-1], "upper_bound": [4]}, this / f"const_case_{case_num}_result.json")
+
+# case 13: case 0 but multivariate
+uni_series, uni_labels = reset_series_multi()
+uni_labels[20] = 1
+case_num = 13
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 0, "diff_order": 0, "lower_bound": [None, None], "upper_bound": [None, None]}, this / f"const_case_{case_num}_result.json")
+
+# case 14: case 4 but multivariate on first dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[20, 0] = 19
+uni_labels[20] = 1
+case_num = 14
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 1, "diff_order": 1, "lower_bound": [0, None], "upper_bound": [None, None]}, this / f"const_case_{case_num}_result.json")
+
+# case 15: case 4 but multivariate on second dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[20, 1] = 19
+uni_labels[20] = 1
+case_num = 15
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 1, "diff_order": 1, "lower_bound": [None, 0], "upper_bound": [None, None]}, this / f"const_case_{case_num}_result.json")
+
+# case 16: case 2 but multivariate on first dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[20, 0] = 1000
+uni_labels[20] = 1
+case_num = 16
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 1, "diff_order": 0, "lower_bound": [None, None], "upper_bound": [1000, None]}, this / f"const_case_{case_num}_result.json")
+
+# case 17: case 2 but multivariate on second dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[20, 1] = 1000
+uni_labels[20] = 1
+case_num = 17
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 1, "diff_order": 0, "lower_bound": [None, None], "upper_bound": [None, 1000]}, this / f"const_case_{case_num}_result.json")
+
+# case 18: case 3 but multivariate on first and second dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[20, 1] = 1000
+uni_labels[20] = 1
+uni_series[70, 0] = -1000
+uni_labels[70] = 1
+case_num = 18
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 1, "diff_order": 0, "lower_bound": [-1000, None], "upper_bound": [None, 1000]}, this / f"const_case_{case_num}_result.json")

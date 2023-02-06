@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 
-from anomalearn.utils import save_py_json, load_py_json
+from anomalearn.utils import save_py_json
 
 
 def reset_series_uni():
