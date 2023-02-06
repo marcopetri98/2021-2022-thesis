@@ -207,6 +207,10 @@ def analyse_constant_simplicity(x, y, diff: int = 3) -> dict:
     best_result = None
     diffs = diff + 1
     for diff_order in range(diffs):
+        # stop if differencing eliminated all the anomalies
+        if len(np.unique(y[diff_order:])) != 2:
+            break
+        
         series = x
         if diff_order != 0:
             series = np.diff(x, diff_order, axis=0)
@@ -294,6 +298,10 @@ def _execute_movement_simplicity(x,
     best_result = None
     diffs = diff + 1
     for diff_order in range(diffs):
+        # stop if differencing eliminated all the anomalies
+        if len(np.unique(y[diff_order:])) != 2:
+            break
+        
         series = x
         labels = y
         if diff_order != 0:

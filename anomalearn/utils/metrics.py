@@ -38,8 +38,10 @@ def _get_binary_confusion_elems(y_true,
 
     if y_true.shape[0] != y_pred.shape[0]:
         raise ValueError("y_true and y_pred must have the same shape")
-    elif len(np.unique(y_true)) == 1:
-        raise ValueError("input has only one label. There must be at least 2 labels")
+    elif len(np.unique(y_true)) != 2:
+        raise ValueError("binary confusion matrix needs exactly 2 labels in y_true")
+    elif 1 not in np.unique(y_true) or 0 not in np.unique(y_true):
+        raise ValueError("binary confusion matrix uses labels 0 and 1")
 
     return np.ravel(confusion_matrix(y_true, y_pred))
 
