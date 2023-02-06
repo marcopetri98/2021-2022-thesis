@@ -80,7 +80,24 @@ np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimite
 save_py_json({"constant_score": 1, "diff_order": 1, "lower_bound": [-1], "upper_bound": [4]}, this / f"const_case_{case_num}_result.json")
 
 # case 7: 0 < score < 1, diff 0, lower bound
+case_num = 7
+uni_series, uni_labels = reset_series_uni()
+uni_labels[50] = 1
+uni_series[70] = -1000
+uni_labels[70] = 1
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 0.5, "diff_order": 0, "lower_bound": [-1000], "upper_bound": [None]}, this / f"const_case_{case_num}_result.json")
+
 # case 8: 0 < score < 1, diff 0, upper bound
+case_num = 8
+uni_series, uni_labels = reset_series_uni()
+uni_labels[50] = 1
+uni_series[20] = 1000
+uni_labels[20] = 1
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 0.5, "diff_order": 0, "lower_bound": [None], "upper_bound": [1000]}, this / f"const_case_{case_num}_result.json")
 
 # case 9: 0 < score < 1, diff 0, both bounds
 case_num = 9
@@ -95,5 +112,35 @@ np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimite
 save_py_json({"constant_score": 2/3, "diff_order": 0, "lower_bound": [-1000], "upper_bound": [1000]}, this / f"const_case_{case_num}_result.json")
 
 # case 10: 0 < score < 1, diff 1, lower bound
+case_num = 10
+uni_series, uni_labels = reset_series_uni()
+uni_labels[50] = 1
+uni_series[20] = 19
+uni_labels[20] = 1
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 0.5, "diff_order": 1, "lower_bound": [0], "upper_bound": [None]}, this / f"const_case_{case_num}_result.json")
+
 # case 11: 0 < score < 1, diff 1, upper bound
+case_num = 11
+uni_series, uni_labels = reset_series_uni()
+uni_labels[50] = 1
+uni_series[20] = 21
+uni_labels[20] = 1
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 0.5, "diff_order": 1, "lower_bound": [None], "upper_bound": [2]}, this / f"const_case_{case_num}_result.json")
+
 # case 12: 0 < score < 1, diff 1, both bounds
+case_num = 12
+uni_series, uni_labels = reset_series_uni()
+uni_labels[50] = 1
+uni_series[20] = 18
+uni_labels[20] = 1
+uni_series[40] = 43
+uni_series[41] = 43
+uni_series[42] = 43
+uni_labels[40] = 1
+np.savetxt(str(this / f"const_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"const_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"constant_score": 2/3, "diff_order": 1, "lower_bound": [-1], "upper_bound": [4]}, this / f"const_case_{case_num}_result.json")

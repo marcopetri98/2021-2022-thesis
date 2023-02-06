@@ -4,7 +4,14 @@ from pathlib import Path
 import numpy as np
 
 from anomalearn.analysis import analyse_constant_simplicity, analyse_mov_avg_simplicity, analyse_mov_std_simplicity
-from anomalearn.utils import mov_avg, load_py_json
+from anomalearn.utils import load_py_json
+
+
+def key_order(x):
+    try:
+        return int(x.name.split(".")[0].split("_")[-1])
+    except ValueError:
+        return int(x.name.split(".")[0].split("_")[-2])
 
 
 class TestDatasetSimplicityFunctions(unittest.TestCase):
@@ -37,9 +44,9 @@ class TestDatasetSimplicityFunctions(unittest.TestCase):
             self.assertListEqual(exp_results_["lower_bound"], results_["lower_bound"])
         
         test_data = Path(__file__).parent / "test_data" / "constant_simplicity"
-        cases = [e for e in test_data.glob("const_case_*[0-9].csv")]
-        cases_labels = [e for e in test_data.glob("const_case_*[0-9]_labels.csv")]
-        cases_results = [e for e in test_data.glob("const_case_*[0-9]_result.json")]
+        cases = sorted([e for e in test_data.glob("const_case_*[0-9].csv")], key=key_order)
+        cases_labels = sorted([e for e in test_data.glob("const_case_*[0-9]_labels.csv")], key=key_order)
+        cases_results = sorted([e for e in test_data.glob("const_case_*[0-9]_result.json")], key=key_order)
         for case, label, result in zip(cases, cases_labels, cases_results):
             print(f"Reading {case.name}, {label.name}, {result.name}")
             series = np.genfromtxt(case, delimiter=",")
@@ -89,9 +96,9 @@ class TestDatasetSimplicityFunctions(unittest.TestCase):
             self.assertListEqual(exp_results_["upper_bound"], results_["upper_bound"])
         
         test_data = Path(__file__).parent / "test_data" / "mov_avg_simplicity"
-        cases = [e for e in test_data.glob("mov_avg_case_*[0-9].csv")]
-        cases_labels = [e for e in test_data.glob("mov_avg_case_*[0-9]_labels.csv")]
-        cases_results = [e for e in test_data.glob("mov_avg_case_*[0-9]_result.json")]
+        cases = sorted([e for e in test_data.glob("mov_avg_case_*[0-9].csv")], key=key_order)
+        cases_labels = sorted([e for e in test_data.glob("mov_avg_case_*[0-9]_labels.csv")], key=key_order)
+        cases_results = sorted([e for e in test_data.glob("mov_avg_case_*[0-9]_result.json")], key=key_order)
         for case, label, result in zip(cases, cases_labels, cases_results):
             print(f"Reading {case.name}, {label.name}, {result.name}")
             series = np.genfromtxt(case, delimiter=",")
@@ -141,9 +148,9 @@ class TestDatasetSimplicityFunctions(unittest.TestCase):
             self.assertListEqual(exp_results_["upper_bound"], results_["upper_bound"])
         
         test_data = Path(__file__).parent / "test_data" / "mov_std_simplicity"
-        cases = [e for e in test_data.glob("mov_std_case_*[0-9].csv")]
-        cases_labels = [e for e in test_data.glob("mov_std_case_*[0-9]_labels.csv")]
-        cases_results = [e for e in test_data.glob("mov_std_case_*[0-9]_result.json")]
+        cases = sorted([e for e in test_data.glob("mov_std_case_*[0-9].csv")], key=key_order)
+        cases_labels = sorted([e for e in test_data.glob("mov_std_case_*[0-9]_labels.csv")], key=key_order)
+        cases_results = sorted([e for e in test_data.glob("mov_std_case_*[0-9]_result.json")], key=key_order)
         for case, label, result in zip(cases, cases_labels, cases_results):
             print(f"Reading {case.name}, {label.name}, {result.name}")
             series = np.genfromtxt(case, delimiter=",")
