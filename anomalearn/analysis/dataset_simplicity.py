@@ -4,8 +4,9 @@ from typing import Callable, Any, Optional
 import numpy as np
 from sklearn.utils import check_array, check_X_y
 
-from ..exceptions import ClosedOpenRangeError, SelectionError
+from ..exceptions import ClosedOpenRangeError
 from ..utils import true_positive_rate, true_negative_rate, mov_avg, mov_std
+from ..visualizer import line_plot
 
 
 def _find_constant_score(x: np.ndarray,
@@ -300,15 +301,17 @@ def _execute_movement_simplicity(x,
             labels = y[diff_order:]
         
         for window in windows_to_try:
-            movement = statistical_movement(series, window)
+            movement = statistical_movement(series, window, "right")
             result = analyse_constant_simplicity(movement, labels, 0)
             
             if best_result is None:
                 best_result = result
                 best_result["diff_order"] = diff_order
+                best_result["window"] = window
             elif result["constant_score"] > best_result["constant_score"]:
                 best_result = result
                 best_result["diff_order"] = diff_order
+                best_result["window"] = window
             
             if best_result["constant_score"] == 1:
                 break
@@ -383,8 +386,8 @@ def analyse_mov_avg_simplicity(x,
         lower than found bounds.
     """
     result = _execute_movement_simplicity(x, y, diff, window_range, mov_avg)
-    result["moving_average_score"] = result["constant_score"]
-    del result["constant_score"]
+    result["mov_avg_score"] = result["movement_score"]
+    del result["movement_score"]
     return result
 
 
@@ -454,6 +457,6 @@ def analyse_mov_std_simplicity(x,
         point is greater or lower than found bounds.
     """
     result = _execute_movement_simplicity(x, y, diff, window_range, mov_std)
-    result["moving_standard_deviation_score"] = result["constant_score"]
-    del result["constant_score"]
+    result["mov_std_score"] = result["movement_score"]
+    del result["movement_score"]
     return result

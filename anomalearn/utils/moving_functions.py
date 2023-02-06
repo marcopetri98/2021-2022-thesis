@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.lib.stride_tricks import sliding_window_view
 
 
 def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
@@ -21,7 +20,7 @@ def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
     mov_avg : ndarray of shape (n_samples, n_features)
         The moving average time series with same shape as `x`.
     """
-    x = np.array(x)
+    x = np.array(x, dtype=np.longdouble)
     if x.ndim == 1:
         x = x.reshape((-1, 1))
     
@@ -58,7 +57,7 @@ def mov_std(x, window: int, clip: str = "right") -> np.ndarray:
     mov_std : ndarray of shape (n_samples, n_features)
         The moving standard deviation time series with same shape as `x`.
     """
-    x = np.array(x)
+    x = np.array(x, dtype=np.longdouble)
     if x.ndim == 1:
         x = x.reshape((-1, 1))
 
