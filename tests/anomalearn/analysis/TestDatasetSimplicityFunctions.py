@@ -1,9 +1,11 @@
+import time
 import unittest
 from pathlib import Path
 
 import numpy as np
 
 from anomalearn.analysis import analyse_constant_simplicity, analyse_mov_avg_simplicity, analyse_mov_std_simplicity
+from anomalearn.reader.time_series import SMDReader
 from anomalearn.utils import load_py_json
 
 
@@ -163,3 +165,32 @@ class TestDatasetSimplicityFunctions(unittest.TestCase):
             print(f"Asserting the results...", end="\n\n")
             results = analyse_mov_std_simplicity(series, labels, window_range=(2, 100), diff=3)
             assert_results(results, exp_results)
+
+    def test_speed(self):
+        standard_path = Path(__file__).parent / "../../../data/anomaly_detection/smd"
+        reader = SMDReader(str(standard_path))
+        big_series = reader.read("machine-1-1", verbose=False).get_dataframe()
+        values = big_series[sorted(set(big_series.columns).difference(["class", "timestamp", "is_training", "interpretation"]),
+                                   key=lambda x: int(x.split("_")[-1]))].values
+        labels = big_series["class"].values
+
+        print(f"Start to analyse constant simplicity of series of shape {values.shape}")
+        start_time = time.time()
+        results = analyse_constant_simplicity(values, labels)
+        end_time = time.time()
+        print(f"\tTime elapsed: {end_time - start_time}.")
+        print(f"\tResults: {results}", end="\n\n")
+
+        print(f"Start to analyse moving average simplicity of series of shape {values.shape}")
+        start_time = time.time()
+        results = analyse_mov_avg_simplicity(values, labels)
+        end_time = time.time()
+        print(f"\tTime elapsed: {end_time - start_time}.")
+        print(f"\tResults: {results}", end="\n\n")
+
+        print(f"Start to analyse moving standard deviation simplicity of series of shape {values.shape}")
+        start_time = time.time()
+        results = analyse_mov_std_simplicity(values, labels)
+        end_time = time.time()
+        print(f"\tTime elapsed: {end_time - start_time}.")
+        print(f"\tResults: {results}", end="\n\n")

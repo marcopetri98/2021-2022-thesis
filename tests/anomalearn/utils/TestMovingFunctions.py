@@ -1,5 +1,5 @@
+import time
 import unittest
-import warnings
 
 import numpy as np
 
@@ -68,3 +68,29 @@ class TestMovingFunctions(unittest.TestCase):
                 self.assertTupleEqual(std_right.shape, mov_std_right.shape)
                 np.testing.assert_array_equal(std_left, mov_std_left)
                 np.testing.assert_array_equal(std_right, mov_std_right)
+                
+    def test_speed(self):
+        big_series = np.random.rand(50000, 50)
+        
+        for window in [2, 5, 10, 100, 1000]:
+            start_time = time.time()
+            _ = mov_avg(big_series, window, "right")
+            end_time = time.time()
+            print(f"Moving average with window {window} of series of shape {big_series.shape}")
+            print(f"\tTime elapsed: {end_time - start_time}. With right cut.")
+    
+            start_time = time.time()
+            _ = mov_avg(big_series, window, "left")
+            end_time = time.time()
+            print(f"\tTime elapsed: {end_time - start_time}. With left cut.")
+    
+            start_time = time.time()
+            _ = mov_std(big_series, window, "right")
+            end_time = time.time()
+            print(f"Moving standard deviation with window {window} of series of shape {big_series.shape}")
+            print(f"\tTime elapsed: {end_time - start_time}. With right cut.")
+    
+            start_time = time.time()
+            _ = mov_std(big_series, window, "left")
+            end_time = time.time()
+            print(f"\tTime elapsed: {end_time - start_time}. With left cut.", end="\n\n")
