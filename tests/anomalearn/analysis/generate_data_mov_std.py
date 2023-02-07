@@ -1,13 +1,16 @@
-import math
 from pathlib import Path
 
 import numpy as np
 
-from anomalearn.utils import save_py_json, mov_std
+from anomalearn.utils import save_py_json
 
 
 def reset_series_uni():
     return np.arange(100).reshape(-1, 1), np.zeros(100)
+
+
+def reset_series_multi():
+    return np.concatenate((np.arange(100).reshape(-1, 1), np.arange(100).reshape(-1, 1)), axis=1), np.zeros(100)
 
 
 this = Path(__file__).parent / "test_data" / "mov_std_simplicity"
@@ -436,5 +439,102 @@ save_py_json({"mov_std_score": 5/6,
               "diff_order": 1,
               "lower_bound": [0],
               "upper_bound": [min(np.std([diff[7], diff[8], diff[9]]), np.std([diff[10], diff[11], diff[12]]))],
+              "window": 3},
+             this / f"mov_std_case_{case_num}_result.json")
+
+# case 25: case 0 but multivariate
+uni_series, uni_labels = reset_series_multi()
+uni_labels[20] = 1
+case_num = 25
+np.savetxt(str(this / f"mov_std_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_std_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_std_score": 0,
+              "diff_order": 0,
+              "lower_bound": [None, None],
+              "upper_bound": [None, None],
+              "window": 2},
+             this / f"mov_std_case_{case_num}_result.json")
+
+# case 26: case 15 but multivariate on first dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[18, 0] = 19
+uni_series[20, 0] = 19
+uni_labels[17] = 1
+uni_labels[19] = 1
+uni_labels[21] = 1
+case_num = 26
+np.savetxt(str(this / f"mov_std_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_std_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_std_score": 1,
+              "diff_order": 0,
+              "lower_bound": [0, None],
+              "upper_bound": [np.std([uni_series[16, 0], uni_series[17, 0], uni_series[18, 0]]), None],
+              "window": 3},
+             this / f"mov_std_case_{case_num}_result.json")
+
+# case 27: case 15 but multivariate on second dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[18, 1] = 19
+uni_series[20, 1] = 19
+uni_labels[17] = 1
+uni_labels[19] = 1
+uni_labels[21] = 1
+case_num = 27
+np.savetxt(str(this / f"mov_std_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_std_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_std_score": 1,
+              "diff_order": 0,
+              "lower_bound": [None, 0],
+              "upper_bound": [None, np.std([uni_series[16, 1], uni_series[17, 1], uni_series[18, 1]])],
+              "window": 3},
+             this / f"mov_std_case_{case_num}_result.json")
+
+# case 28: case 15 but multivariate on both dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[18, 0] = 19
+uni_series[20, 0] = 19
+uni_series[18, 1] = 19
+uni_series[20, 1] = 19
+uni_labels[17] = 1
+uni_labels[19] = 1
+uni_labels[21] = 1
+case_num = 28
+np.savetxt(str(this / f"mov_std_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_std_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_std_score": 1,
+              "diff_order": 0,
+              "lower_bound": [0, 0],
+              "upper_bound": [np.std([uni_series[16, 0], uni_series[17, 0], uni_series[18, 0]]), np.std([uni_series[16, 1], uni_series[17, 1], uni_series[18, 1]])],
+              "window": 3},
+             this / f"mov_std_case_{case_num}_result.json")
+
+# case 29: case 13 but multivariate on first dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[18, 0] = 19
+uni_series[20, 0] = 19
+uni_labels[19] = 1
+case_num = 29
+np.savetxt(str(this / f"mov_std_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_std_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_std_score": 1,
+              "diff_order": 0,
+              "lower_bound": [0, None],
+              "upper_bound": [None, None],
+              "window": 3},
+             this / f"mov_std_case_{case_num}_result.json")
+
+# case 30: case 14 but multivariate on second dim
+uni_series, uni_labels = reset_series_multi()
+uni_series[18, 1] = 19
+uni_series[20, 1] = 19
+uni_labels[17] = 1
+uni_labels[21] = 1
+case_num = 30
+np.savetxt(str(this / f"mov_std_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_std_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_std_score": 1,
+              "diff_order": 0,
+              "lower_bound": [None, None],
+              "upper_bound": [None, np.std([uni_series[16, 1], uni_series[17, 1], uni_series[18, 1]])],
               "window": 3},
              this / f"mov_std_case_{case_num}_result.json")
