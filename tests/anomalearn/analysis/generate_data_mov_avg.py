@@ -9,6 +9,10 @@ def reset_series_uni():
     return np.arange(100).reshape(-1, 1), np.zeros(100)
 
 
+def reset_series_multi():
+    return np.concatenate((np.arange(100).reshape(-1, 1), np.arange(100).reshape(-1, 1)), axis=1), np.zeros(100)
+
+
 this = Path(__file__).parent / "test_data" / "mov_avg_simplicity"
 
 # case 0: score 0 (therefore diff=0, lower_bound=None, upper_bound=None, window=2)
@@ -388,7 +392,7 @@ uni_series, uni_labels = reset_series_uni()
 uni_series[10] = 20
 uni_labels[9] = 1
 uni_labels[80] = 1
-case_num = 17
+case_num = 23
 np.savetxt(str(this / f"mov_avg_case_{case_num}.csv"), uni_series, delimiter=",")
 np.savetxt(str(this / f"mov_avg_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
 save_py_json({"mov_avg_score": 0.5,
@@ -404,12 +408,105 @@ uni_series[10] = 0
 uni_labels[9] = 1
 uni_labels[12] = 1
 uni_labels[80] = 1
-case_num = 18
+case_num = 24
 np.savetxt(str(this / f"mov_avg_case_{case_num}.csv"), uni_series, delimiter=",")
 np.savetxt(str(this / f"mov_avg_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
 save_py_json({"mov_avg_score": 2/3,
               "diff_order": 1,
               "lower_bound": [-7/3],
               "upper_bound": [13/3],
+              "window": 3},
+             this / f"mov_avg_case_{case_num}_result.json")
+
+# case 25: case 0 but multivariate
+uni_series, uni_labels = reset_series_multi()
+uni_labels[20] = 1
+case_num = 25
+np.savetxt(str(this / f"mov_avg_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_avg_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_avg_score": 0,
+              "diff_order": 0,
+              "lower_bound": [None, None],
+              "upper_bound": [None, None],
+              "window": 2},
+             this / f"mov_avg_case_{case_num}_result.json")
+
+# case 26: case 15 but multivariate on first and second dim
+uni_series, uni_labels = reset_series_multi()
+uni_labels[18] = 1
+uni_labels[19] = 1
+uni_labels[20] = 1
+uni_series[19, 1] = -100
+uni_labels[38] = 1
+uni_labels[39] = 1
+uni_labels[40] = 1
+uni_series[39, 0] = 1000
+case_num = 26
+np.savetxt(str(this / f"mov_avg_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_avg_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_avg_score": 1,
+              "diff_order": 0,
+              "lower_bound": [None, -59/3],
+              "upper_bound": [1075/3, None],
+              "window": 3},
+             this / f"mov_avg_case_{case_num}_result.json")
+
+# case 27: case 13 but multivariate on first dim
+uni_series, uni_labels = reset_series_multi()
+uni_labels[18] = 1
+uni_labels[19] = 1
+uni_labels[20] = 1
+uni_series[19, 0] = -100
+case_num = 27
+np.savetxt(str(this / f"mov_avg_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_avg_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_avg_score": 1,
+              "diff_order": 0,
+              "lower_bound": [-59/3, None],
+              "upper_bound": [None, None],
+              "window": 3},
+             this / f"mov_avg_case_{case_num}_result.json")
+
+# case 28: case 14 but multivariate on second dim
+uni_series, uni_labels = reset_series_multi()
+uni_labels[38] = 1
+uni_labels[39] = 1
+uni_labels[40] = 1
+uni_series[39, 1] = 1000
+case_num = 28
+np.savetxt(str(this / f"mov_avg_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_avg_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_avg_score": 1,
+              "diff_order": 0,
+              "lower_bound": [None, None],
+              "upper_bound": [None, 1075/3],
+              "window": 3},
+             this / f"mov_avg_case_{case_num}_result.json")
+
+# case 29: case 15 but multivariate on all dim
+uni_series, uni_labels = reset_series_multi()
+uni_labels[18] = 1
+uni_labels[19] = 1
+uni_labels[20] = 1
+uni_series[19, 1] = -100
+uni_labels[18] = 1
+uni_labels[19] = 1
+uni_labels[20] = 1
+uni_series[19, 0] = -100
+uni_labels[38] = 1
+uni_labels[39] = 1
+uni_labels[40] = 1
+uni_series[39, 1] = 1000
+uni_labels[38] = 1
+uni_labels[39] = 1
+uni_labels[40] = 1
+uni_series[39, 0] = 1000
+case_num = 29
+np.savetxt(str(this / f"mov_avg_case_{case_num}.csv"), uni_series, delimiter=",")
+np.savetxt(str(this / f"mov_avg_case_{case_num}_labels.csv"), uni_labels, delimiter=",")
+save_py_json({"mov_avg_score": 1,
+              "diff_order": 0,
+              "lower_bound": [-59/3, -59/3],
+              "upper_bound": [1075/3, 1075/3],
               "window": 3},
              this / f"mov_avg_case_{case_num}_result.json")
