@@ -6,7 +6,6 @@ from sklearn.utils import check_array, check_X_y
 
 from ..exceptions import ClosedOpenRangeError
 from ..utils import true_positive_rate, true_negative_rate, mov_avg, mov_std
-from ..visualizer import line_plot
 
 
 def _find_constant_score(x: np.ndarray,
