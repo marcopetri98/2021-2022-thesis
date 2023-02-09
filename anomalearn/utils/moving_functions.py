@@ -1,6 +1,8 @@
 import numpy as np
+from numba import jit, prange
 
 
+@jit(nopython=True, parallel=True, fastmath=True)
 def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
     """Compute the moving average series of `x`.
     
@@ -20,7 +22,7 @@ def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
     mov_avg : ndarray of shape (n_samples, n_features)
         The moving average time series with same shape as `x`.
     """
-    x = np.array(x, dtype=np.longdouble)
+    x = np.asarray(x, dtype=np.double)
     if x.ndim == 1:
         x = x.reshape((-1, 1))
     
@@ -30,14 +32,16 @@ def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
         left, right = right, left
     
     avg_series = np.zeros_like(x)
-    for i in range(x.shape[0]):
+    for i in prange(x.shape[0]):
         start = i - left if i - left >= 0 else 0
         end = i + 1 + right
-        avg_series[i, :] = np.mean(x[start:end, :], axis=0)
+        for j in prange(x.shape[1]):
+            avg_series[i, j] = np.nanmean(x[start:end, j])
     
     return avg_series
 
 
+@jit(nopython=True, parallel=True, fastmath=True)
 def mov_std(x, window: int, clip: str = "right") -> np.ndarray:
     """Compute the moving average series of `x`.
     
@@ -57,7 +61,7 @@ def mov_std(x, window: int, clip: str = "right") -> np.ndarray:
     mov_std : ndarray of shape (n_samples, n_features)
         The moving standard deviation time series with same shape as `x`.
     """
-    x = np.array(x, dtype=np.longdouble)
+    x = np.asarray(x, dtype=np.double)
     if x.ndim == 1:
         x = x.reshape((-1, 1))
 
@@ -67,9 +71,10 @@ def mov_std(x, window: int, clip: str = "right") -> np.ndarray:
         left, right = right, left
     
     std_series = np.zeros_like(x)
-    for i in range(x.shape[0]):
+    for i in prange(x.shape[0]):
         start = i - left if i - left >= 0 else 0
         end = i + 1 + right
-        std_series[i, :] = np.std(x[start:end, :], axis=0)
+        for j in prange(x.shape[1]):
+            std_series[i, j] = np.nanstd(x[start:end, j])
     
     return std_series

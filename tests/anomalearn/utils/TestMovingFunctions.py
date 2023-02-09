@@ -30,6 +30,12 @@ class TestMovingFunctions(unittest.TestCase):
     def setUp(self) -> None:
         self.series1 = np.random.rand(100, 1)
         self.series2 = np.random.rand(100, 4)
+
+    def assert_equal_by_elem_numpy(self, arr1: np.ndarray, arr2: np.ndarray):
+        resolution = np.finfo(arr2.dtype).resolution
+        for i in range(arr1.shape[0]):
+            for j in range(arr1.shape[1]):
+                self.assertGreaterEqual(resolution, np.abs(arr1[i, j] - arr2[i, j]))
     
     def test_mov_avg(self):
         for series in [self.series1, self.series2]:
@@ -47,8 +53,9 @@ class TestMovingFunctions(unittest.TestCase):
                 mov_avg_right = mov_avg(series, window, "left")
                 self.assertTupleEqual(avg_left.shape, mov_avg_left.shape)
                 self.assertTupleEqual(avg_right.shape, mov_avg_right.shape)
-                np.testing.assert_array_equal(avg_left, mov_avg_left)
-                np.testing.assert_array_equal(avg_right, mov_avg_right)
+                
+                self.assert_equal_by_elem_numpy(avg_left, mov_avg_left)
+                self.assert_equal_by_elem_numpy(avg_right, mov_avg_right)
     
     def test_mov_std(self):
         for series in [self.series1, self.series2]:
@@ -66,11 +73,16 @@ class TestMovingFunctions(unittest.TestCase):
                 mov_std_right = mov_std(series, window, "left")
                 self.assertTupleEqual(std_left.shape, mov_std_left.shape)
                 self.assertTupleEqual(std_right.shape, mov_std_right.shape)
-                np.testing.assert_array_equal(std_left, mov_std_left)
-                np.testing.assert_array_equal(std_right, mov_std_right)
+                
+                self.assert_equal_by_elem_numpy(std_left, mov_std_left)
+                self.assert_equal_by_elem_numpy(std_right, mov_std_right)
                 
     def test_speed(self):
         big_series = np.random.rand(50000, 50)
+
+        # make numba compile the functions
+        _ = mov_avg(np.random.rand(100, 3), 1, "right")
+        _ = mov_std(np.random.rand(100, 3), 1, "right")
         
         for window in [2, 5, 10, 100, 1000]:
             start_time = time.time()

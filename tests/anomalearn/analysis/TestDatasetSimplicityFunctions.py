@@ -23,6 +23,9 @@ class TestDatasetSimplicityFunctions(unittest.TestCase):
         self.multi_series = np.array([np.arange(100), np.arange(100)]).transpose()
         self.multi_labels = np.zeros(self.multi_series.shape[0])
         
+        # the resolution at which two bounds are considered equal
+        self.resolution = 1e-15
+        
     def test_analyse_constant_simplicity(self):
         # the cases loaded from file should be such that:
         # case 0: score 0 (therefore diff=0, lower_bound=None, upper_bound=None)
@@ -94,8 +97,16 @@ class TestDatasetSimplicityFunctions(unittest.TestCase):
             self.assertEqual(exp_results_["mov_avg_score"], results_["mov_avg_score"])
             self.assertEqual(exp_results_["diff_order"], results_["diff_order"])
             self.assertEqual(exp_results_["window"], results_["window"])
-            self.assertListEqual(exp_results_["lower_bound"], results_["lower_bound"])
-            self.assertListEqual(exp_results_["upper_bound"], results_["upper_bound"])
+            for i, (el1, el2) in enumerate(zip(exp_results_["lower_bound"], results_["lower_bound"])):
+                if (el1 is None) != (el2 is None):
+                    raise AssertionError(f"Left at index {i} ({el1}) is not equal to right at index {i} ({el2})")
+                elif el1 is not None:
+                    self.assertGreaterEqual(self.resolution, el1 - el2)
+            for i, (el1, el2) in enumerate(zip(exp_results_["upper_bound"], results_["upper_bound"])):
+                if (el1 is None) != (el2 is None):
+                    raise AssertionError(f"Left at index {i} ({el1}) is not equal to right at index {i} ({el2})")
+                elif el1 is not None:
+                    self.assertGreaterEqual(self.resolution, el1 - el2)
         
         test_data = Path(__file__).parent / "test_data" / "mov_avg_simplicity"
         cases = sorted([e for e in test_data.glob("mov_avg_case_*[0-9].csv")], key=key_order)
@@ -146,8 +157,16 @@ class TestDatasetSimplicityFunctions(unittest.TestCase):
             self.assertEqual(exp_results_["mov_std_score"], results_["mov_std_score"])
             self.assertEqual(exp_results_["diff_order"], results_["diff_order"])
             self.assertEqual(exp_results_["window"], results_["window"])
-            self.assertListEqual(exp_results_["lower_bound"], results_["lower_bound"])
-            self.assertListEqual(exp_results_["upper_bound"], results_["upper_bound"])
+            for i, (el1, el2) in enumerate(zip(exp_results_["lower_bound"], results_["lower_bound"])):
+                if (el1 is None) != (el2 is None):
+                    raise AssertionError(f"Left at index {i} ({el1}) is not equal to right at index {i} ({el2})")
+                elif el1 is not None:
+                    self.assertGreaterEqual(self.resolution, el1 - el2)
+            for i, (el1, el2) in enumerate(zip(exp_results_["upper_bound"], results_["upper_bound"])):
+                if (el1 is None) != (el2 is None):
+                    raise AssertionError(f"Left at index {i} ({el1}) is not equal to right at index {i} ({el2})")
+                elif el1 is not None:
+                    self.assertGreaterEqual(self.resolution, el1 - el2)
         
         test_data = Path(__file__).parent / "test_data" / "mov_std_simplicity"
         cases = sorted([e for e in test_data.glob("mov_std_case_*[0-9].csv")], key=key_order)
