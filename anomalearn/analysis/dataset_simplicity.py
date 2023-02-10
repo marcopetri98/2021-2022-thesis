@@ -2,12 +2,14 @@ import math
 from typing import Callable, Any, Optional
 
 import numpy as np
+from numba import jit
 from sklearn.utils import check_array, check_X_y
 
 from ..exceptions import ClosedOpenRangeError
 from ..utils import true_positive_rate, true_negative_rate, mov_avg, mov_std
 
 
+@jit(nopython=True, parallel=True)
 def _find_constant_score(x: np.ndarray,
                          y: np.ndarray) -> dict:
     """Find the constant score on this dataset.
@@ -148,6 +150,7 @@ def _get_windows_to_try(window_range: tuple[int, int] | slice | list[int] = (2, 
         return windows
 
 
+@jit(nopython=True, parallel=True)
 def analyse_constant_simplicity(x, y, diff: int = 3) -> dict:
     """Analyses whether the series is constant simple and its score.
 
@@ -228,6 +231,7 @@ def analyse_constant_simplicity(x, y, diff: int = 3) -> dict:
     return best_result
 
 
+@jit(nopython=True, parallel=True)
 def _execute_movement_simplicity(x,
                                  y,
                                  diff: int,

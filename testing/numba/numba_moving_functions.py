@@ -11,6 +11,6 @@ if __name__ == "__main__":
         if method == "avg":
             _ = mov_avg(np.random.rand(100, 3), 2)
             mov_avg.parallel_diagnostics(level=4)
-        else:
+        elif method == "std":
             _ = mov_std(np.random.rand(100, 3), 2)
             mov_std.parallel_diagnostics(level=4)
