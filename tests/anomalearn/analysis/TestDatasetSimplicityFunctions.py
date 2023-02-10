@@ -192,6 +192,17 @@ class TestDatasetSimplicityFunctions(unittest.TestCase):
         values = big_series[sorted(set(big_series.columns).difference(["class", "timestamp", "is_training", "interpretation"]),
                                    key=lambda x: int(x.split("_")[-1]))].values
         labels = big_series["class"].values
+        values = np.ascontiguousarray(values, dtype=values.dtype)
+        labels = np.ascontiguousarray(labels, dtype=labels.dtype)
+
+        # compile the functions before testing speed
+        print("Compiling functions before testing the speed.", end="\n\n")
+        dummy_series = np.random.rand(100, 1)
+        dummy_labels = np.zeros(100)
+        dummy_labels[50] = 1
+        _ = analyse_constant_simplicity(dummy_series, dummy_labels)
+        _ = analyse_mov_avg_simplicity(dummy_series, dummy_labels)
+        _ = analyse_mov_std_simplicity(dummy_series, dummy_labels)
 
         print(f"Start to analyse constant simplicity of series of shape {values.shape}")
         start_time = time.time()

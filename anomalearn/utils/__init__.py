@@ -12,6 +12,7 @@ from .lists import concat_list_array
 
 from .metrics import true_positive_rate
 from .metrics import true_negative_rate
+from .metrics import binary_confusion_matrix
 
 from .moving_functions import mov_avg
 from .moving_functions import mov_std
