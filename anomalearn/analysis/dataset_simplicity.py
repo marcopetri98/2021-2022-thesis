@@ -379,6 +379,12 @@ def _check_analysis_inputs(x,
     x = np.array(x)
     y = np.array(y)
     
+    if len(np.unique(y)) != 2:
+        raise ValueError("The input labels are more than 2, there must be only "
+                         "two labels: 0 (negative) and 1 (positive).")
+    elif 0 not in y or 1 not in y:
+        raise ValueError("The input labels must be 0 (negative) and 1 (positive)")
+    
     return x, y, windows_to_try
 
 
@@ -515,6 +521,8 @@ def _fast_execute_movement_simplicity(x,
             
             if best_score == 1:
                 break
+    
+    # TODO: insert some type of warning when function cannot try any config
     
     return best_score, best_upper, best_lower, best_diff, best_window
 
@@ -810,7 +818,7 @@ def _fast_execute_mixed_score_simplicity(x,
                     pos = pos + mov_std_res[-2]
                     for e in pos:
                         pred[e[0]] = True
-            pred = pred
+            
             mixed_score = _true_positive_rate(y, pred)
     
     return *const_res, *mov_avg_res, *mov_std_res, mixed_score

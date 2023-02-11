@@ -38,4 +38,4 @@ class TSBenchmarkReader(TSReader):
             raise TypeError("benchmark_location must be a string")
 
         if not os.path.isdir(self.benchmark_location):
-            raise ValueError("benchmark_location must be a directory")
+            raise ValueError(f"benchmark_location must be a directory (it is {self.benchmark_location})")

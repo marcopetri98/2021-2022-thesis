@@ -120,7 +120,7 @@ class YahooS5Reader(TSBenchmarkReader):
                      file_format="csv",
                      pandas_args=pandas_args,
                      verbose=False)
-            
+        
         if verbose:
             print_step("Renaming columns with standard names [",
                        rts_config["Univariate"]["index_column"], ", ",
@@ -149,8 +149,8 @@ class YahooS5Reader(TSBenchmarkReader):
                     print_step("Converting timestamps into dates")
                     
                 dates = [datetime.datetime.fromtimestamp(e)
-                         for e in self.dataset[rts_config["Univariate"]["target_column"]]]
-                self.dataset[rts_config["Univariate"]["target_column"]] = pd.to_datetime(dates)
+                         for e in self.dataset[rts_config["Univariate"]["index_column"]]]
+                self.dataset[rts_config["Univariate"]["index_column"]] = pd.to_datetime(dates)
         
         if verbose:
             print_header("Dataset reading ended")

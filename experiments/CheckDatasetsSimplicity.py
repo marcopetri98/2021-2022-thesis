@@ -133,7 +133,7 @@ if __name__ == "__main__":
                      TSAConstAvgStd(max_window=MAX_WINDOW)]
 
     for idx, reader in enumerate(all_readers):
-        print(f"Reading time series using {all_datasets[idx]}")
+        print(f"Reading time series from {all_datasets[idx]}")
 
         for ser_idx, series in enumerate(reader):
             is_multivariate, series_cols = get_series_columns(series)
