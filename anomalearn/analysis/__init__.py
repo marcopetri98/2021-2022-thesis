@@ -7,3 +7,4 @@ from .TSDatasetAnalyser import TSDatasetAnalyser
 from .dataset_simplicity import analyse_constant_simplicity
 from .dataset_simplicity import analyse_mov_avg_simplicity
 from .dataset_simplicity import analyse_mov_std_simplicity
+from .dataset_simplicity import analyse_mixed_simplicity

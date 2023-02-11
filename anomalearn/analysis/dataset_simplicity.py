@@ -1,7 +1,6 @@
 import math
 from typing import Callable, Any, Optional
 
-import numba
 import numpy as np
 from numba import jit, prange
 from sklearn.utils import check_array, check_X_y
@@ -87,6 +86,30 @@ def _transpose_numpy(x: np.ndarray) -> np.ndarray:
         for j in prange(x.shape[1]):
             transposed_x[j, i] = x[i, j]
     return transposed_x
+
+
+@jit(nopython=True)
+def _diff_numpy(x: np.ndarray,
+                n: int) -> np.ndarray:
+    """Computes the array of differences.
+    
+    Parameters
+    ----------
+    x : ndarray of shape (n_samples, n_feature)
+        The array to be differentiated.
+    
+    n : int
+        The order of the differentiation.
+
+    Returns
+    -------
+    diff_array : ndarray
+        The differentiated array.
+    """
+    transposed_x = _transpose_numpy(x)
+    series = np.diff(transposed_x, n)
+    series = _transpose_numpy(series)
+    return series
 
 
 @jit(nopython=True, parallel=True)
@@ -252,9 +275,7 @@ def _analyse_constant_simplicity(x: np.ndarray,
         
         series = x
         if diff_order != 0:
-            transposed_x = _transpose_numpy(x)
-            series = np.diff(transposed_x, diff_order)
-            series = _transpose_numpy(series)
+            series = _diff_numpy(x, diff_order)
         
         score, upper, lower = _find_constant_score(series, y[diff_order:])
         if math.isnan(best_score):
@@ -276,6 +297,26 @@ def _analyse_constant_simplicity(x: np.ndarray,
 
 def _fix_numba_upper_lower(best_upper: list,
                            best_lower: list) -> tuple[list, list]:
+    """Converts float nan to None.
+    
+    Parameters
+    ----------
+    best_upper : list
+        The upper bounds computed by compiled functions.
+    
+    best_lower : list
+        The lower bounds computed by compiled functions.
+
+    Returns
+    -------
+    corrected_upper_bounds : list
+        The upper bound passed to the functions in which float nans are
+        converted to None.
+    
+    corrected_lower_bounds : list
+        The lower bound passed to the functions in which float nans are
+        converted to None.
+    """
     final_upper, final_lower = [], []
     for up, low in zip(best_upper, best_lower):
         if math.isnan(up):
@@ -288,6 +329,57 @@ def _fix_numba_upper_lower(best_upper: list,
         else:
             final_lower.append(low)
     return final_upper, final_lower
+
+
+def _check_analysis_inputs(x,
+                           y,
+                           diff: int,
+                           window_range: tuple[int, int] | slice | list[int] | None = None) -> tuple[np.ndarray, np.ndarray, list[int] | None]:
+    """Checks that inputs are ok and process them.
+    
+    Parameters
+    ----------
+    x : array-like of shape (n_samples, n_features)
+        The time series to be analysed passed to analysis functions.
+
+    y : array-like of shape (n_samples,)
+        The labels of the time series passed to analysis functions.
+
+    diff : int
+        The diff parameter passed to the analysis functions.
+    
+    window_range : tuple[int, int] or slice or list[int], default=None
+        The window range passed to the analysis functions. If None, it means
+        that the windows to try must not be computed and None will be returned.
+
+    Returns
+    -------
+    new_x : ndarray
+        The numpy ndarray of the input x.
+    
+    new_y : ndarray
+        The numpy ndarray of the input y.
+    
+    windows_to_try : list[int]
+        The list of all windows to try. None if `window_range` is None.
+    """
+    if not isinstance(diff, int):
+        raise TypeError("diff must be an integer")
+    
+    if diff < 0:
+        raise ClosedOpenRangeError(0, np.inf, diff)
+    
+    if window_range is not None:
+        windows_to_try = _get_windows_to_try(window_range)
+    else:
+        windows_to_try = None
+    
+    check_array(x)
+    check_X_y(x, y)
+    x = np.array(x)
+    y = np.array(y)
+    
+    return x, y, windows_to_try
 
 
 def analyse_constant_simplicity(x, y, diff: int = 3) -> dict:
@@ -334,17 +426,7 @@ def analyse_constant_simplicity(x, y, diff: int = 3) -> dict:
         None, a point is labelled anomalous if any feature of that point is
         greater or lower than found bounds.
     """
-    if not isinstance(diff, int):
-        raise TypeError("diff must be an integer")
-    
-    if diff < 0:
-        raise ClosedOpenRangeError(0, np.inf, diff)
-
-    check_array(x)
-    check_X_y(x, y)
-    x = np.array(x)
-    y = np.array(y)
-
+    x, y, _ = _check_analysis_inputs(x, y, diff)
     best_score, best_upper, best_lower, best_diff = _analyse_constant_simplicity(x, y, diff)
     final_upper, final_lower = _fix_numba_upper_lower(best_upper, best_lower)
     
@@ -411,9 +493,7 @@ def _fast_execute_movement_simplicity(x,
         series = x
         labels = y
         if diff_order != 0:
-            transposed_x = _transpose_numpy(x)
-            series = np.diff(transposed_x, diff_order)
-            series = _transpose_numpy(series)
+            series = _diff_numpy(x, diff_order)
             labels = y[diff_order:]
         
         for window in windows_to_try:
@@ -490,22 +570,10 @@ def _execute_movement_simplicity(x,
         TNR at 1. When bounds are not None, a point is labelled anomalous if
         any feature of that point is greater or lower than found bounds.
     """
-    if not isinstance(diff, int):
-        raise TypeError("diff must be an integer")
-    elif not isinstance(statistical_movement, Callable):
-        raise TypeError(
-            "statistical_movement must be Callable[[Any, int, str], np.ndarray]")
+    if not isinstance(statistical_movement, Callable):
+        raise TypeError("statistical_movement must be Callable[[Any, int, str], np.ndarray]")
     
-    if diff < 0:
-        raise ClosedOpenRangeError(0, np.inf, diff)
-    
-    windows_to_try = _get_windows_to_try(window_range)
-    
-    check_array(x)
-    check_X_y(x, y)
-    x = np.array(x)
-    y = np.array(y)
-    
+    x, y, windows_to_try = _check_analysis_inputs(x, y, diff, window_range)
     best_score, best_upper, best_lower, best_diff, best_window = _fast_execute_movement_simplicity(x, y, diff, windows_to_try, statistical_movement)
     final_upper, final_lower = _fix_numba_upper_lower(best_upper, best_lower)
     
@@ -651,3 +719,178 @@ def analyse_mov_std_simplicity(x,
     result["mov_std_score"] = result["movement_score"]
     del result["movement_score"]
     return result
+
+
+@jit(nopython=True, parallel=True)
+def _fast_execute_mixed_score_simplicity(x,
+                                         y,
+                                         diff: int,
+                                         windows_to_try: list[int]) -> tuple:
+    """Computes the mixed simplicity score.
+
+    Parameters
+    ----------
+    x : array-like of shape (n_samples, n_features)
+        Same as `analyse_mixed_simplicity`.
+
+    y : array-like of shape (n_samples,)
+        Same as `analyse_mixed_simplicity`.
+
+    diff : int, default=3
+        Same as `analyse_mixed_simplicity`.
+
+    windows_to_try : list[int]
+        The windows to try to compute the movement simplicity score.
+
+    Returns
+    -------
+    results : tuple
+        A tuple with the results of the numba analyse constant simplicity as
+        first elements, next the results of fast execute movement simplicity
+        for avg, next the fast execute movement simplicity for std, then the
+        mixed score.
+    """
+    const_res = _analyse_constant_simplicity(x, y, diff)
+    mov_avg_res = _fast_execute_movement_simplicity(x, y, diff, windows_to_try, mov_avg)
+    mov_std_res = _fast_execute_movement_simplicity(x, y, diff, windows_to_try, mov_std)
+    
+    mixed_score = 0
+    if const_res[0] == mov_avg_res[0] and mov_avg_res[0] == mov_std_res[0] and const_res[0] == 0:
+        # if all are 0 also mixed is 0
+        mixed_score = 0
+    else:
+        # at least one of them is not 0
+        if const_res[0] == 1 or mov_avg_res[0] == 1 or mov_std_res[0] == 1:
+            # if at least one reaches perfection mixed is perfect
+            mixed_score = 1
+        else:
+            # scores themselves are between 0 and 1, mixed must be computed
+            mov_avg_input = x
+            if mov_avg_res[-2] != 0:
+                mov_avg_input = _diff_numpy(x, mov_avg_res[-2])
+            mov_avg_series = mov_avg(mov_avg_input, mov_avg_res[-1])
+            
+            mov_std_input = x
+            if mov_std_res[-2] != 0:
+                mov_std_input = _diff_numpy(x, mov_std_res[-2])
+            mov_std_series = mov_std(mov_std_input, mov_std_res[-1])
+            
+            pred = np.full(y.shape, False, dtype=np.bool_)
+            for f in prange(x.shape[1]):
+                # process constant labels
+                if not math.isnan(const_res[1][f]):
+                    pos = np.argwhere(x[:, f] >= const_res[1][f])
+                    for e in pos:
+                        pred[e[0]] = True
+                if not math.isnan(const_res[2][f]):
+                    pos = np.argwhere(x[:, f] <= const_res[2][f])
+                    for e in pos:
+                        pred[e[0]] = True
+                
+                # process moving average labels
+                if not math.isnan(mov_avg_res[1][f]):
+                    pos = np.argwhere(mov_avg_series[:, f] >= mov_avg_res[1][f])
+                    pos = pos + mov_avg_res[-2]
+                    for e in pos:
+                        pred[e[0]] = True
+                if not math.isnan(mov_avg_res[2][f]):
+                    pos = np.argwhere(mov_avg_series[:, f] <= mov_avg_res[2][f])
+                    pos = pos + mov_avg_res[-2]
+                    for e in pos:
+                        pred[e[0]] = True
+                
+                # process moving standard deviation labels
+                if not math.isnan(mov_std_res[1][f]):
+                    pos = np.argwhere(mov_std_series[:, f] >= mov_std_res[1][f])
+                    pos = pos + mov_std_res[-2]
+                    for e in pos:
+                        pred[e[0]] = True
+                if not math.isnan(mov_std_res[2][f]):
+                    pos = np.argwhere(mov_std_series[:, f] <= mov_std_res[2][f])
+                    pos = pos + mov_std_res[-2]
+                    for e in pos:
+                        pred[e[0]] = True
+            pred = pred
+            mixed_score = _true_positive_rate(y, pred)
+    
+    return *const_res, *mov_avg_res, *mov_std_res, mixed_score
+
+
+def analyse_mixed_simplicity(x,
+                             y,
+                             diff: int = 3,
+                             window_range: tuple[int, int] | slice | list[int] = (2, 300)) -> dict:
+    """Analyses if the time series is complexity mixing constant, moving average and moving standard deviation scores.
+    
+    A dataset may be constant simple, moving average simple or moving standard
+    deviation simple. However, they may also be partially simple in each of
+    these cases.
+    
+    A dataset is mixed simple if combining the previous three simplicity scores
+    it is simple. The score mixed score is defined such that it is 1 when the
+    dataset is mixed simple. It is 0 when no anomalies can be separated from the
+    normal points without producing false positives. Therefore, the higher the
+    score, the higher the number of anomalies that can be found just by placing
+    a constant on the moving average series. The score is the True Positive Rate
+    (TPR) at True Negative Rate (TNR) equal to 1.
+    
+    The analysis first compute the constant score, moving average score and
+    standard deviation score. Once these scores are computed, they are mixed to
+    produce the final set of discovered anomalies such that if an anomaly can be
+    discovered by at least one approach, it is discovered also by the mixed
+    approach. Therefore, the mixed score is always at least equal to the highest
+    and always less than or equal to 1.
+    
+    Parameters
+    ----------
+    x : array-like of shape (n_samples, n_features)
+        The time series to be analysed.
+        
+    y : array-like of shape (n_samples,)
+        The labels of the time series.
+        
+    diff : int, default=3
+        It is the maximum number of times the series might be differenced to
+        find constant simplicity. If constant simplicity is found at
+        differencing value of `i`, higher values will not be checked. If it
+        is passed 0, the series will never be differenced.
+        
+    window_range : tuple[int, int] or slice or list[int], default=(2, 200)
+        It is the range in which the window will be searched, the slice object
+        describing the range and the step to be used to search windows or a list
+        of windows to try. Theoretically, all window values (between 0 and the
+        length of the time series) should be tried to verify whether a dataset
+        is moving average simple. This parameter limits the search into a
+        specific interval for efficiency reasons and because over certain window
+        dimension may become a useless search.
+
+    Returns
+    -------
+    analysis_result : dict
+        Dictionary with the results of the analysis. The dictionary has the
+        following keys: `mixed_score`, `const_result`, `mov_avg_result` and
+        `mov_std_result`. The `mixed_score` key is the key of the mixed score of
+        the analysed dataset. The `const_result` key is the key of the constant
+        score analysis' results. The `mov_avg_result` key is the key of the
+        moving average score analysis' results. The `mov_std_result` is the key
+        of the moving standard deviation analysis' results.
+    """
+    x, y, windows_to_try = _check_analysis_inputs(x, y, diff, window_range)
+    results = _fast_execute_mixed_score_simplicity(x, y, diff, windows_to_try)
+    
+    const_score, const_upper, const_lower, const_diff = results[0], results[1], results[2], results[3]
+    const_upper, const_lower = _fix_numba_upper_lower(const_upper, const_lower)
+    
+    avg_score, avg_upper, avg_lower, avg_diff, avg_window = results[4], results[5], results[6], results[7], results[8]
+    avg_upper, avg_lower = _fix_numba_upper_lower(avg_upper, avg_lower)
+    
+    std_score, std_upper, std_lower, std_diff, std_window = results[9], results[10], results[11], results[12], results[13]
+    std_upper, std_lower = _fix_numba_upper_lower(std_upper, std_lower)
+    
+    mixed_score = results[-1]
+    
+    const_result = {"constant_score": const_score, "upper_bound": const_upper, "lower_bound": const_lower, "diff_order": const_diff}
+    avg_result = {"mov_avg_score": avg_score, "upper_bound": avg_upper, "lower_bound": avg_lower, "diff_order": avg_diff, "window": avg_window}
+    std_result = {"mov_std_score": std_score, "upper_bound": std_upper, "lower_bound": std_lower, "diff_order": std_diff, "window": std_window}
+    
+    return {"mixed_score": mixed_score, "const_result": const_result, "mov_avg_result": avg_result, "mov_std_result": std_result}

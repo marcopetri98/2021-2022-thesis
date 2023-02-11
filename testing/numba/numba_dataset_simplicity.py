@@ -1,6 +1,6 @@
 import numpy as np
 
-from anomalearn.analysis.dataset_simplicity import _analyse_constant_simplicity, _find_constant_score, _fast_execute_movement_simplicity, _find_best_constants
+from anomalearn.analysis.dataset_simplicity import _analyse_constant_simplicity, _find_constant_score, _fast_execute_movement_simplicity, _find_best_constants, _fast_execute_mixed_score_simplicity
 from anomalearn.utils import mov_avg
 
 if __name__ == "__main__":
@@ -8,13 +8,14 @@ if __name__ == "__main__":
     
     welcome_msg = "To diagnose the parallelism obtained in functions: " \
                   "_analyse_constant_simplicity, _find_constant_score, " \
-                  "_fast_execute_movement_simplicity, _find_best_constants you " \
-                  "can insert as commands analyse, find, movement, constant " \
+                  "_fast_execute_movement_simplicity, _find_best_constants, " \
+                  "_fast_execute_mixed_score_simplicity you  can insert as " \
+                  "commands analyse, find, movement, constant, mixed " \
                   "respectively."
     print(welcome_msg, end="\n\n")
     
-    while method is None or method not in ["analyse", "find", "movement", "constant"]:
-        method = input("Which function do you want to diagnose in terms of parallelism? [analyse/find/movement/constant] ")
+    while method is None or method not in ["analyse", "find", "movement", "constant", "mixed"]:
+        method = input("Which function do you want to diagnose in terms of parallelism? [analyse/find/movement/constant/mixed] ")
 
         dummy_series, dummy_labels = np.random.rand(100, 3), np.zeros(100)
         dummy_labels[50] = 1
@@ -36,3 +37,6 @@ if __name__ == "__main__":
         elif method == "movement":
             _ = _fast_execute_movement_simplicity(dummy_series, dummy_labels, 1, [2, 3], mov_avg)
             print("_fast_execute_movement_simplicity is not parallel")
+        elif method == "mixed":
+            _ = _fast_execute_mixed_score_simplicity(dummy_series, dummy_labels, 1, [2, 3])
+            _fast_execute_mixed_score_simplicity.parallel_diagnostics(level=4)
