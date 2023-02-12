@@ -1,3 +1,4 @@
+import math
 import time
 from pathlib import Path
 
@@ -35,8 +36,8 @@ if __name__ == "__main__":
 
     # create lists of readers to iterate over them
     light_readers = [yahoo_reader, ucr_reader, smd_reader, nab_reader, mgab_reader,
-                     ghl_reader, exathlon_reader, nasa_msl_smap]
-    light_names = ["Yahoo", "UCR", "SMD", "NAB", "MGAB", "GHL", "Exathlon", "NASA"]
+                     ghl_reader, nasa_msl_smap, exathlon_reader]
+    light_names = ["Yahoo", "UCR", "SMD", "NAB", "MGAB", "GHL", "NASA", "Exathlon"]
     heavy_readers = [kitsune_reader]
     heavy_names = ["Kitsune"]
 
@@ -64,44 +65,53 @@ if __name__ == "__main__":
         print(f"Reading time series using {all_datasets[idx]}...", end="\n\n")
         
         for ser_idx, series in enumerate(reader):
-            print(f"Reading series number {ser_idx + 1}...")
             is_multivariate, series_cols = get_series_columns(series)
             row_idx = ser_idx + sum([len(all_readers[i]) for i in range(idx)]) if idx > 0 else ser_idx
 
-            print("Getting the labels and the time series from dataframe...")
-            time_series = series[series.columns.intersection(series_cols)].values
-            time_series_labels = series[rts_config["Univariate"]["target_column"]].values
-            
-            if time_series.ndim == 1:
-                time_series = time_series.reshape((-1, 1))
-            
-            time_series = np.ascontiguousarray(time_series, dtype=np.double)
-            time_series_labels = np.ascontiguousarray(time_series_labels, dtype=np.int32)
-            
-            if len(np.unique(time_series_labels)) == 2:
-                print("Analysing the mixed simplicity score...")
-                start_time = time.time()
-                mixed_analysis = analyse_mixed_simplicity(time_series, time_series_labels)
-                end_time = time.time()
-                print(f"Time series analysed in {end_time - start_time:.2f}s")
-                print(f"The dataset MIXED SCORE IS: {mixed_analysis['mixed_score']}")
-                print(f"Saving current results to file...", end="\n\n")
+            if isinstance(results_df.loc[row_idx, "Dataset"], float) and math.isnan(results_df.loc[row_idx, "Dataset"]):
+                print(f"Reading series number {ser_idx + 1}...")
+                print("Getting the labels and the time series from dataframe...")
                 
-                results_df.loc[row_idx, "Dataset"] = all_datasets[idx]
-                results_df.loc[row_idx, "Mixed score"] = mixed_analysis["mixed_score"]
-                results_df.loc[row_idx, "Constant score"] = mixed_analysis["const_result"]["constant_score"]
-                results_df.loc[row_idx, "Moving average score"] = mixed_analysis["mov_avg_result"]["mov_avg_score"]
-                results_df.loc[row_idx, "Moving standard deviation score"] = mixed_analysis["mov_std_result"]["mov_std_score"]
-                results_df.loc[row_idx, "Analysis result dict"] = str(mixed_analysis)
-            else:
-                print("The time series has only one label...")
-                print("Nothing can be computed with such a configuration", end="\n\n")
+                if all_datasets[idx] == "GHL":
+                    time_series = series[series.columns.intersection(series_cols)].values
+                    l1 = np.asarray(series["class_0"].values, dtype=np.int32)
+                    l2 = np.asarray(series["class_1"].values, dtype=np.int32)
+                    l3 = np.asarray(series["class_2"].values, dtype=np.int32)
+                    time_series_labels = l1 | l2 | l3
+                else:
+                    time_series = series[series.columns.intersection(series_cols)].values
+                    time_series_labels = series[rts_config["Univariate"]["target_column"]].values
                 
-                results_df.loc[row_idx, "Dataset"] = all_datasets[idx]
-                results_df.loc[row_idx, "Mixed score"] = None
-                results_df.loc[row_idx, "Constant score"] = None
-                results_df.loc[row_idx, "Moving average score"] = None
-                results_df.loc[row_idx, "Moving standard deviation score"] = None
-                results_df.loc[row_idx, "Analysis result dict"] = None
-            
-            results_df.to_csv(output_file)
+                if time_series.ndim == 1:
+                    time_series = time_series.reshape((-1, 1))
+                
+                time_series = np.ascontiguousarray(time_series, dtype=np.double)
+                time_series_labels = np.ascontiguousarray(time_series_labels, dtype=np.int32)
+                
+                if len(np.unique(time_series_labels)) == 2:
+                    print("Analysing the mixed simplicity score...")
+                    start_time = time.time()
+                    mixed_analysis = analyse_mixed_simplicity(time_series, time_series_labels)
+                    end_time = time.time()
+                    print(f"Time series analysed in {end_time - start_time:.2f}s")
+                    print(f"The dataset MIXED SCORE IS: {mixed_analysis['mixed_score']}")
+                    print(f"Saving current results to file...", end="\n\n")
+                    
+                    results_df.loc[row_idx, "Dataset"] = all_datasets[idx]
+                    results_df.loc[row_idx, "Mixed score"] = mixed_analysis["mixed_score"]
+                    results_df.loc[row_idx, "Constant score"] = mixed_analysis["const_result"]["constant_score"]
+                    results_df.loc[row_idx, "Moving average score"] = mixed_analysis["mov_avg_result"]["mov_avg_score"]
+                    results_df.loc[row_idx, "Moving standard deviation score"] = mixed_analysis["mov_std_result"]["mov_std_score"]
+                    results_df.loc[row_idx, "Analysis result dict"] = str(mixed_analysis)
+                else:
+                    print("The time series has only one label...")
+                    print("Nothing can be computed with such a configuration", end="\n\n")
+                    
+                    results_df.loc[row_idx, "Dataset"] = all_datasets[idx]
+                    results_df.loc[row_idx, "Mixed score"] = None
+                    results_df.loc[row_idx, "Constant score"] = None
+                    results_df.loc[row_idx, "Moving average score"] = None
+                    results_df.loc[row_idx, "Moving standard deviation score"] = None
+                    results_df.loc[row_idx, "Analysis result dict"] = None
+                
+                results_df.to_csv(output_file)
