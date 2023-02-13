@@ -30,8 +30,8 @@ def _check_binary_input(y_true,
         If the arrays in input are not 1D, if they have more than 2 labels or
         if the labels are not 0 and 1.
     """
-    check_array_1d(y_true, "y_true")
-    check_array_1d(y_pred, "y_pred")
+    check_array_1d(y_true, array_name="y_true")
+    check_array_1d(y_pred, array_name="y_pred")
 
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)

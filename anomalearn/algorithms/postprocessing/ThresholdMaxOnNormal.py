@@ -104,7 +104,7 @@ class ThresholdMaxOnNormal(IParametric, ITransformer, AbstractPipelineSavableLay
         -------
         None
         """
-        check_array_1d(x, "x", "allow-nan")
+        check_array_1d(x, "allow-nan")
         scores = np.ma.array(x, mask=np.isnan(x))
         self._threshold = np.ma.max(scores)
     
@@ -126,7 +126,7 @@ class ThresholdMaxOnNormal(IParametric, ITransformer, AbstractPipelineSavableLay
         ValueError
             If the transform is called before the fit has been called.
         """
-        check_array_1d(x, "x", "allow-nan")
+        check_array_1d(x, "allow-nan")
         x = np.ma.array(x, mask=np.isnan(x))
         
         if self._threshold is None:

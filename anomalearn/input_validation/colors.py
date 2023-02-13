@@ -6,7 +6,7 @@ def is_matplotlib_color(color) -> bool:
 
     Parameters
     ----------
-    color
+    color : color or list[color]
         A matplotlib color or a list of matplotlib colors.
 
     Returns

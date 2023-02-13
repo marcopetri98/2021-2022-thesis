@@ -1,6 +1,3 @@
-from typing import Union
-
-
 def is_var_of_type(variable,
                    allowed_types: list) -> bool:
     """Checks if a variable is of at least one of the specified types
@@ -27,9 +24,9 @@ def is_var_of_type(variable,
     return False
 
 
-def check_attributes_exists(estimator,
-                            attributes: Union[str, list[str]]) -> None:
-    """Checks is the attributes are defined in estimator.
+def check_attributes_exist(estimator,
+                           attributes: str | list[str]) -> None:
+    """Checks if the attributes are defined in estimator.
 
     Parameters
     ----------
@@ -42,6 +39,11 @@ def check_attributes_exists(estimator,
     Returns
     -------
     None
+    
+    Raises
+    ------
+    ValueError
+        If at least one of the attributes is not defined in the estimator.
     """
     if isinstance(attributes, str):
         if attributes not in estimator.__dict__.keys():
@@ -56,7 +58,7 @@ def check_attributes_exists(estimator,
 
 def check_not_default_attributes(estimator,
                                  attributes: dict,
-                                 error: str = "Train the model before calling this method") -> None:
+                                 error: str = "Attributes have default values") -> None:
     """Checks if the attributes have the default not trained value.
     
     It raises an exception if at least one of the attribute has the default not
@@ -77,16 +79,21 @@ def check_not_default_attributes(estimator,
     Returns
     -------
     None
+    
+    Raises
+    ------
+    ValueError
+        If at least one of the specified attributes has the default value.
     """
     for key, value in attributes.items():
-        check_attributes_exists(estimator, key)
+        check_attributes_exist(estimator, key)
         attr_val = getattr(estimator, key)
         if value is None:
             if attr_val is None:
-                raise RuntimeError(error)
+                raise ValueError(error)
         else:
             if attr_val == value:
-                raise RuntimeError(error)
+                raise ValueError(error)
 
 
 def check_argument_types(arguments: list,
@@ -118,7 +125,7 @@ def check_argument_types(arguments: list,
         has wrong type.
         
     ValueError
-        If variables have wrong values.
+        If the lists have different lengths.
     """
     # check type errors
     if not isinstance(arguments, list):

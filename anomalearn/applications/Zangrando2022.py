@@ -13,7 +13,7 @@ from ..utils import print_header, print_step
 
 
 class Zangrando2022Loader(ILoader):
-    """Data loader for the paper Zangrando 2022.
+    """Data loader for the paper Zangrando 2022 (https://doi.org/10.1186/s42162-022-00230-7).
 
     The paper implemented in this class is "Anomaly detection in quasi-periodic
     energy consumption data series: a comparison of algorithms" by the authors
