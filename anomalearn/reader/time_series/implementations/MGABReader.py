@@ -88,7 +88,7 @@ class MGABReader(TSBenchmarkReader):
                        rts_config["Univariate"]["index_column"], ", ",
                        rts_config["Univariate"]["value_column"], "]")
 
-        self.dataset.rename(columns={
+        self._dataset.rename(columns={
                                 "Unnamed: 0": rts_config["Univariate"]["index_column"],
                                 "value": rts_config["Univariate"]["value_column"],
                                 "is_anomaly": rts_config["Univariate"]["target_column"]

@@ -90,7 +90,6 @@ class KitsuneReader(TSBenchmarkReader):
             print_step(f"Reading {dataset_name} dataset located in folder {dataset_path}")
             print_step("Reading raw data and raw labels")
             
-        print(os.path.join(dataset_path, dataset_name + "_dataset.csv"))
         # read raw data and labels
         dataset = pd.read_csv(os.path.join(dataset_path, dataset_name + "_dataset.csv"),
                               header=None,
@@ -127,7 +126,7 @@ class KitsuneReader(TSBenchmarkReader):
         dataset.insert(len(dataset.columns),
                        rts_config["Multivariate"]["target_column"],
                        labels)
-        self.dataset = dataset.copy()
+        self._dataset = dataset.copy()
         
         if verbose:
             print_header("Dataset reading ended")

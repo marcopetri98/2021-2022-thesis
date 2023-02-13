@@ -47,6 +47,11 @@ class IDataMultipleReader(ABC):
         -------
         IDataMultipleReader
             Instance of itself to be able to chain calls.
+            
+        Raises
+        ------
+        NotImplementedError
+            If the file format is not supported.
         """
         pass
     
@@ -66,6 +71,11 @@ class IDataMultipleReader(ABC):
         -------
         dataframes : list[DataFrame]
             All the dataframes in the same order specified with read_multiple.
+            
+        Raises
+        ------
+        ValueError
+            If the datasets have not been read.
         """
         pass
     
@@ -88,6 +98,14 @@ class IDataMultipleReader(ABC):
         -------
         dataframe : DataFrame
             The ith dataframe in the order specified with read_multiple.
+            
+        Raises
+        ------
+        IndexError
+            If the index is out of bounds.
+        
+        ValueError
+            If the datasets have not been read.
         """
         pass
     

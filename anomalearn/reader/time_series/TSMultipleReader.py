@@ -19,7 +19,7 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
     def __init__(self):
         super().__init__()
         
-        self.all_dataframes: list | None = None
+        self._all_dataframes: list | None = None
         
     def read_multiple(self, paths: list[str],
                       files_format: str = "csv",
@@ -30,7 +30,7 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
         if verbose:
             print_header("Start reading all datasets")
             
-        self.all_dataframes = list()
+        self._all_dataframes = list()
         for idx, path in enumerate(paths):
             if verbose:
                 print_step(f"Start to read the {idx}th dataset")
@@ -39,7 +39,7 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
                       file_format=files_format,
                       pandas_args=pandas_args,
                       verbose=False)
-            self.all_dataframes.append(self.dataset)
+            self._all_dataframes.append(self._dataset)
             
             if verbose:
                 print_step(f"Finished to read the {idx}th dataset")
@@ -51,7 +51,7 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
             
         return self
     
-    def select_dataframe(self, pos: int) -> None:
+    def select_dataframe(self, pos: int) -> TSMultipleReader:
         """Selects the dataset to be used.
         
         Parameters
@@ -61,23 +61,29 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
 
         Returns
         -------
-        None
-        """
-        if pos <= 0 or pos >= len(self.all_dataframes):
-            raise IndexError(f"There are {len(self.all_dataframes)} dataframes")
+        self
+            Instance to itself to allow call chaining.
+            
+        Raises
+        ------
+        IndexError
+            If the index is out of bounds.
         
-        self.dataset = self.all_dataframes[pos]
+        ValueError
+            If the datasets have not been read.
+        """
+        if self._all_dataframes is None:
+            raise ValueError("read datasets before selecting them")
+        
+        self._dataset = self._all_dataframes[pos]
+        return self
     
     def get_all_dataframes(self) -> list[pd.DataFrame]:
-        check_not_default_attributes(self, {"all_dataframes": None})
-        return self.all_dataframes.copy()
+        check_not_default_attributes(self, {"_all_dataframes": None})
+        return [e.copy(deep=True) for e in self._all_dataframes]
     
     def get_ith_dataframe(self, pos: int,
                           *args,
                           **kwargs) -> pd.DataFrame:
-        check_not_default_attributes(self, {"all_dataframes": None})
-        
-        if pos <= 0 or pos >= len(self.all_dataframes):
-            raise IndexError(f"There are {len(self.all_dataframes)} dataframes")
-        
-        return self.all_dataframes[pos].copy()
+        check_not_default_attributes(self, {"_all_dataframes": None})
+        return self._all_dataframes[pos].copy(deep=True)

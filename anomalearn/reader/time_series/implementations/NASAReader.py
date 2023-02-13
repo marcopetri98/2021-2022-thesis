@@ -42,11 +42,11 @@ class NASAReader(TSReader):
     def __init__(self, anomalies_path: str):
         super().__init__()
 
-        self.anomalies_path = anomalies_path
+        self._anomalies_path = anomalies_path
 
         self.__check_parameters()
 
-        self.anomalies_df = pd.read_csv(self.anomalies_path)
+        self._anomalies_df = pd.read_csv(self._anomalies_path)
 
     def __iter__(self):
         return NASAIterator(self)
@@ -96,23 +96,23 @@ class NASAReader(TSReader):
             raise TypeError("dataset_folder must be a valid path to a dir")
 
         if isinstance(path, int):
-            path = self.anomalies_df.iloc[path]["chan_id"]
+            path = self._anomalies_df.iloc[path]["chan_id"]
 
         if dataset_folder == "same-as-labels":
-            dataset_folder = Path(self.anomalies_path).parent
+            dataset_folder = Path(self._anomalies_path).parent
 
-        if path not in self.anomalies_df["chan_id"].tolist():
+        if path not in self._anomalies_df["chan_id"].tolist():
             raise ValueError("path must be a valid channel name")
         elif not {"train", "test"}.issubset(os.listdir(dataset_folder)):
             raise ValueError("train and test folders are not present, pass a "
                              "valid dataset folder")
 
-        row_selector = self.anomalies_df["chan_id"] == path
+        row_selector = self._anomalies_df["chan_id"] == path
 
         if verbose:
             print_header("Start reading dataset")
             print_step(f"The selected dataset is {path} of "
-                       f"{self.anomalies_df[row_selector]['spacecraft']}")
+                       f"{self._anomalies_df[row_selector]['spacecraft']}")
 
         # if the user specified one of the channels build the path
         train_path = os.path.join(dataset_folder, "train", path + ".npy")
@@ -129,7 +129,7 @@ class NASAReader(TSReader):
 
         train_labels = np.zeros(train_series.shape[0])
         test_labels = np.zeros(test_series.shape[0])
-        anomalies = self.anomalies_df.loc[row_selector]["anomaly_sequences"]
+        anomalies = self._anomalies_df.loc[row_selector]["anomaly_sequences"]
         anomalies = ast.literal_eval(anomalies.iloc[0])
         for sequence in anomalies:
             test_labels[sequence[0]:sequence[1] + 1] = 1
@@ -159,7 +159,7 @@ class NASAReader(TSReader):
                                    targets.reshape(-1, 1),
                                    is_training.reshape(-1, 1)),
                                   axis=1)
-        self.dataset = pd.DataFrame(all_data, columns=all_columns)
+        self._dataset = pd.DataFrame(all_data, columns=all_columns)
 
         if verbose:
             print_header("Ended dataset reading")
@@ -167,9 +167,9 @@ class NASAReader(TSReader):
         return self
 
     def __check_parameters(self):
-        if not isinstance(self.anomalies_path, str):
+        if not isinstance(self._anomalies_path, str):
             raise TypeError("anomalies_path must be a string of a path to a csv"
                             " file")
 
-        if not os.path.isfile(self.anomalies_path):
+        if not os.path.isfile(self._anomalies_path):
             raise ValueError("anomalies_path must be a path to a csv file")

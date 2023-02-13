@@ -25,7 +25,7 @@ class IDataReader(ABC):
         Parameters
         ----------
         path
-            It is an  representing the location on disk of the dataset to
+            It is a path representing the location on disk of the dataset to
             read.
         
         file_format : ["csv", "json"]
@@ -50,6 +50,11 @@ class IDataReader(ABC):
         -------
         IDataReader
             Instance of itself to be able to chain calls.
+            
+        Raises
+        ------
+        NotImplementedError
+            If the file format is not supported.
         """
         pass
     
@@ -69,5 +74,10 @@ class IDataReader(ABC):
         -------
         dataframe : DataFrame
             The dataframe of the dataset.
+            
+        Raises
+        ------
+        ValueError
+            If the dataset has not been read.
         """
         pass

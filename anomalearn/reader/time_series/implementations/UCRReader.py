@@ -128,11 +128,11 @@ class UCRReader(TSBenchmarkReader):
         if verbose:
             print_step("Building the dataframe")
 
-        self.dataset = pd.DataFrame(all_data,
-                                    columns=[rts_config["Univariate"]["index_column"],
-                                             rts_config["Univariate"]["value_column"],
-                                             rts_config["Univariate"]["target_column"],
-                                             rts_config["Univariate"]["is_training"]])
+        self._dataset = pd.DataFrame(all_data,
+                                     columns=[rts_config["Univariate"]["index_column"],
+                                              rts_config["Univariate"]["value_column"],
+                                              rts_config["Univariate"]["target_column"],
+                                              rts_config["Univariate"]["is_training"]])
 
         if verbose:
             print_header("Dataset reading ended")

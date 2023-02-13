@@ -42,7 +42,7 @@ class ExathlonReader(TSBenchmarkReader):
                  mode: str = "all"):
         super().__init__(benchmark_location=benchmark_location)
 
-        self.mode = mode
+        self._mode = mode
 
         self.__check_parameters()
 
@@ -83,14 +83,14 @@ class ExathlonReader(TSBenchmarkReader):
         -------
         None
         """
-        self.mode = mode
+        self._mode = mode
         self.__check_parameters()
 
     def __iter__(self):
         return ExathlonIterator(self)
 
     def __len__(self):
-        match self.mode:
+        match self._mode:
             case "all":
                 return len(self._files_paths)
 
@@ -140,7 +140,7 @@ class ExathlonReader(TSBenchmarkReader):
         if not isinstance(path, int) and not isinstance(path, str):
             raise TypeError("path must be either int or string")
         elif isinstance(path, int) and not 0 <= path < len(self):
-            raise ValueError(f"there are {len(self)} series with mode {self.mode}")
+            raise ValueError(f"there are {len(self)} series with mode {self._mode}")
         elif not isinstance(full_rename, bool):
             raise TypeError("full_rename must be boolean")
         elif isinstance(path, str) and not any([path in e for e in self._files_paths]):
@@ -155,7 +155,7 @@ class ExathlonReader(TSBenchmarkReader):
             path_idx = [path in e for e in self._files_paths].index(True)
             path = self._files_paths[path_idx]
         else:
-            match self.mode:
+            match self._mode:
                 case "all":
                     if path < len(self._undisturbed_paths):
                         path = self._undisturbed_paths[path]
@@ -228,7 +228,7 @@ class ExathlonReader(TSBenchmarkReader):
                            "app7", "app8", "app9", "app10", "ground_truth.csv"}
         contents = os.listdir(self.benchmark_location)
 
-        if not isinstance(self.mode, str):
+        if not isinstance(self._mode, str):
             raise TypeError(f"mode must be one of {self._ALL_MODES}")
 
         if len(contents) < 11:

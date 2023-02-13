@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-from .. import TSReader
+from .. import TSReader, rts_config
 from ... import MissingStrategy
 from ....utils.printing import print_header, print_step
 
@@ -32,9 +32,6 @@ class ODINTSReader(TSReader):
         It is the column of the anomalies file stating the end of an anomaly
         window.
     """
-    _ANOMALY_COL = "target"
-    _SERIES_COL = "value"
-    _TIMESTAMP_COL = "timestamp"
     _DAY_COL = "day_of_the_week"
     _ANOMALY_TYPE = "anomaly_type"
     
@@ -78,45 +75,45 @@ class ODINTSReader(TSReader):
         if verbose:
             print_step("Ended dataset values reading")
         
-        self._unmodified_dataset = self.dataset.copy()
+        self._unmodified_dataset = self._dataset.copy()
         
         dataset_cp = self._add_information(verbose=verbose)
         
         if verbose:
-            print_step("Renaming columns with standard names {}".format([self._TIMESTAMP_COL,
-                                                                         self._SERIES_COL]))
+            print_step("Renaming columns with standard names {}".format([rts_config["Univariate"]["index_column"],
+                                                                         rts_config["Univariate"]["value_column"]]))
         
         # add anomaly labels to original dataset and drop useless columns
-        self.dataset.insert(len(self.dataset.columns),
-                            self._ANOMALY_COL,
-                            dataset_cp[self._ANOMALY_COL].values)
-        self.dataset.rename(columns={
-                                self.timestamp_col: self._TIMESTAMP_COL,
-                                self.univariate_col: self._SERIES_COL
+        self._dataset.insert(len(self._dataset.columns),
+                             rts_config["Univariate"]["target_column"],
+                             dataset_cp[rts_config["Univariate"]["target_column"]].values)
+        self._dataset.rename(columns={
+                                self.timestamp_col: rts_config["Univariate"]["index_column"],
+                                self.univariate_col: rts_config["Univariate"]["value_column"]
                             },
                             inplace=True)
-        self.dataset.drop(columns=self.dataset.columns.difference([self._TIMESTAMP_COL,
-                                                                   self._SERIES_COL,
-                                                                   self._ANOMALY_COL]),
-                          inplace=True)
+        self._dataset.drop(columns=self._dataset.columns.difference([rts_config["Univariate"]["index_column"],
+                                                                     rts_config["Univariate"]["value_column"],
+                                                                     rts_config["Univariate"]["target_column"]]),
+                           inplace=True)
         
         if resample:
             if verbose:
                 print_step("Resampling dataset to chosen granularity")
             
-            self.dataset[self._TIMESTAMP_COL] = pd.to_datetime(self.dataset[self._TIMESTAMP_COL])
-            self.dataset.index = pd.to_datetime(self.dataset[self._TIMESTAMP_COL])
-            self.dataset = self.dataset.resample(resampling_granularity).agg({self._SERIES_COL: np.mean, self._ANOMALY_COL: np.max})
-            self.dataset.reset_index(inplace=True)
-            self.dataset[self._TIMESTAMP_COL] = self.dataset[self._TIMESTAMP_COL].dt.strftime("%Y-%m-%d %H:%M:%S")
+            self._dataset[rts_config["Univariate"]["index_column"]] = pd.to_datetime(self._dataset[rts_config["Univariate"]["index_column"]])
+            self._dataset.index = pd.to_datetime(self._dataset[rts_config["Univariate"]["index_column"]])
+            self._dataset = self._dataset.resample(resampling_granularity).agg({rts_config["Univariate"]["value_column"]: np.mean, rts_config["Univariate"]["target_column"]: np.max})
+            self._dataset.reset_index(inplace=True)
+            self._dataset[rts_config["Univariate"]["index_column"]] = self._dataset[rts_config["Univariate"]["index_column"]].dt.strftime("%Y-%m-%d %H:%M:%S")
         
         if verbose:
             print_step("Dealing with missing values with specified strategy")
         
         if missing_strategy == MissingStrategy.DROP:
-            self.dataset.dropna(inplace=True)
+            self._dataset.dropna(inplace=True)
         elif missing_strategy == MissingStrategy.FIXED_VALUE:
-            self.dataset.fillna(missing_fixed_value, inplace=True)
+            self._dataset.fillna(missing_fixed_value, inplace=True)
             
         if verbose:
             print_header("Ended dataset reading")
@@ -139,8 +136,8 @@ class ODINTSReader(TSReader):
         
         new_dataset = self._unmodified_dataset.copy()
         new_dataset.insert(len(new_dataset.columns),
-                           self._ANOMALY_COL,
-                           enhanced_dataset[self._ANOMALY_COL].values)
+                           rts_config["Univariate"]["target_column"],
+                           enhanced_dataset[rts_config["Univariate"]["target_column"]].values)
         new_dataset.insert(len(new_dataset.columns),
                            self._ANOMALY_TYPE,
                            enhanced_dataset[self._ANOMALY_TYPE].values)
@@ -148,12 +145,12 @@ class ODINTSReader(TSReader):
                            self._DAY_COL,
                            enhanced_dataset[self._DAY_COL].values)
         new_dataset = new_dataset.rename(columns={
-            self.timestamp_col: self._TIMESTAMP_COL,
-            self.univariate_col: self._SERIES_COL
+            self.timestamp_col: rts_config["Univariate"]["index_column"],
+            self.univariate_col: rts_config["Univariate"]["value_column"]
         })
-        new_dataset = new_dataset.drop(columns=new_dataset.columns.difference([self._TIMESTAMP_COL,
-                                                                               self._SERIES_COL,
-                                                                               self._ANOMALY_COL,
+        new_dataset = new_dataset.drop(columns=new_dataset.columns.difference([rts_config["Univariate"]["index_column"],
+                                                                               rts_config["Univariate"]["value_column"],
+                                                                               rts_config["Univariate"]["target_column"],
                                                                                self._ANOMALY_TYPE,
                                                                                self._DAY_COL]))
         
@@ -194,7 +191,7 @@ class ODINTSReader(TSReader):
         anomalies = np.zeros(dataset_cp.shape[0])
         day = np.ones(dataset_cp.shape[0]) * -1
         anomaly_type = ["No"] * dataset_cp.shape[0]
-        dataset_cp.insert(len(dataset_cp.columns), self._ANOMALY_COL, anomalies)
+        dataset_cp.insert(len(dataset_cp.columns), rts_config["Univariate"]["target_column"], anomalies)
         
         if complete:
             dataset_cp.insert(len(dataset_cp.columns), self._DAY_COL, day)
@@ -218,7 +215,7 @@ class ODINTSReader(TSReader):
 
         # build the anomaly labels on original dataset
         for start, end in anomaly_intervals:
-            dataset_cp.loc[start:end, self._ANOMALY_COL] = 1
+            dataset_cp.loc[start:end, rts_config["Univariate"]["target_column"]] = 1
             if complete:
                 dataset_cp.loc[start:end, self._ANOMALY_TYPE] = anomaly_type_dict[start]
                 for idx, row in dataset_cp.loc[start:end].iterrows():

@@ -126,7 +126,7 @@ class GHLReader(TSBenchmarkReader):
         dataset.rename(columns=channels, inplace=True)
         dataset.rename(columns=classes, inplace=True)
 
-        self.dataset = dataset.copy()
+        self._dataset = dataset.copy()
 
         if verbose:
             print_header("Ended dataset reading")

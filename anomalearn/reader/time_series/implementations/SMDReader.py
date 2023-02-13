@@ -146,20 +146,20 @@ class SMDReader(TSBenchmarkReader):
             print_step("Building the overall dataset")
 
         # build the overall dataset
-        self.dataset = pd.concat((training_set, testing_set))
-        self.dataset.set_index(np.arange(self.dataset.shape[0]), inplace=True)
-        self.dataset.insert(0,
-                            rts_config["Multivariate"]["index_column"],
-                            np.arange(self.dataset.shape[0]))
-        self.dataset.insert(len(self.dataset.columns),
-                            rts_config["Multivariate"]["target_column"],
-                            labels)
-        self.dataset.insert(len(self.dataset.columns),
-                            rts_config["Multivariate"]["is_training"],
-                            is_training)
-        self.dataset.insert(len(self.dataset.columns),
+        self._dataset = pd.concat((training_set, testing_set))
+        self._dataset.set_index(np.arange(self._dataset.shape[0]), inplace=True)
+        self._dataset.insert(0,
+                             rts_config["Multivariate"]["index_column"],
+                             np.arange(self._dataset.shape[0]))
+        self._dataset.insert(len(self._dataset.columns),
+                             rts_config["Multivariate"]["target_column"],
+                             labels)
+        self._dataset.insert(len(self._dataset.columns),
+                             rts_config["Multivariate"]["is_training"],
+                             is_training)
+        self._dataset.insert(len(self._dataset.columns),
                             "interpretation",
-                            interpretation)
+                             interpretation)
 
         if verbose:
             print_header("Dataset reading ended")

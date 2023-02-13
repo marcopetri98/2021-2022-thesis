@@ -128,7 +128,7 @@ class YahooS5Reader(TSBenchmarkReader):
             
         match benchmark:
             case "A1" | "A2":
-                self.dataset.rename(columns={
+                self._dataset.rename(columns={
                                         "timestamp": rts_config["Univariate"]["index_column"],
                                         "is_anomaly": rts_config["Univariate"]["target_column"],
                                         "value": rts_config["Univariate"]["value_column"]
@@ -136,7 +136,7 @@ class YahooS5Reader(TSBenchmarkReader):
                                     inplace=True)
         
             case "A3" | "A4":
-                self.dataset.rename(columns={
+                self._dataset.rename(columns={
                                         "timestamps": rts_config["Univariate"]["index_column"],
                                         "anomaly": rts_config["Univariate"]["target_column"],
                                         "value": rts_config["Univariate"]["value_column"]
@@ -149,8 +149,8 @@ class YahooS5Reader(TSBenchmarkReader):
                     print_step("Converting timestamps into dates")
                     
                 dates = [datetime.datetime.fromtimestamp(e)
-                         for e in self.dataset[rts_config["Univariate"]["index_column"]]]
-                self.dataset[rts_config["Univariate"]["index_column"]] = pd.to_datetime(dates)
+                         for e in self._dataset[rts_config["Univariate"]["index_column"]]]
+                self._dataset[rts_config["Univariate"]["index_column"]] = pd.to_datetime(dates)
         
         if verbose:
             print_header("Dataset reading ended")

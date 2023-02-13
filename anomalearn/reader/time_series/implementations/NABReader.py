@@ -146,7 +146,7 @@ class NABReader(TSBenchmarkReader):
                        rts_config["Univariate"]["target_column"],
                        target)
 
-        self.dataset = dataset.copy()
+        self._dataset = dataset.copy()
 
         if verbose:
             print_header("Ended dataset reading")
