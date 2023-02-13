@@ -88,7 +88,7 @@ class SMDReader(TSBenchmarkReader):
             raise TypeError("path must be a machine name or an index")
         elif isinstance(path, int) and not 0 <= path < len(self):
             raise IndexError(f"path is {path} and SMD has {len(self)} series")
-        elif path not in self._machines:
+        elif isinstance(path, str) and path not in self._machines:
             raise ValueError(f"path must be one of {self._machines}")
 
         if isinstance(path, int):
