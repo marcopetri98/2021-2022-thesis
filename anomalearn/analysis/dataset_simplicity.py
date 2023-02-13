@@ -374,8 +374,8 @@ def _check_analysis_inputs(x,
     else:
         windows_to_try = None
     
-    check_array(x)
-    check_X_y(x, y)
+    check_array(x, force_all_finite="allow-nan")
+    check_X_y(x, y, force_all_finite="allow-nan")
     x = np.array(x)
     y = np.array(y)
     
