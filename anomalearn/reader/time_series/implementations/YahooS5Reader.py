@@ -87,7 +87,7 @@ class YahooS5Reader(TSBenchmarkReader):
         ----------
         path : str or bytes or PathLike or int
             The path to the csv file of the yahoo dataset, or an integer stating
-            which number of time series to load for the specified benchmark.
+            which time series to load from the benchmark (indexed from 0).
         
         benchmark : ["A1", "A2", "A3", "A4"]
             The benchmark from which the time series must be extracted in case

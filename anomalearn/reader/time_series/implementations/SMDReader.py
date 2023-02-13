@@ -62,9 +62,9 @@ class SMDReader(TSBenchmarkReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"there are only {len(self)} machines")
 
-        return self.read(path=self._machines[item], verbose=False).get_dataframe()
+        return self.read(path=item, verbose=False).get_dataframe()
 
-    def read(self, path: str,
+    def read(self, path: str | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
              verbose: bool = True,
@@ -73,9 +73,10 @@ class SMDReader(TSBenchmarkReader):
         """
         Parameters
         ----------
-        path : str
+        path : str or int
             It is the name of the machine that you want to read (e.g.,
-            machine-1-1").
+            machine-1-1"), or an integer stating which time series to load from
+            the benchmark (indexed from 0).
 
         file_format : str, default="csv"
             Ignored.
@@ -83,10 +84,15 @@ class SMDReader(TSBenchmarkReader):
         pandas_args : dict or None, default=None
             Ignored.
         """
-        if not isinstance(path, str):
-            raise TypeError("path must be a machine name")
+        if not isinstance(path, str) and not isinstance(path, int):
+            raise TypeError("path must be a machine name or an index")
+        elif isinstance(path, int) and not 0 <= path < len(self):
+            raise IndexError(f"path is {path} and SMD has {len(self)} series")
         elif path not in self._machines:
             raise ValueError(f"path must be one of {self._machines}")
+
+        if isinstance(path, int):
+            path = self._machines[path]
 
         if verbose:
             print_header("Started dataset reading")

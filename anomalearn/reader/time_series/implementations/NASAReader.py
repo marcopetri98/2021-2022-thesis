@@ -60,10 +60,9 @@ class NASAReader(TSReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"there are only {len(self)} channels in total")
 
-        channel = self.anomalies_df.iloc[item]["chan_id"]
-        return self.read(path=channel, merge_split=True, verbose=False).get_dataframe()
+        return self.read(path=item, merge_split=True, verbose=False).get_dataframe()
 
-    def read(self, path: str,
+    def read(self, path: str | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
              verbose: bool = True,
@@ -73,9 +72,10 @@ class NASAReader(TSReader):
         """
         Parameters
         ----------
-        path : str
+        path : str or int
             The names of the channels to read (e.g., "A-1" is a valid value
-            for path).
+            for path), or an integer stating which time series to load from
+            the benchmark (indexed from 0).
 
         file_format : str, default="csv"
             Ignored.
@@ -83,21 +83,20 @@ class NASAReader(TSReader):
         pandas_args : dict or None, default=None
             Ignored.
 
-        merge_split : bool, default=True
-            Whether to merge train and test (concatenate train and test such
-            that the new sequence is train -> test). When false, the training
-            rows will have prepended "train_" string and the testing rows will
-            have prepended "test_" string.
-
         dataset_folder : str, default="same-as-labels"
             It is the path of the folder containing training and testing splits
             of the dataset. Otherwise, the option "same-as-labels" assumes that
             the dataset folder is the same folder containing the labels.
         """
-        if not isinstance(path, str):
-            raise TypeError("path must be a string")
+        if not isinstance(path, str) and not isinstance(path, int):
+            raise TypeError("path must be a string or an integer")
+        elif isinstance(path, int) and not 0 <= path < len(self):
+            raise IndexError(f"path is {path} and NASA has {len(self)} series")
         elif dataset_folder != "same-as-labels" and not os.path.isdir(dataset_folder):
             raise TypeError("dataset_folder must be a valid path to a dir")
+
+        if isinstance(path, int):
+            path = self.anomalies_df.iloc[path]["chan_id"]
 
         if dataset_folder == "same-as-labels":
             dataset_folder = Path(self.anomalies_path).parent

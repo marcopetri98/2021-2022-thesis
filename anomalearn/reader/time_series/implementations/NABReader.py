@@ -85,6 +85,20 @@ class NABReader(TSBenchmarkReader):
              verbose: bool = True,
              *args,
              **kwargs) -> NABReader:
+        """
+        Parameters
+        ----------
+        path : str
+            It is the name of the dataset that you want to read (e.g.,
+            machine-1-1"), or an integer stating which time series to load from
+            the benchmark (indexed from 0).
+
+        file_format : str, default="csv"
+            Ignored.
+
+        pandas_args : dict or None, default=None
+            Ignored.
+        """
         if not isinstance(path, str) and not isinstance(path, int):
             raise TypeError("path must be a string or an int")
         elif isinstance(path, str) and path not in self._datasets_names:
