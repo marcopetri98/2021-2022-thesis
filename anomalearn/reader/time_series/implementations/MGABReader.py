@@ -31,7 +31,7 @@ class MGABReader(TSBenchmarkReader):
     This reader is used to read the datasets contained in the MGAB benchmark.
     """
 
-    def __init__(self, benchmark_location: str):
+    def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
     def __iter__(self):
@@ -76,7 +76,7 @@ class MGABReader(TSBenchmarkReader):
             print_step("Start reading values")
 
         if isinstance(path, int):
-            path = os.path.join(self.benchmark_location, str(path + 1) + ".csv")
+            path = self._benchmark_path / (str(path + 1) + ".csv")
 
         super().read(path=path,
                      file_format=file_format,

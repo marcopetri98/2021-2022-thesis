@@ -49,7 +49,7 @@ class YahooS5Reader(TSBenchmarkReader):
         "A4": "A4Benchmark-TS"
     }
     
-    def __init__(self, benchmark_location: str):
+    def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
         
     def __iter__(self):
@@ -113,9 +113,7 @@ class YahooS5Reader(TSBenchmarkReader):
             print_step("Start reading values")
         
         if isinstance(path, int):
-            path = os.path.join(self.benchmark_location,
-                                benchmark + "Benchmark",
-                                self._PREFIX[benchmark] + str(path + 1) + ".csv")
+            path = self._benchmark_path / (benchmark + "Benchmark") / (self._PREFIX[benchmark] + str(path + 1) + ".csv")
         super().read(path=path,
                      file_format="csv",
                      pandas_args=pandas_args,

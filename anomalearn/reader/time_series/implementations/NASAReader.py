@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import ast
-import os.path
+import os
 from pathlib import Path
 
 import numpy as np
@@ -115,8 +115,8 @@ class NASAReader(TSReader):
                        f"{self._anomalies_df[row_selector]['spacecraft']}")
 
         # if the user specified one of the channels build the path
-        train_path = os.path.join(dataset_folder, "train", path + ".npy")
-        test_path = os.path.join(dataset_folder, "test", path + ".npy")
+        train_path = Path(dataset_folder) / "train" / (path + ".npy")
+        test_path = Path(dataset_folder) / "test" / (path + ".npy")
 
         if verbose:
             print_step("Reading training and testing data")
@@ -171,5 +171,5 @@ class NASAReader(TSReader):
             raise TypeError("anomalies_path must be a string of a path to a csv"
                             " file")
 
-        if not os.path.isfile(self._anomalies_path):
+        if not Path(self._anomalies_path).is_file():
             raise ValueError("anomalies_path must be a path to a csv file")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -35,17 +36,17 @@ class SMDReader(TSBenchmarkReader):
     The reader reads the txt files in the SMD benchmark folder and translates
     them into the default format for time series.
     """
-    def __init__(self, benchmark_location: str):
+    def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
-        self._interpretation = os.path.join(self.benchmark_location, "interpretation_label")
-        self._test_set = os.path.join(self.benchmark_location, "test")
-        self._test_gt = os.path.join(self.benchmark_location, "test_label")
-        self._train_set = os.path.join(self.benchmark_location, "train")
+        self._interpretation = self._benchmark_path / "interpretation_label"
+        self._test_set = self._benchmark_path / "test"
+        self._test_gt = self._benchmark_path / "test_label"
+        self._train_set = self._benchmark_path / "train"
         
-        self._machines = [e.split(".txt")[0]
-                          for e in os.listdir(self._train_set)
-                          if os.path.isfile(os.path.join(self._train_set, e))]
+        self._machines = [e.name.split(".")[0]
+                          for e in self._train_set.glob("*.txt")
+                          if e.is_file()]
         self._machines.sort(key=lambda elem: int(elem.split("-")[1])*10 + int(elem.split("-")[2]))
 
         self.__check_parameters()
@@ -99,11 +100,11 @@ class SMDReader(TSBenchmarkReader):
             print_step(f"Reading machine {path}")
 
         # read training dataset and testing
-        training_set = pd.read_csv(os.path.join(self._train_set, path + ".txt"),
+        training_set = pd.read_csv(self._train_set / (path + ".txt"),
                                    header=None)
-        testing_set = pd.read_csv(os.path.join(self._test_set, path + ".txt"),
+        testing_set = pd.read_csv(self._test_set / (path + ".txt"),
                                   header=None)
-        test_labels = pd.read_csv(os.path.join(self._test_gt, path + ".txt"),
+        test_labels = pd.read_csv(self._test_gt / (path + ".txt"),
                                   header=None)[0].values
 
         if verbose:
@@ -133,7 +134,7 @@ class SMDReader(TSBenchmarkReader):
             print_step("Reading anomalies' interpretation")
 
         # reading the interpretation file
-        with open(os.path.join(self._interpretation, path + ".txt"), "r") as f:
+        with open(self._interpretation / (path + ".txt"), "r") as f:
             for line in f:
                 interval, channels = line.split(":")
                 start, end = interval.split("-")
@@ -167,15 +168,15 @@ class SMDReader(TSBenchmarkReader):
         return self
 
     def __check_parameters(self):
-        if not os.path.isdir(self._interpretation):
+        if not self._interpretation.is_dir():
             raise ValueError("benchmark_location must contain a folder named "
                              "interpretation_label")
-        elif not os.path.isdir(self._test_gt):
+        elif not self._test_gt.is_dir():
             raise ValueError("benchmark_location must contain a folder named "
                              "test_label")
-        elif not os.path.isdir(self._test_set):
+        elif not self._test_set.is_dir():
             raise ValueError("benchmark_location must contain a folder named "
                              "test")
-        elif not os.path.isdir(self._train_set):
+        elif not self._train_set.is_dir():
             raise ValueError("benchmark_location must contain a folder named "
                              "train")

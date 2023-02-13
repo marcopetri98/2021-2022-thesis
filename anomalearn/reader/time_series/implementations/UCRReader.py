@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -36,12 +37,12 @@ class UCRReader(TSBenchmarkReader):
     the default format.
     """
 
-    def __init__(self, benchmark_location: str):
+    def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
-        self._all_datasets = [e
-                              for e in os.listdir(self.benchmark_location)
-                              if os.path.isfile(os.path.join(self.benchmark_location, e))]
+        self._all_datasets = [e.resolve()
+                              for e in self._benchmark_path.glob("*")
+                              if e.is_file()]
         self._all_datasets = sorted(self._all_datasets)
 
         self.__check_parameters()
@@ -81,8 +82,7 @@ class UCRReader(TSBenchmarkReader):
             print_header("Start reading dataset")
 
         if isinstance(path, int):
-            path = os.path.normpath(os.path.join(self.benchmark_location,
-                                                 self._all_datasets[path]))
+            path = (self._benchmark_path / self._all_datasets[path]).resolve()
 
         if verbose:
             print_step(f"Dataset {path} is being loaded")
@@ -105,7 +105,7 @@ class UCRReader(TSBenchmarkReader):
         if verbose:
             print_step("Extracting training set and the anomaly")
 
-        filename = os.path.basename(os.path.normpath(path))
+        filename = Path(path).name
         filename_parts = filename.split("_")
         last_train_point = int(filename_parts[-3])
         anomaly_start = int(filename_parts[-2])
@@ -140,5 +140,6 @@ class UCRReader(TSBenchmarkReader):
         return self
 
     def __check_parameters(self):
+        print(self._all_datasets)
         if len(self._all_datasets) != len(self):
             raise ValueError(f"The benchmark should contain {len(self)} files")

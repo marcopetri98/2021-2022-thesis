@@ -39,26 +39,25 @@ class NABReader(TSBenchmarkReader):
     the windows' length is 10% of data around each label point).
     """
     
-    def __init__(self, benchmark_location: str):
+    def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
         self._datasets_paths = []
         self._datasets_names = []
 
-        data_path = os.path.join(self.benchmark_location, "data")
-        for root, dirs, files in os.walk(data_path):
-            for file in files:
-                if file != "README.md":
-                    self._datasets_names.append(file.split(".")[0])
-                    self._datasets_paths.append(os.path.normpath(os.path.join(root, file)))
+        data_path = self._benchmark_path / "data"
+        for path in data_path.glob("**/*"):
+            if path.is_file() and path.name != "README.md":
+                self._datasets_names.append(path.name.split(".")[0])
+                self._datasets_paths.append(path.resolve())
                     
         # order paths and names as in path
         sorted_couples = sorted(list(zip(self._datasets_paths, self._datasets_names)), key=operator.itemgetter(0))
         self._datasets_paths = [e[0] for e in sorted_couples]
         self._datasets_names = [e[1] for e in sorted_couples]
 
-        labels_path = os.path.join(self.benchmark_location, "labels")
-        windows_path = os.path.normpath(os.path.join(labels_path, "combined_windows.json"))
+        labels_path = self._benchmark_path / "labels"
+        windows_path = (labels_path / "combined_windows.json").resolve()
         with open(windows_path) as file:
             self._combined_windows = json.load(file)
 
@@ -118,7 +117,7 @@ class NABReader(TSBenchmarkReader):
             dataset_name = self._datasets_names[path]
 
         if verbose:
-            print_step(f"Loading series from file path {os.path.normpath(dataset_path)}")
+            print_step(f"Loading series from file path {dataset_path.resolve()}")
 
         # load dataset
         dataset = pd.read_csv(dataset_path)
@@ -154,14 +153,14 @@ class NABReader(TSBenchmarkReader):
         return self
 
     def __check_parameters(self):
-        if len(os.listdir(self.benchmark_location)) != 2:
+        if len(list(self._benchmark_path.glob("*"))) != 2:
             raise ValueError("benchmark_location must contain only data and "
                              "labels folders")
 
-        labels_path = os.path.join(self.benchmark_location, "labels")
-        data_path = os.path.join(self.benchmark_location, "data")
+        labels_path = self._benchmark_path / "labels"
+        data_path = self._benchmark_path / "data"
 
-        if "combined_windows.json" not in os.listdir(labels_path):
+        if "combined_windows.json" not in [str(e.name) for e in labels_path.glob("*")]:
             raise ValueError("labels folder does not contain combined_windows "
                              "file")
 

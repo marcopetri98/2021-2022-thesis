@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from . import TSReader
 
@@ -12,10 +13,11 @@ class TSBenchmarkReader(TSReader):
         The location of the benchmark's folder.
     """
 
-    def __init__(self, benchmark_location: str):
+    def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__()
 
-        self.benchmark_location = benchmark_location
+        self._benchmark_location = benchmark_location
+        self._benchmark_path = Path(self._benchmark_location)
 
         self.__check_parameters()
 
@@ -34,8 +36,10 @@ class TSBenchmarkReader(TSReader):
         ValueError
             If any parameter has wrong value.
         """
-        if not isinstance(self.benchmark_location, str):
-            raise TypeError("benchmark_location must be a string")
+        if not isinstance(self._benchmark_location, str) and not isinstance(self._benchmark_location, os.PathLike):
+            raise TypeError("benchmark_location must be a string or a path-like")
 
-        if not os.path.isdir(self.benchmark_location):
-            raise ValueError(f"benchmark_location must be a directory (it is {self.benchmark_location})")
+        path = Path(self._benchmark_location)
+
+        if not path.is_dir():
+            raise ValueError(f"benchmark_location must be a directory (it is {str(path)})")

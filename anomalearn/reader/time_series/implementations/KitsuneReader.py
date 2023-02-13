@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -37,7 +38,7 @@ class KitsuneReader(TSBenchmarkReader):
     _DATASETS = ["active_wiretap", "arp_mitm", "fuzzing", "mirai", "os_scan",
                  "ssdp_flood", "ssl_renegotiation", "syn_dos", "video_injection"]
     
-    def __init__(self, benchmark_location: str):
+    def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
         
         self.__check_parameters()
@@ -83,7 +84,7 @@ class KitsuneReader(TSBenchmarkReader):
             raise ValueError(f"there are only {len(self)} datasets")
         
         dataset_name = path if isinstance(path, str) else self._DATASETS[path]
-        dataset_path = os.path.normpath(os.path.join(self.benchmark_location, dataset_name))
+        dataset_path = (self._benchmark_path / dataset_name).resolve()
         
         if verbose:
             print_header("Started dataset reading")
@@ -91,16 +92,16 @@ class KitsuneReader(TSBenchmarkReader):
             print_step("Reading raw data and raw labels")
             
         # read raw data and labels
-        dataset = pd.read_csv(os.path.join(dataset_path, dataset_name + "_dataset.csv"),
+        dataset = pd.read_csv(Path(dataset_path) / (dataset_name + "_dataset.csv"),
                               header=None,
                               dtype=float)
         if dataset_name == "mirai":
-            raw_labels = pd.read_csv(os.path.join(dataset_path, dataset_name + "_labels.csv"),
+            raw_labels = pd.read_csv(Path(dataset_path) / (dataset_name + "_labels.csv"),
                                      header=None,
                                      dtype=int)
             labels = raw_labels[raw_labels.columns[0]].values
         else:
-            raw_labels = pd.read_csv(os.path.join(dataset_path, dataset_name + "_labels.csv"))
+            raw_labels = pd.read_csv(Path(dataset_path) / (dataset_name + "_labels.csv"))
             labels = raw_labels["x"].values
             
         
@@ -134,14 +135,14 @@ class KitsuneReader(TSBenchmarkReader):
         return self
         
     def __check_parameters(self):
-        contents = [os.path.join(self.benchmark_location, e)
-                    for e in os.listdir(self.benchmark_location)]
-        dirs = list(filter(os.path.isdir, contents))
+        dirs = [e.resolve()
+                for e in self._benchmark_path.glob("*")
+                if e.is_dir()]
         
         if len(dirs) != 9:
             raise ValueError("benchmark_location must contain the 9 datasets")
         
         for dir_path in dirs:
-            if len(os.listdir(dir_path)) != 3:
+            if len(list(dir_path.glob("*"))) != 3:
                 raise ValueError("each dataset directory must have exactly 3 "
                                  "files")

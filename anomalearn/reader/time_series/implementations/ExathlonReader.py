@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -38,7 +39,7 @@ class ExathlonReader(TSBenchmarkReader):
     """
     _ALL_MODES = ["train", "test", "all"]
 
-    def __init__(self, benchmark_location: str,
+    def __init__(self, benchmark_location: str | os.PathLike,
                  mode: str = "all"):
         super().__init__(benchmark_location=benchmark_location)
 
@@ -53,12 +54,12 @@ class ExathlonReader(TSBenchmarkReader):
             fourth_num = int(el.split("_")[3])
             return first_num + second_num + third_num + fourth_num
 
-        self._gt = pd.read_csv(os.path.join(self.benchmark_location, "ground_truth.csv"))
+        self._gt = pd.read_csv(self._benchmark_path / "ground_truth.csv")
         self._disturbed = self._gt["trace_name"].unique().tolist()
         self._disturbed.sort(key=_exathlon_file_order)
 
         self._files_paths = []
-        for root, dirs, files in os.walk(self.benchmark_location):
+        for root, dirs, files in os.walk(self._benchmark_location):
             for name in files:
                 if name != "ground_truth.csv":
                     self._files_paths.append(os.path.normpath(os.path.join(root, name)))
@@ -175,7 +176,7 @@ class ExathlonReader(TSBenchmarkReader):
             print_step("Building the target vector")
 
         # build the target vector
-        trace_name = os.path.basename(os.path.normpath(path)).split(".")[0]
+        trace_name = Path(path).name.split(".")[0]
         target = np.zeros(dataset.shape[0])
         if path in self._disturbed_paths:
             gt: pd.DataFrame = self._gt.loc[self._gt["trace_name"] == trace_name]
@@ -216,7 +217,7 @@ class ExathlonReader(TSBenchmarkReader):
                        rts_config["Multivariate"]["target_column"],
                        target)
 
-        self.dataset = dataset.copy()
+        self._dataset = dataset.copy()
 
         if verbose:
             print_header("Ended dataset reading")
@@ -226,7 +227,7 @@ class ExathlonReader(TSBenchmarkReader):
     def __check_parameters(self):
         allowed_content = {"app1", "app2", "app3", "app4", "app5", "app6",
                            "app7", "app8", "app9", "app10", "ground_truth.csv"}
-        contents = os.listdir(self.benchmark_location)
+        contents = [e.name for e in self._benchmark_path.glob("*")]
 
         if not isinstance(self._mode, str):
             raise TypeError(f"mode must be one of {self._ALL_MODES}")

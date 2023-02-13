@@ -33,13 +33,13 @@ class GHLReader(TSBenchmarkReader):
     The reader is able to read both testing and training dataset with meaningful
     interfaces.
     """
-    def __init__(self, benchmark_location: str):
+    def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
         self.__check_parameters()
 
-        self._all_test_sets_paths = list(filter(lambda x: "train" not in x, sorted(os.listdir(self.benchmark_location))))
-        self._train_set_path = list(filter(lambda x: "train" in x, os.listdir(self.benchmark_location)))[0]
+        self._all_test_sets_paths = list(sorted([str(e.resolve()) for e in self._benchmark_path.glob("[0-9][0-9]*.csv")]))
+        self._train_set_path = str(self._benchmark_path.glob("train*.csv"))
 
     def __iter__(self):
         return GHLIterator(self)
@@ -97,9 +97,9 @@ class GHLReader(TSBenchmarkReader):
                 print_step(f"Reading GHL testing set {path}")
 
         if isinstance(path, int):
-            file_path = os.path.join(self.benchmark_location, self._all_test_sets_paths[path])
+            file_path = self._benchmark_path / self._all_test_sets_paths[path]
         else:
-            file_path = os.path.join(self.benchmark_location, self._train_set_path)
+            file_path = self._benchmark_path / self._train_set_path
 
         if verbose:
             print_step("Reading file and ordering columns")
@@ -134,6 +134,6 @@ class GHLReader(TSBenchmarkReader):
         return self
 
     def __check_parameters(self):
-        if len(os.listdir(self.benchmark_location)) != len(self) + 1:
+        if len(list(self._benchmark_path.glob("*"))) != len(self) + 1:
             raise ValueError("benchmark_location must contain all the 48 tests "
                              "and the training set")
