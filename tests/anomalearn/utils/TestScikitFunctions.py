@@ -30,7 +30,7 @@ class TestScikitFunction(unittest.TestCase):
         
         self.assertTrue(are_normal_attr_equal(minmax1, minmax2, normal_attr))
         minmax1 = MinMaxScaler(copy=False)
-        self.assertFalse(are_numpy_attr_equal(minmax1, minmax2, normal_attr))
-        self.assertFalse(are_numpy_attr_equal(minmax2, minmax1, normal_attr))
+        self.assertFalse(are_normal_attr_equal(minmax1, minmax2, normal_attr))
+        self.assertFalse(are_normal_attr_equal(minmax2, minmax1, normal_attr))
         minmax2 = MinMaxScaler(copy=False)
         self.assertTrue(are_normal_attr_equal(minmax1, minmax2, normal_attr))

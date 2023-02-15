@@ -1,8 +1,12 @@
+import logging
 from typing import Tuple
 
 import numpy as np
 from numpy.linalg import LinAlgError
 from sklearn.utils import check_array
+
+
+__module_logger = logging.getLogger(__name__)
 
 
 def estimate_mean_covariance(x) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -34,21 +38,26 @@ def estimate_mean_covariance(x) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     check_array(x, force_all_finite="allow-nan")
     errors = np.ma.array(x, mask=np.isnan(x))
+    __module_logger.info("errors have been successfully converted to masked array")
 
     mean = np.ma.mean(errors, axis=0)
     cov = np.ma.cov(errors, rowvar=False, ddof=1) if errors.ndim != 1 and errors.shape[1] != 1 else np.ma.std(errors, axis=0, ddof=1)
     is_vector = errors.ndim != 1 and errors.shape[1] != 1
+    __module_logger.info("mean and covariance/standard deviation computed")
 
     if (errors.ndim != 1 and errors.shape[1] != 1) and np.any(np.linalg.eigvals(cov) < 0):
+        __module_logger.critical("covariance matrix has strictly negative eigenvalues")
         raise ValueError("Impossible to compute the covariance matrix.")
 
     if np.sum(cov) == 0:
+        __module_logger.debug(f"np.sum(cov)={np.sum(cov)}")
         cov += 1e-10
 
     if is_vector:
         try:
             inv_cov = np.linalg.inv(cov)
         except LinAlgError:
+            __module_logger.info("computing pseudo-inverse of covariance matrix")
             inv_cov = np.linalg.pinv(cov)
     else:
         inv_cov = 1 / cov

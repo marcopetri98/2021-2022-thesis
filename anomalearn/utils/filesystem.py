@@ -1,4 +1,8 @@
+import logging
 from pathlib import Path
+
+
+__module_logger = logging.getLogger(__name__)
 
 
 def find_or_create_dir(path: str) -> None:
@@ -19,6 +23,7 @@ def find_or_create_dir(path: str) -> None:
         If the given path points to a file and not to a directory.
     """
     path_obj = Path(path)
+    __module_logger.debug(f"path={str(path_obj)}")
 
     if not path_obj.is_dir() and path_obj.exists():
         raise ValueError("path must point to an existing directory or to a "

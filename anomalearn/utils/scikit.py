@@ -1,4 +1,9 @@
+import logging
+
 import numpy as np
+
+
+__module_logger = logging.getLogger(__name__)
 
 
 def are_numpy_attr_equal(estimator1, estimator2, attributes: list[str]) -> bool:
@@ -26,11 +31,15 @@ def are_numpy_attr_equal(estimator1, estimator2, attributes: list[str]) -> bool:
     for prop_name in attributes:
         try:
             this_prop = getattr(estimator1, prop_name)
+            __module_logger.debug(f"estimator1.{prop_name}={this_prop}")
         except AttributeError:
+            __module_logger.debug(f"estimator1 does not have {prop_name}")
             this_prop = None
         try:
             other_prop = getattr(estimator2, prop_name)
+            __module_logger.debug(f"estimator2.{prop_name}={other_prop}")
         except AttributeError:
+            __module_logger.debug(f"estimator2 does not have {prop_name}")
             other_prop = None
     
         # XOR between this_prop and other_prop being None
@@ -68,6 +77,8 @@ def are_normal_attr_equal(estimator1, estimator2, attributes: list[str]) -> bool
     for prop_name in attributes:
         this_prop = getattr(estimator1, prop_name)
         other_prop = getattr(estimator2, prop_name)
+        __module_logger.debug(f"estimator1.{prop_name}={this_prop}")
+        __module_logger.debug(f"estimator2.{prop_name}={other_prop}")
     
         if (this_prop is None) != (other_prop is None):
             return False

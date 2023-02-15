@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.utils import check_array
 
 
 def get_rows_without_nan(x) -> np.ndarray:
@@ -17,5 +18,6 @@ def get_rows_without_nan(x) -> np.ndarray:
         An array containing the numbers of the rows without nan. Note that rows
         may have infinite values instead.
     """
+    check_array(x, ensure_2d=False, allow_nd=True, force_all_finite=False)
     x = np.array(x)
     return np.argwhere(~np.isnan(np.sum(x.reshape((x.shape[0], -1)), axis=1))).squeeze()

@@ -1,7 +1,12 @@
+import logging
+
 import numpy as np
 from numba import jit
 
 from ..input_validation import check_array_1d
+
+
+__module_logger = logging.getLogger(__name__)
 
 
 def _check_binary_input(y_true,
@@ -35,6 +40,8 @@ def _check_binary_input(y_true,
 
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
+    __module_logger.debug(f"y_true.shape={y_true.shape}, y_pred.shape={y_pred.shape}")
+    __module_logger.debug(f"np.unique(y_true)={np.unique(y_true.shape)}")
 
     if y_true.shape[0] != y_pred.shape[0]:
         raise ValueError("y_true and y_pred must have the same shape")
