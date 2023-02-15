@@ -1,6 +1,6 @@
 import abc
 import logging
-
+from collections.abc import Reversible, Sized
 
 __module_logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class EqualityABC(abc.ABC):
     """
     @abc.abstractmethod
     def __eq__(self, other):
-        pass
+        raise NotImplementedError
     
     def __ne__(self, other):
         return self.__eq__(other)
@@ -56,4 +56,33 @@ class EqualityABC(abc.ABC):
     def __subclasshook__(cls, other):
         if cls is EqualityABC:
             return _check_methods(other, "__eq__", "__ne__")
+        return NotImplemented
+
+
+class ObtainableABC(Reversible, Sized):
+    """Abstract class for objects implementing __getitem__.
+    """
+    @abc.abstractmethod
+    def __getitem__(self, item):
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def __len__(self):
+        raise NotImplementedError
+    
+    def __iter__(self):
+        i = 0
+        while i < len(self):
+            v = self[i]
+            yield v
+            i += 1
+    
+    def __reversed__(self):
+        for i in reversed(range(len(self))):
+            yield self[i]
+
+    @classmethod
+    def __subclasshook__(cls, other):
+        if cls is ObtainableABC:
+            return _check_methods(other, "__getitem__", "__len__", "__iter__", "__reversed__")
         return NotImplemented

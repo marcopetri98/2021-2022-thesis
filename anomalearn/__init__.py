@@ -9,3 +9,5 @@ common. Therefore, we can build a framework to easy the process of developing
 new algorithms by abstracting those concepts with abstract classes, partially
 implemented.
 """
+
+from .abc import EqualityABC, ObtainableABC
