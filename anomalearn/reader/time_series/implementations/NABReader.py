@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import operator
 import os
 
@@ -8,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
-from ....utils.printing import print_header, print_step
 
 
 class NABIterator(object):
@@ -42,6 +42,7 @@ class NABReader(TSBenchmarkReader):
     def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
+        self.__logger = logging.getLogger(__name__)
         self._datasets_paths = []
         self._datasets_names = []
 
@@ -81,7 +82,6 @@ class NABReader(TSBenchmarkReader):
     def read(self, path: str | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              *args,
              **kwargs) -> NABReader:
         """
@@ -105,9 +105,6 @@ class NABReader(TSBenchmarkReader):
         elif isinstance(path, int) and not 0 <= path < len(self):
             raise ValueError(f"there are only {len(self)} datasets in NAB")
         
-        if verbose:
-            print_header("Start reading dataset")
-        
         # get the dataset path
         if isinstance(path, str):
             dataset_path = self._datasets_paths[self._datasets_names.index(path)]
@@ -116,15 +113,10 @@ class NABReader(TSBenchmarkReader):
             dataset_path = self._datasets_paths[path]
             dataset_name = self._datasets_names[path]
 
-        if verbose:
-            print_step(f"Loading series from file path {dataset_path.resolve()}")
-
         # load dataset
         dataset = pd.read_csv(dataset_path)
 
-        if verbose:
-            print_step("Start to read and build labels")
-        
+        self.__logger.info("building point labels from combined windows")
         # build target class vector
         target = np.zeros(dataset.shape[0])
         if len(self._combined_windows[dataset_name]) != 0:
@@ -133,9 +125,7 @@ class NABReader(TSBenchmarkReader):
                 end_idx = dataset["timestamp"].tolist().index(window[1].split(".")[0])
                 target[start_idx:end_idx + 1] = 1
 
-        if verbose:
-            print_step("Renaming columns with standard names")
-        
+        self.__logger.info("renaming columns with standard names")
         # give to the columns standard names
         dataset.rename(columns={"timestamp": rts_config["Univariate"]["index_column"]},
                        inplace=True)
@@ -146,9 +136,6 @@ class NABReader(TSBenchmarkReader):
                        target)
 
         self._dataset = dataset.copy()
-
-        if verbose:
-            print_header("Ended dataset reading")
         
         return self
 
@@ -159,7 +146,8 @@ class NABReader(TSBenchmarkReader):
 
         labels_path = self._benchmark_path / "labels"
         data_path = self._benchmark_path / "data"
-
+        
+        self.__logger.debug(f"labels path contains {list(labels_path.glob('*'))}")
         if "combined_windows.json" not in [str(e.name) for e in labels_path.glob("*")]:
             raise ValueError("labels folder does not contain combined_windows "
                              "file")

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 
@@ -7,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
-from ....utils import print_step, print_header
 
 
 class KitsuneIterator(object):
@@ -40,7 +40,8 @@ class KitsuneReader(TSBenchmarkReader):
     
     def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
-        
+
+        self.__logger = logging.getLogger(__name__)
         self.__check_parameters()
         
     def __iter__(self):
@@ -60,7 +61,6 @@ class KitsuneReader(TSBenchmarkReader):
     def read(self, path: str | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              *args,
              **kwargs) -> KitsuneReader:
         """
@@ -86,11 +86,6 @@ class KitsuneReader(TSBenchmarkReader):
         dataset_name = path if isinstance(path, str) else self._DATASETS[path]
         dataset_path = (self._benchmark_path / dataset_name).resolve()
         
-        if verbose:
-            print_header("Started dataset reading")
-            print_step(f"Reading {dataset_name} dataset located in folder {dataset_path}")
-            print_step("Reading raw data and raw labels")
-            
         # read raw data and labels
         dataset = pd.read_csv(Path(dataset_path) / (dataset_name + "_dataset.csv"),
                               header=None,
@@ -104,10 +99,7 @@ class KitsuneReader(TSBenchmarkReader):
             raw_labels = pd.read_csv(Path(dataset_path) / (dataset_name + "_labels.csv"))
             labels = raw_labels["x"].values
             
-        
-        if verbose:
-            print_step("Renaming columns with standard names")
-            
+        self.__logger.info("renaming columns with standard names")
         # rename columns with standard names
         dataset_header = [f"{rts_config['Multivariate']['channel_column']}_{e}"
                           for e in dataset.columns]
@@ -117,9 +109,7 @@ class KitsuneReader(TSBenchmarkReader):
         # rename columns with standard names
         dataset.rename(columns=columns_mapping, inplace=True)
         
-        if verbose:
-            print_step("Building the overall dataset")
-            
+        self.__logger.info("building the final dataframe")
         dataset.set_index(np.arange(dataset.shape[0]), inplace=True)
         dataset.insert(0,
                        rts_config["Multivariate"]["index_column"],
@@ -129,9 +119,6 @@ class KitsuneReader(TSBenchmarkReader):
                        labels)
         self._dataset = dataset.copy()
         
-        if verbose:
-            print_header("Dataset reading ended")
-        
         return self
         
     def __check_parameters(self):
@@ -139,6 +126,7 @@ class KitsuneReader(TSBenchmarkReader):
                 for e in self._benchmark_path.glob("*")
                 if e.is_dir()]
         
+        self.__logger.debug(f"dirs contained in the benchmark are {dirs}")
         if len(dirs) != 9:
             raise ValueError("benchmark_location must contain the 9 datasets")
         

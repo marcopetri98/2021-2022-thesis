@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 
@@ -7,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
-from ....utils import print_header, print_step, print_warning
 
 
 class ExathlonIterator(object):
@@ -43,6 +43,7 @@ class ExathlonReader(TSBenchmarkReader):
                  mode: str = "all"):
         super().__init__(benchmark_location=benchmark_location)
 
+        self.__logger = logging.getLogger(__name__)
         self._mode = mode
 
         self.__check_parameters()
@@ -115,7 +116,6 @@ class ExathlonReader(TSBenchmarkReader):
     def read(self, path: int | str,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              full_rename: bool = True,
              *args,
              **kwargs) -> ExathlonReader:
@@ -147,10 +147,6 @@ class ExathlonReader(TSBenchmarkReader):
         elif isinstance(path, str) and not any([path in e for e in self._files_paths]):
             raise ValueError(f"path must be a valid name of a series")
 
-        if verbose:
-            print_header("Start to read dataset")
-            print_step("Loading from file the time series")
-
         # load the time series selected by the user
         if isinstance(path, str):
             path_idx = [path in e for e in self._files_paths].index(True)
@@ -169,11 +165,9 @@ class ExathlonReader(TSBenchmarkReader):
                 case "test":
                     path = self._disturbed_paths[path]
 
+        self.__logger.info(f"reading series at {path}")
         # actually load the csv using pandas
         dataset = pd.read_csv(path)
-
-        if verbose:
-            print_step("Building the target vector")
 
         # build the target vector
         trace_name = Path(path).name.split(".")[0]
@@ -188,23 +182,21 @@ class ExathlonReader(TSBenchmarkReader):
                 start = int(row["root_cause_start"])
 
                 if start not in dataset["t"].tolist():
-                    print_warning("Reading a dataset whose anomaly start is not"
-                                  " present in the dataset. It will be selected"
-                                  " the next timestamp if possible.")
+                    self.__logger.warning("reading dataset whose start is not "
+                                          "present. The next timestamp will be "
+                                          "selected")
                     start += 1
                 if end not in dataset["t"].tolist():
-                    print_warning("Reading a dataset whose anomaly start is not"
-                                  " present in the dataset. It will be selected"
-                                  " the previous timestamp if possible.")
+                    self.__logger.warning("reading dataset whose end is not "
+                                          "present. The previous timestamp will "
+                                          "be selected")
                     end -= 1
                 
                 start_idx = dataset["t"].tolist().index(start)
                 end_idx = dataset["t"].tolist().index(end)
                 target[start_idx:end_idx + 1] = 1
 
-        if verbose:
-            print_step("Renaming columns with standard names")
-
+        self.__logger.info(f"renaming columns with standard names")
         # build columns name mappings
         channels = {e: f"channel_{e if not full_rename else idx}"
                     for idx, e in enumerate(dataset.columns[1:])}
@@ -219,15 +211,13 @@ class ExathlonReader(TSBenchmarkReader):
 
         self._dataset = dataset.copy()
 
-        if verbose:
-            print_header("Ended dataset reading")
-
         return self
 
     def __check_parameters(self):
         allowed_content = {"app1", "app2", "app3", "app4", "app5", "app6",
                            "app7", "app8", "app9", "app10", "ground_truth.csv"}
         contents = [e.name for e in self._benchmark_path.glob("*")]
+        self.__logger.debug(f"benchmark contents are {contents}")
 
         if not isinstance(self._mode, str):
             raise TypeError(f"mode must be one of {self._ALL_MODES}")

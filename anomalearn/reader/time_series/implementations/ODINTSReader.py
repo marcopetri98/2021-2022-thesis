@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 
 import numpy as np
@@ -7,7 +8,6 @@ import pandas as pd
 
 from .. import TSReader, rts_config
 from ... import MissingStrategy
-from ....utils.printing import print_header, print_step
 
 
 class ODINTSReader(TSReader):
@@ -42,7 +42,8 @@ class ODINTSReader(TSReader):
                  end_col: str = "end_date",
                  anomaly_type_col: str = "anomaly_type"):
         super().__init__()
-        
+
+        self.__logger = logging.getLogger(__name__)
         self.anomalies_path = anomalies_path
         self.timestamp_col = timestamp_col
         self.univariate_col = univariate_col
@@ -50,12 +51,11 @@ class ODINTSReader(TSReader):
         self.end_col = end_col
         self.anomaly_type_col = anomaly_type_col
         
-        self._unmodified_dataset: pd.DataFrame = None
+        self._unmodified_dataset: pd.DataFrame | None = None
         
     def read(self, path,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              resample: bool = False,
              resampling_granularity: str = "1min",
              missing_strategy: MissingStrategy = MissingStrategy.DROP,
@@ -64,25 +64,14 @@ class ODINTSReader(TSReader):
              **kwargs) -> ODINTSReader:
         # TODO: implement interpolation imputation
         if missing_strategy not in [MissingStrategy.NOTHING, MissingStrategy.DROP, MissingStrategy.FIXED_VALUE]:
-            raise NotImplementedError("Imputation still not implemented")
+            raise NotImplementedError("Interpolation still not implemented")
 
-        if verbose:
-            print_header("Start reading dataset")
-            print_step("Start reading the dataset values")
-        
         super().read(path, file_format, verbose=False)
-        
-        if verbose:
-            print_step("Ended dataset values reading")
-        
+
         self._unmodified_dataset = self._dataset.copy()
+        dataset_cp = self._add_information()
         
-        dataset_cp = self._add_information(verbose=verbose)
-        
-        if verbose:
-            print_step("Renaming columns with standard names {}".format([rts_config["Univariate"]["index_column"],
-                                                                         rts_config["Univariate"]["value_column"]]))
-        
+        self.__logger.info("renaming columns with standard names")
         # add anomaly labels to original dataset and drop useless columns
         self._dataset.insert(len(self._dataset.columns),
                              rts_config["Univariate"]["target_column"],
@@ -98,25 +87,19 @@ class ODINTSReader(TSReader):
                            inplace=True)
         
         if resample:
-            if verbose:
-                print_step("Resampling dataset to chosen granularity")
-            
+            self.__logger.info("resampling")
             self._dataset[rts_config["Univariate"]["index_column"]] = pd.to_datetime(self._dataset[rts_config["Univariate"]["index_column"]])
             self._dataset.index = pd.to_datetime(self._dataset[rts_config["Univariate"]["index_column"]])
             self._dataset = self._dataset.resample(resampling_granularity).agg({rts_config["Univariate"]["value_column"]: np.mean, rts_config["Univariate"]["target_column"]: np.max})
             self._dataset.reset_index(inplace=True)
             self._dataset[rts_config["Univariate"]["index_column"]] = self._dataset[rts_config["Univariate"]["index_column"]].dt.strftime("%Y-%m-%d %H:%M:%S")
         
-        if verbose:
-            print_step("Dealing with missing values with specified strategy")
-        
         if missing_strategy == MissingStrategy.DROP:
+            self.__logger.info("dropping missing values")
             self._dataset.dropna(inplace=True)
         elif missing_strategy == MissingStrategy.FIXED_VALUE:
+            self.__logger.info("placing fixed value for missing values")
             self._dataset.fillna(missing_fixed_value, inplace=True)
-            
-        if verbose:
-            print_header("Ended dataset reading")
         
         return self
     
@@ -146,8 +129,7 @@ class ODINTSReader(TSReader):
                            enhanced_dataset[self._DAY_COL].values)
         new_dataset = new_dataset.rename(columns={
             self.timestamp_col: rts_config["Univariate"]["index_column"],
-            self.univariate_col: rts_config["Univariate"]["value_column"]
-        })
+            self.univariate_col: rts_config["Univariate"]["value_column"]})
         new_dataset = new_dataset.drop(columns=new_dataset.columns.difference([rts_config["Univariate"]["index_column"],
                                                                                rts_config["Univariate"]["value_column"],
                                                                                rts_config["Univariate"]["target_column"],
@@ -156,8 +138,7 @@ class ODINTSReader(TSReader):
         
         return new_dataset
     
-    def _add_information(self, complete: bool = False,
-                         verbose: bool = False) -> pd.DataFrame:
+    def _add_information(self, complete: bool = False) -> pd.DataFrame:
         """Add information contained in the anomalies' path.
         
         Parameters
@@ -165,19 +146,13 @@ class ODINTSReader(TSReader):
         complete : bool, default=False
             States if anomaly columns must be added beside the labels.
         
-        verbose: bool, default=False
-            States if detailed printing must be done.
-        
         Returns
         -------
         enhanced_dataset : pd.DataFrame
             The dataset enhanced with the information contained in the json file
             of the anomalies.
         """
-        if verbose:
-            print_step("Converting ODIN TS format to classical GT format")
-            print_step("Reading ODIN TS anomalies json")
-        
+        self.__logger.info("reading odin annotations")
         # read the file with anomalies annotations
         anomalies_df = pd.read_csv(self.anomalies_path)
 
@@ -197,9 +172,7 @@ class ODINTSReader(TSReader):
             dataset_cp.insert(len(dataset_cp.columns), self._DAY_COL, day)
             dataset_cp.insert(len(dataset_cp.columns), self._ANOMALY_TYPE, anomaly_type)
 
-        if verbose:
-            print_step("Retrieving anomaly intervals")
-            
+        self.__logger.info("computing anomaly intervals from file")
         # get the anomaly intervals
         anomaly_intervals = [(datetime.strptime(el[0], "%Y-%m-%d %H:%M:%S"),
                               datetime.strptime(el[1], "%Y-%m-%d %H:%M:%S"))
@@ -210,9 +183,7 @@ class ODINTSReader(TSReader):
                                  for el in zip(anomalies_df[self.start_col].tolist(),
                                                anomalies_df[self.anomaly_type_col].tolist())}
 
-        if verbose:
-            print_step("Converting intervals to labels for each point")
-
+        self.__logger.info("converting intervals to point labels")
         # build the anomaly labels on original dataset
         for start, end in anomaly_intervals:
             dataset_cp.loc[start:end, rts_config["Univariate"]["target_column"]] = 1
@@ -220,10 +191,6 @@ class ODINTSReader(TSReader):
                 dataset_cp.loc[start:end, self._ANOMALY_TYPE] = anomaly_type_dict[start]
                 for idx, row in dataset_cp.loc[start:end].iterrows():
                     dataset_cp.loc[idx, self._DAY_COL] = idx.to_pydatetime().weekday()
-        
-        if verbose:
-            print_step("All intervals have been converted to point labels")
-            print_step("Converted ODIN TS format")
         
         return dataset_cp
     

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import logging
+
 import pandas as pd
 
 from . import TSReader
 from .. import IDataMultipleReader
 from ...input_validation import check_not_default_attributes
-from ...utils import print_header, print_step
 
 
 class TSMultipleReader(TSReader, IDataMultipleReader):
@@ -18,37 +19,27 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
     
     def __init__(self):
         super().__init__()
-        
+
+        self.__logger = logging.getLogger(__name__)
         self._all_dataframes: list | None = None
         
     def read_multiple(self, paths: list[str],
                       files_format: str = "csv",
                       pandas_args: dict | None = None,
-                      verbose: bool = True,
                       *args,
                       **kwargs) -> TSMultipleReader:
-        if verbose:
-            print_header("Start reading all datasets")
-            
         self._all_dataframes = list()
         for idx, path in enumerate(paths):
-            if verbose:
-                print_step(f"Start to read the {idx}th dataset")
-                
+            self.__logger.info(f"reading from {idx}th path {path}")
             self.read(path=path,
                       file_format=files_format,
                       pandas_args=pandas_args,
                       verbose=False)
             self._all_dataframes.append(self._dataset)
-            
-            if verbose:
-                print_step(f"Finished to read the {idx}th dataset")
 
         self.select_dataframe(pos=0)
-
-        if verbose:
-            print_header("All datasets read")
-            
+        self.__logger.info("all datasets read")
+        
         return self
     
     def select_dataframe(self, pos: int) -> TSMultipleReader:

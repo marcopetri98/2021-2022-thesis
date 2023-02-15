@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import datetime
+import logging
 import os
 
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
-from ....utils import print_header, print_step
 
 
 class YahooS5Iterator(object):
@@ -51,6 +51,8 @@ class YahooS5Reader(TSBenchmarkReader):
     
     def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
+
+        self.__logger = logging.getLogger(__name__)
         
     def __iter__(self):
         return YahooS5Iterator(self)
@@ -78,7 +80,6 @@ class YahooS5Reader(TSBenchmarkReader):
     def read(self, path: str | bytes | os.PathLike | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              benchmark: str = None,
              *args,
              **kwargs) -> YahooS5Reader:
@@ -88,6 +89,12 @@ class YahooS5Reader(TSBenchmarkReader):
         path : str or bytes or PathLike or int
             The path to the csv file of the yahoo dataset, or an integer stating
             which time series to load from the benchmark (indexed from 0).
+
+        file_format : str, default="csv"
+            Ignored.
+
+        pandas_args : dict or None, default=None
+            As in superclass.
         
         benchmark : ["A1", "A2", "A3", "A4"]
             The benchmark from which the time series must be extracted in case
@@ -105,12 +112,8 @@ class YahooS5Reader(TSBenchmarkReader):
         
         if isinstance(path, int) and benchmark not in self._ALL_BENCHMARKS:
             raise ValueError(f"benchmark must be one of {self._ALL_BENCHMARKS}")
-        elif not 0 <= path < self._MAX_INT[benchmark]:
+        elif isinstance(path, int) and not 0 <= path < self._MAX_INT[benchmark]:
             raise ValueError(f"for benchmark {benchmark} there are only {self._MAX_INT[benchmark]} series")
-        
-        if verbose:
-            print_header("Dataset reading started")
-            print_step("Start reading values")
         
         if isinstance(path, int):
             path = self._benchmark_path / (benchmark + "Benchmark") / (self._PREFIX[benchmark] + str(path + 1) + ".csv")
@@ -119,10 +122,9 @@ class YahooS5Reader(TSBenchmarkReader):
                      pandas_args=pandas_args,
                      verbose=False)
         
-        if verbose:
-            print_step("Renaming columns with standard names [",
-                       rts_config["Univariate"]["index_column"], ", ",
-                       rts_config["Univariate"]["value_column"], "]")
+        self.__logger.info("Renaming columns with standard names [",
+                           rts_config["Univariate"]["index_column"], ", ",
+                           rts_config["Univariate"]["value_column"], "]")
             
         match benchmark:
             case "A1" | "A2":
@@ -143,14 +145,9 @@ class YahooS5Reader(TSBenchmarkReader):
             
         match benchmark:
             case "A2" | "A3" | "A4":
-                if verbose:
-                    print_step("Converting timestamps into dates")
-                    
+                self.__logger.info("timestamps are being converted to datetimes")
                 dates = [datetime.datetime.fromtimestamp(e)
                          for e in self._dataset[rts_config["Univariate"]["index_column"]]]
                 self._dataset[rts_config["Univariate"]["index_column"]] = pd.to_datetime(dates)
-        
-        if verbose:
-            print_header("Dataset reading ended")
         
         return self

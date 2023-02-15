@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import logging
 import os
 
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
-from ....utils import print_header, print_step
 
 
 class GHLIterator(object):
@@ -36,10 +36,11 @@ class GHLReader(TSBenchmarkReader):
     def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
+        self.__logger = logging.getLogger(__name__)
         self.__check_parameters()
 
         self._all_test_sets_paths = list(sorted([str(e.resolve()) for e in self._benchmark_path.glob("[0-9][0-9]*.csv")]))
-        self._train_set_path = str(self._benchmark_path.glob("train*.csv"))
+        self._train_set_path = self._benchmark_path.glob("train*.csv")
 
     def __iter__(self):
         return GHLIterator(self)
@@ -58,7 +59,6 @@ class GHLReader(TSBenchmarkReader):
     def read(self, path: int | str,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              full_rename: bool = True,
              *args,
              **kwargs) -> GHLReader:
@@ -89,20 +89,15 @@ class GHLReader(TSBenchmarkReader):
         elif isinstance(path, int) and not 0 <= path < len(self):
             raise ValueError(f"there are only {len(self)} testing sets")
 
-        if verbose:
-            print_header("Start to read dataset")
-            if path == "train":
-                print_step("Reading GHL training dataset")
-            else:
-                print_step(f"Reading GHL testing set {path}")
-
         if isinstance(path, int):
-            file_path = self._benchmark_path / self._all_test_sets_paths[path]
+            file_path = self._all_test_sets_paths[path]
         else:
-            file_path = self._benchmark_path / self._train_set_path
+            file_path = self._train_set_path
 
-        if verbose:
-            print_step("Reading file and ordering columns")
+        if path == "train":
+            self.__logger.info(f"reading training at {file_path}")
+        else:
+            self.__logger.info(f"reading testing at {file_path}")
 
         # read file and reorder columns
         dataset = pd.read_csv(file_path)
@@ -110,9 +105,7 @@ class GHLReader(TSBenchmarkReader):
         ordered_cols.extend(["DANGER", "FAULT", "ATTACK"])
         dataset = dataset[ordered_cols]
 
-        if verbose:
-            print_step("Renaming columns with standard names")
-
+        self.__logger.info("renaming columns with standard names")
         # build columns name mappings
         channels = {e: f"channel_{e if not full_rename else idx}"
                     for idx, e in enumerate(dataset.columns[1:-3])
@@ -128,12 +121,11 @@ class GHLReader(TSBenchmarkReader):
 
         self._dataset = dataset.copy()
 
-        if verbose:
-            print_header("Ended dataset reading")
-
         return self
 
     def __check_parameters(self):
-        if len(list(self._benchmark_path.glob("*"))) != len(self) + 1:
+        benchmark_contents = list(self._benchmark_path.glob("*"))
+        self.__logger.debug(f"benchmark folder contains {benchmark_contents}")
+        if len(benchmark_contents) != len(self) + 1:
             raise ValueError("benchmark_location must contain all the 48 tests "
                              "and the training set")

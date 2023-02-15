@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+import logging
 import os
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
-from ....utils import print_header, print_step
 
 
 class SMDIterator(object):
@@ -39,6 +38,7 @@ class SMDReader(TSBenchmarkReader):
     def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
+        self.__logger = logging.getLogger(__name__)
         self._interpretation = self._benchmark_path / "interpretation_label"
         self._test_set = self._benchmark_path / "test"
         self._test_gt = self._benchmark_path / "test_label"
@@ -68,7 +68,6 @@ class SMDReader(TSBenchmarkReader):
     def read(self, path: str | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              *args,
              **kwargs) -> SMDReader:
         """
@@ -95,10 +94,6 @@ class SMDReader(TSBenchmarkReader):
         if isinstance(path, int):
             path = self._machines[path]
 
-        if verbose:
-            print_header("Started dataset reading")
-            print_step(f"Reading machine {path}")
-
         # read training dataset and testing
         training_set = pd.read_csv(self._train_set / (path + ".txt"),
                                    header=None)
@@ -107,9 +102,7 @@ class SMDReader(TSBenchmarkReader):
         test_labels = pd.read_csv(self._test_gt / (path + ".txt"),
                                   header=None)[0].values
 
-        if verbose:
-            print_step("Renaming columns with standard names")
-
+        self.__logger.info("renaming columns with standard names")
         # retrieve number of columns and mapping to new columns' names
         dataset_header = [f"{rts_config['Multivariate']['channel_column']}_{e}"
                           for e in training_set.columns]
@@ -120,9 +113,9 @@ class SMDReader(TSBenchmarkReader):
         training_set.rename(columns=columns_mapping, inplace=True)
         testing_set.rename(columns=columns_mapping, inplace=True)
 
-        if verbose:
-            print_step("Building labels and is_training column")
-
+        self.__logger.info(f"building {rts_config['Multivariate']['target_column']}"
+                           f" and {rts_config['Multivariate']['is_training']} "
+                           f"columns")
         # build overall labels and training column
         labels = np.zeros(training_set.shape[0] + testing_set.shape[0])
         labels[training_set.shape[0]:] = test_labels
@@ -130,9 +123,7 @@ class SMDReader(TSBenchmarkReader):
         is_training[:training_set.shape[0]] = 1
         interpretation = [None] * labels.shape[0]
 
-        if verbose:
-            print_step("Reading anomalies' interpretation")
-
+        self.__logger.info("extracting anomalies interpretation")
         # reading the interpretation file
         with open(self._interpretation / (path + ".txt"), "r") as f:
             for line in f:
@@ -143,9 +134,7 @@ class SMDReader(TSBenchmarkReader):
                 for i in range(int(start), int(end) + 1, 1):
                     interpretation[i] = elements
 
-        if verbose:
-            print_step("Building the overall dataset")
-
+        self.__logger.info("building final dataframe")
         # build the overall dataset
         self._dataset = pd.concat((training_set, testing_set))
         self._dataset.set_index(np.arange(self._dataset.shape[0]), inplace=True)
@@ -159,15 +148,15 @@ class SMDReader(TSBenchmarkReader):
                              rts_config["Multivariate"]["is_training"],
                              is_training)
         self._dataset.insert(len(self._dataset.columns),
-                            "interpretation",
+                             "interpretation",
                              interpretation)
-
-        if verbose:
-            print_header("Dataset reading ended")
 
         return self
 
     def __check_parameters(self):
+        self.__logger.debug(f"benchmark_location contents are "
+                            f"{list(self._benchmark_path.glob('*'))}")
+        
         if not self._interpretation.is_dir():
             raise ValueError("benchmark_location must contain a folder named "
                              "interpretation_label")

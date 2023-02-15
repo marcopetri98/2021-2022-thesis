@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import logging
 import os
 
 from .. import TSBenchmarkReader, rts_config
-from ....utils import print_header, print_step
 
 
 class MGABReaderIterator(object):
@@ -34,6 +34,8 @@ class MGABReader(TSBenchmarkReader):
     def __init__(self, benchmark_location: str | os.PathLike):
         super().__init__(benchmark_location=benchmark_location)
 
+        self.__logger = logging.getLogger(__name__)
+
     def __iter__(self):
         return MGABReaderIterator(self)
 
@@ -51,7 +53,6 @@ class MGABReader(TSBenchmarkReader):
     def read(self, path: str | bytes | os.PathLike | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              *args,
              **kwargs) -> MGABReader:
         """
@@ -60,6 +61,12 @@ class MGABReader(TSBenchmarkReader):
         path : str or bytes or PathLike or int
             The path to the csv containing the time series or the integer
             representing which time series to load from the dataset location.
+
+        file_format : str, default="csv"
+            Ignored.
+
+        pandas_args : dict or None, default=None
+            Ignored.
 
         Returns
         -------
@@ -71,10 +78,6 @@ class MGABReader(TSBenchmarkReader):
         elif isinstance(path, int) and not 0 <= path < len(self):
             raise ValueError(f"path must be between 0 and {len(self)}")
 
-        if verbose:
-            print_header("Dataset reading started")
-            print_step("Start reading values")
-
         if isinstance(path, int):
             path = self._benchmark_path / (str(path + 1) + ".csv")
 
@@ -83,19 +86,12 @@ class MGABReader(TSBenchmarkReader):
                      pandas_args=pandas_args,
                      verbose=False)
 
-        if verbose:
-            print_step("Renaming columns with standard names [",
-                       rts_config["Univariate"]["index_column"], ", ",
-                       rts_config["Univariate"]["value_column"], "]")
-
+        self.__logger.info("renaming columns with standard names")
         self._dataset.rename(columns={
                                 "Unnamed: 0": rts_config["Univariate"]["index_column"],
                                 "value": rts_config["Univariate"]["value_column"],
                                 "is_anomaly": rts_config["Univariate"]["target_column"]
                             },
                             inplace=True)
-
-        if verbose:
-            print_header("Dataset reading ended")
 
         return self

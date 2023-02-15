@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import logging
 import os
 from pathlib import Path
 
@@ -8,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from .. import TSReader, rts_config
-from ....utils import print_header, print_step
 
 
 class NASAIterator(object):
@@ -39,10 +39,11 @@ class NASAReader(TSReader):
     training and testing data to build a single unique dataframe containing all
     data such that new and different split can be performed.
     """
-    def __init__(self, anomalies_path: str):
+    def __init__(self, anomalies_path: str | os.PathLike):
         super().__init__()
 
-        self._anomalies_path = anomalies_path
+        self.__logger = logging.getLogger(__name__)
+        self._anomalies_path = Path(anomalies_path)
 
         self.__check_parameters()
 
@@ -65,7 +66,6 @@ class NASAReader(TSReader):
     def read(self, path: str | int,
              file_format: str = "csv",
              pandas_args: dict | None = None,
-             verbose: bool = True,
              dataset_folder: str = "same-as-labels",
              *args,
              **kwargs) -> NASAReader:
@@ -109,23 +109,14 @@ class NASAReader(TSReader):
 
         row_selector = self._anomalies_df["chan_id"] == path
 
-        if verbose:
-            print_header("Start reading dataset")
-            print_step(f"The selected dataset is {path} of "
-                       f"{self._anomalies_df[row_selector]['spacecraft']}")
-
         # if the user specified one of the channels build the path
         train_path = Path(dataset_folder) / "train" / (path + ".npy")
         test_path = Path(dataset_folder) / "test" / (path + ".npy")
+        self.__logger.debug(f"train={str(train_path)}, test={str(test_path)}")
 
-        if verbose:
-            print_step("Reading training and testing data")
-
+        self.__logger.info("reading numpy files")
         train_series = np.load(train_path)
         test_series = np.load(test_path)
-
-        if verbose:
-            print_step("Build target class vector")
 
         train_labels = np.zeros(train_series.shape[0])
         test_labels = np.zeros(test_series.shape[0])
@@ -134,17 +125,13 @@ class NASAReader(TSReader):
         for sequence in anomalies:
             test_labels[sequence[0]:sequence[1] + 1] = 1
 
-        if verbose:
-            print_step("Naming columns with default names")
-
+        self.__logger.info("renaming columns with standard names")
         columns = [str(e) for e in range(train_series.shape[1])]
         columns[0] = "telemetry"
         columns = [rts_config["Multivariate"]["channel_column"] + "_" + e
                    for e in columns]
 
-        if verbose:
-            print_step("Building the dataframe")
-
+        self.__logger.info("finishing the dataframe")
         series = np.concatenate((train_series, test_series))
         targets = np.concatenate((train_labels, test_labels))
         timestamp = np.arange(series.shape[0])
@@ -161,15 +148,10 @@ class NASAReader(TSReader):
                                   axis=1)
         self._dataset = pd.DataFrame(all_data, columns=all_columns)
 
-        if verbose:
-            print_header("Ended dataset reading")
-
         return self
 
     def __check_parameters(self):
-        if not isinstance(self._anomalies_path, str):
-            raise TypeError("anomalies_path must be a string of a path to a csv"
-                            " file")
+        self.__logger.debug(f"path to anomalies is {str(self._anomalies_path)}")
 
-        if not Path(self._anomalies_path).is_file():
+        if not self._anomalies_path.is_file():
             raise ValueError("anomalies_path must be a path to a csv file")

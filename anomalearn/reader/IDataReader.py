@@ -14,7 +14,6 @@ class IDataReader(ABC):
     def read(self, path,
              file_format: str,
              pandas_args: dict | None = None,
-             verbose: bool = True,
              *args,
              **kwargs) -> IDataReader:
         """Reads a dataset and returns an instance of itself.
@@ -36,9 +35,6 @@ class IDataReader(ABC):
             reading the dataset with pandas. The params depend on the file
             format of the dataset. If the format is "csv", the additional params
             will be the pandas params for `read_csv` and so on.
-            
-        verbose : bool, default=True
-            States if detailed printing must be done while reading the dataset.
             
         args
             Not used, present to allow multiple inheritance and signature change.
