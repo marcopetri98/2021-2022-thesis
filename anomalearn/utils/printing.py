@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime
 
 import colorama
@@ -27,6 +28,7 @@ def print_header(heading: str, separator: str = "=", **kwargs) -> None:
 		This function is deprecated and will be replaced in favor of built-in
 		python logging method since it is pre-built.
 	"""
+	warnings.warn("This function will be substituted by usage of logging", DeprecationWarning)
 	# Checks assumption
 	if len(separator) != 1:
 		raise ValueError("The separator must be a single character")
@@ -62,6 +64,7 @@ def print_step(*args, **kwargs) -> None:
 		This function is deprecated and will be replaced in favor of built-in
 		python logging method since it is pre-built.
 	"""
+	warnings.warn("This function will be substituted by usage of logging", DeprecationWarning)
 	if len(args) == 0:
 		raise ValueError("An execution step print must have a text")
 
