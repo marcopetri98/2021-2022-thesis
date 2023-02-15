@@ -1,9 +1,13 @@
 import importlib
+import logging
 import os
 from pathlib import Path
 from typing import Any
 
 from ..utils import load_py_json
+
+
+__module_logger = logging.getLogger(__name__)
 
 
 def _find_class_in_lib(class_name: str) -> Any:
@@ -95,7 +99,9 @@ def load_estimator(path: str,
     """
     path_obj = Path(path)
     estimator_classes = estimator_classes if estimator_classes is not None else []
-    
+
+    __module_logger.debug(f"path={str(path_obj)}")
+    __module_logger.debug(f"os.listdir(path)={os.listdir(str(path_obj))}")
     if not path_obj.is_dir():
         raise ValueError("The given path is not a directory.")
     elif not {"savable_model.json", "signature.json"}.issubset(os.listdir(str(path_obj))):
