@@ -1,4 +1,6 @@
+import logging
 import math
+import warnings
 from typing import Callable, Any, Optional
 
 import numpy as np
@@ -8,6 +10,9 @@ from sklearn.utils import check_array, check_X_y
 from ..exceptions import ClosedOpenRangeError
 from ..utils import mov_avg, mov_std
 from ..utils.metrics import _true_positive_rate, _true_negative_rate
+
+
+__module_logger = logging.getLogger(__name__)
 
 
 @jit(nopython=True, parallel=True)
@@ -230,6 +235,7 @@ def _get_windows_to_try(window_range: tuple[int, int] | slice | list[int] = (2, 
         return windows
 
 
+# TODO: continue to check until numba.typed.List and numba.typed.Dict will become stable and change
 @jit(nopython=True)
 def _analyse_constant_simplicity(x: np.ndarray,
                                  y: np.ndarray,
@@ -379,6 +385,7 @@ def _check_analysis_inputs(x,
     x = np.array(x)
     y = np.array(y)
     
+    __module_logger.debug(f"np.unique(y)={np.unique(y)}")
     if len(np.unique(y)) != 2:
         raise ValueError("The input labels are more than 2, there must be only "
                          "two labels: 0 (negative) and 1 (positive).")
@@ -433,13 +440,15 @@ def analyse_constant_simplicity(x, y, diff: int = 3) -> dict:
         greater or lower than found bounds.
     """
     x, y, _ = _check_analysis_inputs(x, y, diff)
+    __module_logger.warning("currently typed.List and typed.Dict for numba are "
+                            "still not used")
     best_score, best_upper, best_lower, best_diff = _analyse_constant_simplicity(x, y, diff)
     final_upper, final_lower = _fix_numba_upper_lower(best_upper, best_lower)
     
     return {"constant_score": best_score, "upper_bound": final_upper, "lower_bound": final_lower, "diff_order": best_diff}
 
 
-# TODO: continue to check until numba.typed.List will become stable and change
+# TODO: continue to check until numba.typed.List and numba.typed.Dict will become stable and change
 @jit(nopython=True)
 def _fast_execute_movement_simplicity(x,
                                       y,
@@ -522,8 +531,6 @@ def _fast_execute_movement_simplicity(x,
             if best_score == 1:
                 break
     
-    # TODO: insert some type of warning when function cannot try any config
-    
     return best_score, best_upper, best_lower, best_diff, best_window
 
 
@@ -582,8 +589,13 @@ def _execute_movement_simplicity(x,
         raise TypeError("statistical_movement must be Callable[[Any, int, str], np.ndarray]")
     
     x, y, windows_to_try = _check_analysis_inputs(x, y, diff, window_range)
+    __module_logger.warning("currently typed.List and typed.Dict for numba are "
+                            "still not used")
     best_score, best_upper, best_lower, best_diff, best_window = _fast_execute_movement_simplicity(x, y, diff, windows_to_try, statistical_movement)
     final_upper, final_lower = _fix_numba_upper_lower(best_upper, best_lower)
+    
+    if best_diff == -1:
+        warnings.warn("no configuration can be tested on this input", RuntimeWarning)
     
     return {"movement_score": best_score, "upper_bound": final_upper, "lower_bound": final_lower, "diff_order": best_diff, "window": best_window}
 
@@ -729,6 +741,7 @@ def analyse_mov_std_simplicity(x,
     return result
 
 
+# TODO: continue to check until numba.typed.List and numba.typed.Dict will become stable and change
 @jit(nopython=True, parallel=True)
 def _fast_execute_mixed_score_simplicity(x,
                                          y,
@@ -884,6 +897,8 @@ def analyse_mixed_simplicity(x,
         of the moving standard deviation analysis' results.
     """
     x, y, windows_to_try = _check_analysis_inputs(x, y, diff, window_range)
+    __module_logger.warning("currently typed.List and typed.Dict for numba are "
+                            "still not used")
     results = _fast_execute_mixed_score_simplicity(x, y, diff, windows_to_try)
     
     const_score, const_upper, const_lower, const_diff = results[0], results[1], results[2], results[3]
