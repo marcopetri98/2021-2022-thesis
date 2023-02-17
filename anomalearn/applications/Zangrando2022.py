@@ -7,12 +7,11 @@ import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 
-from .Interfaces import ILoader
 from ..reader.time_series import TSMultipleReader, ODINTSReader
 from ..utils import print_header, print_step
 
 
-class Zangrando2022Loader(ILoader):
+class Zangrando2022Loader(object):
     """Data loader for the paper Zangrando 2022 (https://doi.org/10.1186/s42162-022-00230-7).
 
     The paper implemented in this class is "Anomaly detection in quasi-periodic

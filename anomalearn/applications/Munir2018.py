@@ -6,11 +6,10 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .Interfaces import ILoader
 from ..reader.time_series import TSReader, YahooS5Reader
 
 
-class Munir2018Loader(ILoader):
+class Munir2018Loader(object):
     """Data loader for DeepAnT model.
     
     This class implements the loading of the datasets used in the paper "DeepAnT

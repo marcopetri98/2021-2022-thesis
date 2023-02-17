@@ -27,5 +27,8 @@ development of scientific knowledge since it allows other scientists to improve
 others work or collaborate if an error or imprecision is found.
 """
 
+from .IExperimentLoader import IExperimentLoader
+from .ExperimentLoader import ExperimentLoader
+
 from .Munir2018 import Munir2018Loader
 from .Zangrando2022 import Zangrando2022Loader, Zangrando2022Threshold

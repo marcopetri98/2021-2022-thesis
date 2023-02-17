@@ -50,7 +50,7 @@ class EqualityABC(abc.ABC):
         raise NotImplementedError
     
     def __ne__(self, other):
-        return self.__eq__(other)
+        return not self.__eq__(other)
 
     @classmethod
     def __subclasshook__(cls, other):
