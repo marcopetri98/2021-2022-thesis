@@ -89,8 +89,8 @@ class NABReader(TSBenchmarkReader):
         ----------
         path : str
             It is the name of the dataset that you want to read (e.g.,
-            machine-1-1"), or an integer stating which time series to load from
-            the benchmark (indexed from 0).
+            art_daily_no_noise), or an integer stating which time series to load
+            from the benchmark (indexed from 0).
 
         file_format : str, default="csv"
             Ignored.
@@ -114,28 +114,26 @@ class NABReader(TSBenchmarkReader):
             dataset_name = self._datasets_names[path]
 
         # load dataset
-        dataset = pd.read_csv(dataset_path)
+        super().read(dataset_path, "csv", pandas_args)
 
         self.__logger.info("building point labels from combined windows")
         # build target class vector
-        target = np.zeros(dataset.shape[0])
+        target = np.zeros(self._dataset.shape[0])
         if len(self._combined_windows[dataset_name]) != 0:
             for window in self._combined_windows[dataset_name]:
-                start_idx = dataset["timestamp"].tolist().index(window[0].split(".")[0])
-                end_idx = dataset["timestamp"].tolist().index(window[1].split(".")[0])
+                start_idx = self._dataset["timestamp"].tolist().index(window[0].split(".")[0])
+                end_idx = self._dataset["timestamp"].tolist().index(window[1].split(".")[0])
                 target[start_idx:end_idx + 1] = 1
 
         self.__logger.info("renaming columns with standard names")
         # give to the columns standard names
-        dataset.rename(columns={"timestamp": rts_config["Univariate"]["index_column"]},
-                       inplace=True)
-        dataset.rename(columns={"value": rts_config["Univariate"]["value_column"]},
-                       inplace=True)
-        dataset.insert(len(dataset.columns),
-                       rts_config["Univariate"]["target_column"],
-                       target)
-
-        self._dataset = dataset.copy()
+        self._dataset.rename(columns={"timestamp": rts_config["Univariate"]["index_column"]},
+                             inplace=True)
+        self._dataset.rename(columns={"value": rts_config["Univariate"]["value_column"]},
+                             inplace=True)
+        self._dataset.insert(len(self._dataset.columns),
+                             rts_config["Univariate"]["target_column"],
+                             target)
         
         return self
 

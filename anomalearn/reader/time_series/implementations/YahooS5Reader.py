@@ -7,29 +7,10 @@ import os
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
+from ... import IDatasetReader
 
 
-class YahooS5Iterator(object):
-    """An iterator for the YahooS5Reader class.
-
-    The iterator iterates over all the time series present in the Yahoo
-    benchmark in lexicographic order.
-    """
-    def __init__(self, yahoo_s5):
-        super().__init__()
-        
-        self.index = 0
-        self.yahoo_s5 = yahoo_s5
-        
-    def __next__(self):
-        if self.index < len(self.yahoo_s5):
-            self.index += 1
-            return self.yahoo_s5[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class YahooS5Reader(TSBenchmarkReader):
+class YahooS5Reader(IDatasetReader, TSBenchmarkReader):
     """Data reader for the yahoo webscope S5 anomaly detection (https://webscope.sandbox.yahoo.com/catalog.php?datatype=s&did=70).
     
     The class is used to read and access time series contained in the yahoo S5
@@ -53,9 +34,6 @@ class YahooS5Reader(TSBenchmarkReader):
         super().__init__(benchmark_location=benchmark_location)
 
         self.__logger = logging.getLogger(__name__)
-        
-    def __iter__(self):
-        return YahooS5Iterator(self)
         
     def __len__(self):
         return 367
@@ -122,9 +100,9 @@ class YahooS5Reader(TSBenchmarkReader):
                      pandas_args=pandas_args,
                      verbose=False)
         
-        self.__logger.info("Renaming columns with standard names [",
-                           rts_config["Univariate"]["index_column"], ", ",
-                           rts_config["Univariate"]["value_column"], "]")
+        self.__logger.info("Renaming columns with standard names [%s, %s]",
+                           rts_config["Univariate"]["index_column"],
+                           rts_config["Univariate"]["value_column"])
             
         match benchmark:
             case "A1" | "A2":

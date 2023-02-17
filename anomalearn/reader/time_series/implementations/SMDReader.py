@@ -94,6 +94,9 @@ class SMDReader(TSBenchmarkReader):
         if isinstance(path, int):
             path = self._machines[path]
 
+        self.__logger.info(f"reading training file at {str(self._train_set / (path + '.txt'))}")
+        self.__logger.info(f"reading testing file at {str(self._test_set / (path + '.txt'))}")
+        self.__logger.info(f"reading ground truth file at {str(self._test_gt / (path + '.txt'))}")
         # read training dataset and testing
         training_set = pd.read_csv(self._train_set / (path + ".txt"),
                                    header=None)

@@ -165,7 +165,7 @@ class ExathlonReader(TSBenchmarkReader):
                 case "test":
                     path = self._disturbed_paths[path]
 
-        self.__logger.info(f"reading series at {path}")
+        self.__logger.info(f"reading time series at {path}")
         # actually load the csv using pandas
         dataset = pd.read_csv(path)
 

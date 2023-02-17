@@ -14,8 +14,8 @@ from .. import TSReader, rts_config
 class NASAIterator(object):
     """An iterator for NASAReader.
 
-    The iterator iterates over all the channels of the two time series in the
-    same order of the labeled anomalies file.
+    The iterator iterates over all the channels of the two time series
+    alphabetical order.
     """
     def __init__(self, nasa_reader):
         super().__init__()
@@ -44,6 +44,8 @@ class NASAReader(TSReader):
 
         self.__logger = logging.getLogger(__name__)
         self._anomalies_path = Path(anomalies_path)
+        self._channels = list(sorted([e.name.split(".")[0]
+                                      for e in (Path(self._anomalies_path).parent / "train").glob("*")]))
 
         self.__check_parameters()
 
@@ -96,12 +98,12 @@ class NASAReader(TSReader):
             raise TypeError("dataset_folder must be a valid path to a dir")
 
         if isinstance(path, int):
-            path = self._anomalies_df.iloc[path]["chan_id"]
+            path = self._channels[path]
 
         if dataset_folder == "same-as-labels":
             dataset_folder = Path(self._anomalies_path).parent
 
-        if path not in self._anomalies_df["chan_id"].tolist():
+        if path not in self._channels:
             raise ValueError("path must be a valid channel name")
         elif not {"train", "test"}.issubset(os.listdir(dataset_folder)):
             raise ValueError("train and test folders are not present, pass a "
@@ -114,16 +116,18 @@ class NASAReader(TSReader):
         test_path = Path(dataset_folder) / "test" / (path + ".npy")
         self.__logger.debug(f"train={str(train_path)}, test={str(test_path)}")
 
-        self.__logger.info("reading numpy files")
-        train_series = np.load(train_path)
-        test_series = np.load(test_path)
+        self.__logger.info(f"reading training dataset at {str(train_path)}")
+        self.__logger.info(f"reading testing dataset at {str(test_path)}")
+        train_series = np.load(str(train_path))
+        test_series = np.load(str(test_path))
 
         train_labels = np.zeros(train_series.shape[0])
         test_labels = np.zeros(test_series.shape[0])
         anomalies = self._anomalies_df.loc[row_selector]["anomaly_sequences"]
-        anomalies = ast.literal_eval(anomalies.iloc[0])
-        for sequence in anomalies:
-            test_labels[sequence[0]:sequence[1] + 1] = 1
+        for i in range(anomalies.shape[0]):
+            interval = ast.literal_eval(anomalies.iloc[i])
+            for sequence in interval:
+                test_labels[sequence[0]:sequence[1] + 1] = 1
 
         self.__logger.info("renaming columns with standard names")
         columns = [str(e) for e in range(train_series.shape[1])]

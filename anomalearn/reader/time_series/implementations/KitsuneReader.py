@@ -85,7 +85,8 @@ class KitsuneReader(TSBenchmarkReader):
         
         dataset_name = path if isinstance(path, str) else self._DATASETS[path]
         dataset_path = (self._benchmark_path / dataset_name).resolve()
-        
+
+        self.__logger.info(f"reading dataset from {Path(dataset_path) / (dataset_name + '_dataset.csv')}")
         # read raw data and labels
         dataset = pd.read_csv(Path(dataset_path) / (dataset_name + "_dataset.csv"),
                               header=None,

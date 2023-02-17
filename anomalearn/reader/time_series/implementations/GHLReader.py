@@ -40,13 +40,13 @@ class GHLReader(TSBenchmarkReader):
         self.__check_parameters()
 
         self._all_test_sets_paths = list(sorted([str(e.resolve()) for e in self._benchmark_path.glob("[0-9][0-9]*.csv")]))
-        self._train_set_path = self._benchmark_path.glob("train*.csv")
+        self._train_set_path = str(list(self._benchmark_path.glob("train*.csv"))[0])
 
     def __iter__(self):
         return GHLIterator(self)
 
     def __len__(self):
-        return 48
+        return 49
 
     def __getitem__(self, item):
         if not isinstance(item, int):
@@ -54,7 +54,10 @@ class GHLReader(TSBenchmarkReader):
         elif not 0 <= item < len(self):
             raise IndexError(f"there are only {len(self)} testing sets")
 
-        return self.read(path=item, verbose=False).get_dataframe()
+        if item == 0:
+            return self.read(path="train", verbose=False).get_dataframe()
+        else:
+            return self.read(path=item - 1, verbose=False).get_dataframe()
 
     def read(self, path: int | str,
              file_format: str = "csv",
@@ -86,7 +89,7 @@ class GHLReader(TSBenchmarkReader):
             raise TypeError("path can only be \"train\" if it is a string")
         elif not isinstance(full_rename, bool):
             raise TypeError("full_rename must be boolean")
-        elif isinstance(path, int) and not 0 <= path < len(self):
+        elif isinstance(path, int) and not 0 <= path < len(self) - 1:
             raise ValueError(f"there are only {len(self)} testing sets")
 
         if isinstance(path, int):
@@ -95,14 +98,16 @@ class GHLReader(TSBenchmarkReader):
             file_path = self._train_set_path
 
         if path == "train":
-            self.__logger.info(f"reading training at {file_path}")
+            self.__logger.info("reading training")
         else:
-            self.__logger.info(f"reading testing at {file_path}")
+            self.__logger.info("reading testing")
 
+        self.__logger.info(f"reading time series at {file_path}")
         # read file and reorder columns
         dataset = pd.read_csv(file_path)
         ordered_cols = [e for e in dataset.columns if e not in ["DANGER", "FAULT", "ATTACK"]]
-        ordered_cols.extend(["DANGER", "FAULT", "ATTACK"])
+        if path != "train":
+            ordered_cols.extend(["DANGER", "FAULT", "ATTACK"])
         dataset = dataset[ordered_cols]
 
         self.__logger.info("renaming columns with standard names")
@@ -126,6 +131,6 @@ class GHLReader(TSBenchmarkReader):
     def __check_parameters(self):
         benchmark_contents = list(self._benchmark_path.glob("*"))
         self.__logger.debug(f"benchmark folder contains {benchmark_contents}")
-        if len(benchmark_contents) != len(self) + 1:
+        if len(benchmark_contents) != len(self):
             raise ValueError("benchmark_location must contain all the 48 tests "
                              "and the training set")

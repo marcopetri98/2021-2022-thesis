@@ -74,7 +74,7 @@ class MGABReader(TSBenchmarkReader):
             An instance to itself to allow call chaining.
         """
         if not isinstance(path, int) and not os.path.isfile(path):
-            raise TypeError("path must be a valid path or an int")
+            raise ValueError("path must be a valid path or an int")
         elif isinstance(path, int) and not 0 <= path < len(self):
             raise ValueError(f"path must be between 0 and {len(self)}")
 

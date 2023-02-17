@@ -30,7 +30,7 @@ class TestAbc(unittest.TestCase):
         reverse_iterator = reversed(obtainable)
         
         for idx, val in enumerate(obtainable):
-            self.assertEqual(idx, val)
+            self.assertEqual(obtainable[idx], val)
             
         for idx, val in enumerate(reversed(obtainable)):
-            self.assertEqual(dim - 1 - idx, val)
+            self.assertEqual(obtainable[dim - 1 - idx], val)
