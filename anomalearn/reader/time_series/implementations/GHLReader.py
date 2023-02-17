@@ -6,28 +6,10 @@ import os
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
+from ... import IDatasetReader
 
 
-class GHLIterator(object):
-    """An iterator for GHLReader.
-
-    This iterator reads the testing datasets in lexicographic order.
-    """
-    def __init__(self, ghl_reader):
-        super().__init__()
-
-        self.index = 0
-        self.ghl_reader = ghl_reader
-
-    def __next__(self):
-        if self.index < len(self.ghl_reader):
-            self.index += 1
-            return self.ghl_reader[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class GHLReader(TSBenchmarkReader):
+class GHLReader(IDatasetReader, TSBenchmarkReader):
     """Data reader for GHL dataset (https://doi.org/10.48550/arXiv.1612.06676).
 
     The reader is able to read both testing and training dataset with meaningful
@@ -41,9 +23,6 @@ class GHLReader(TSBenchmarkReader):
 
         self._all_test_sets_paths = list(sorted([str(e.resolve()) for e in self._benchmark_path.glob("[0-9][0-9]*.csv")]))
         self._train_set_path = str(list(self._benchmark_path.glob("train*.csv"))[0])
-
-    def __iter__(self):
-        return GHLIterator(self)
 
     def __len__(self):
         return 49

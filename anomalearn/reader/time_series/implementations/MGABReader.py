@@ -4,28 +4,10 @@ import logging
 import os
 
 from .. import TSBenchmarkReader, rts_config
+from ... import IDatasetReader
 
 
-class MGABReaderIterator(object):
-    """An iterator for the MGABReader class.
-
-    The iterator iterates over time series in ascending order.
-    """
-    def __init__(self, mgab_reader):
-        super().__init__()
-
-        self.index = 0
-        self.mgab_reader = mgab_reader
-
-    def __next__(self):
-        if self.index < len(self.mgab_reader):
-            self.index += 1
-            return self.mgab_reader[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class MGABReader(TSBenchmarkReader):
+class MGABReader(IDatasetReader, TSBenchmarkReader):
     """Data reader for MGAB anomaly benchmark (https://doi.org/10.5281/zenodo.3760086).
 
     This reader is used to read the datasets contained in the MGAB benchmark.
@@ -35,9 +17,6 @@ class MGABReader(TSBenchmarkReader):
         super().__init__(benchmark_location=benchmark_location)
 
         self.__logger = logging.getLogger(__name__)
-
-    def __iter__(self):
-        return MGABReaderIterator(self)
 
     def __len__(self):
         return 10

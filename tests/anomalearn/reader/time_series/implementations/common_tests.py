@@ -43,21 +43,18 @@ def assert_get_item_behaviour(tester: TestCase,
     -------
     None
     """
-    logging.basicConfig(filename=output_path, force=True)
-    logger.setLevel(logging.DEBUG)
-
     if output_path.exists():
         output_path.unlink()
+
+    logging.basicConfig(filename=output_path, force=True)
+    logger.setLevel(logging.DEBUG)
 
     for i in range(len(reader)):
         _ = reader[i]
 
     output = output_path.read_text()
     read_files = re.findall(".*" + split_string + ".*\n", output)
-    print(read_files)
     filenames = set([e.split(split_string)[1] for e in read_files])
-    for name in sorted(filenames):
-        print(name)
     tester.assertEqual(benchmark_length, len(filenames))
     for filename in filenames:
         filename_path = Path(filename).parent.resolve()

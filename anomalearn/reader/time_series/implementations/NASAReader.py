@@ -9,29 +9,10 @@ import numpy as np
 import pandas as pd
 
 from .. import TSReader, rts_config
+from ... import IDatasetReader
 
 
-class NASAIterator(object):
-    """An iterator for NASAReader.
-
-    The iterator iterates over all the channels of the two time series
-    alphabetical order.
-    """
-    def __init__(self, nasa_reader):
-        super().__init__()
-
-        self.index = 0
-        self.nasa_reader = nasa_reader
-
-    def __next__(self):
-        if self.index < len(self.nasa_reader):
-            self.index += 1
-            return self.nasa_reader[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class NASAReader(TSReader):
+class NASAReader(IDatasetReader, TSReader):
     """Data reader for NASA MSL and NASA SMAP datasets (https://doi.org/10.1145/3219819.3219845).
 
     The reader is set up such that NASA files pre-split in training and testing
@@ -50,9 +31,6 @@ class NASAReader(TSReader):
         self.__check_parameters()
 
         self._anomalies_df = pd.read_csv(self._anomalies_path)
-
-    def __iter__(self):
-        return NASAIterator(self)
 
     def __len__(self):
         return 82

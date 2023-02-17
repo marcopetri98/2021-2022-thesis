@@ -99,6 +99,8 @@ class TestScorerGaussian(unittest.TestCase):
             new_scorer = ScorerGaussian()
             new_scorer.load(tmp_dir)
             self.assertEqual(scorer, new_scorer)
-            
-        path = Path(__file__) / "../../../../../requirements.txt"
+
+        path = Path(__file__).parent / (str(Path(__file__).name).split(".")[0] + "_temp_.txt")
+        path.touch()
         self.assertRaises(ValueError, scorer.save, str(path))
+        path.unlink()

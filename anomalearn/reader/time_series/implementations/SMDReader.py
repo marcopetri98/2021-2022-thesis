@@ -7,29 +7,10 @@ import numpy as np
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
+from ... import IDatasetReader
 
 
-class SMDIterator(object):
-    """An iterator for SMDReader.
-
-    The iterator reads the datasets from the first machine till the last machine
-    in lexicographic order.
-    """
-    def __init__(self, smd_reader):
-        super().__init__()
-
-        self.index = 0
-        self.smd_reader = smd_reader
-
-    def __next__(self):
-        if self.index < len(self.smd_reader):
-            self.index += 1
-            return self.smd_reader[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class SMDReader(TSBenchmarkReader):
+class SMDReader(IDatasetReader, TSBenchmarkReader):
     """Data reader for SMD dataset (https://doi.org/10.1145/3292500.3330672).
 
     The reader reads the txt files in the SMD benchmark folder and translates
@@ -50,9 +31,6 @@ class SMDReader(TSBenchmarkReader):
         self._machines.sort(key=lambda elem: int(elem.split("-")[1])*10 + int(elem.split("-")[2]))
 
         self.__check_parameters()
-
-    def __iter__(self):
-        return SMDIterator(self)
 
     def __len__(self):
         return 28

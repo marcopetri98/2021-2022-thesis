@@ -6,32 +6,12 @@ import operator
 import os
 
 import numpy as np
-import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
+from ... import IDatasetReader
 
 
-class NABIterator(object):
-    """An iterator for the NAB benchmark.
-
-    The iterator reads in lexicographic order datasets' folders and csv files.
-    It also reads the datasets without anomalies.
-    """
-    def __init__(self, nab_reader):
-        super().__init__()
-
-        self.index = 0
-        self.nab_reader = nab_reader
-
-    def __next__(self):
-        if self.index < len(self.nab_reader):
-            self.index += 1
-            return self.nab_reader[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class NABReader(TSBenchmarkReader):
+class NABReader(IDatasetReader, TSBenchmarkReader):
     """A reader of NAB time series datasets.
 
     The reader reads the time series and adds the target column class for the
@@ -64,9 +44,6 @@ class NABReader(TSBenchmarkReader):
 
         self._combined_windows = {key.split("/")[1].split(".")[0]: self._combined_windows[key]
                                   for key in self._combined_windows}
-
-    def __iter__(self):
-        return NABIterator(self)
 
     def __len__(self):
         return len(self._datasets_names)

@@ -8,28 +8,10 @@ import numpy as np
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
+from ... import IDatasetReader
 
 
-class KitsuneIterator(object):
-    """An iterator for KitsuneReader.
-    
-    The iterator reads the datasets in lexicographic order.
-    """
-    def __init__(self, kitsune_reader):
-        super().__init__()
-        
-        self.index = 0
-        self.kitsune_reader = kitsune_reader
-        
-    def __next__(self):
-        if self.index < len(self.kitsune_reader):
-            self.index += 1
-            return self.kitsune_reader[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class KitsuneReader(TSBenchmarkReader):
+class KitsuneReader(IDatasetReader, TSBenchmarkReader):
     """A reader for the Kitsune benchmark.
     
     The reader reads the csv files with the raw data and the labels. The reader
@@ -43,9 +25,6 @@ class KitsuneReader(TSBenchmarkReader):
 
         self.__logger = logging.getLogger(__name__)
         self.__check_parameters()
-        
-    def __iter__(self):
-        return KitsuneIterator(self)
         
     def __len__(self):
         return 9

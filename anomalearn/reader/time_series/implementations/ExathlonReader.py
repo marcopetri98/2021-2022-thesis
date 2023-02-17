@@ -8,30 +8,10 @@ import numpy as np
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
+from ... import IDatasetReader
 
 
-class ExathlonIterator(object):
-    """An iterator for Exathlon reader.
-
-    This iterator reads the time series from the app with the smallest number to
-    the highest number. Moreover, it first returns all the training sets, then
-    it return all the test sets.
-    """
-    def __init__(self, exathlon_reader):
-        super().__init__()
-
-        self.index = 0
-        self.exathlon_reader = exathlon_reader
-
-    def __next__(self):
-        if self.index < len(self.exathlon_reader):
-            self.index += 1
-            return self.exathlon_reader[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class ExathlonReader(TSBenchmarkReader):
+class ExathlonReader(IDatasetReader, TSBenchmarkReader):
     """A reader for the Exathlon benchmark (https://doi.org/10.14778/3476249.3476307).
 
     The reader automatically provides an easy-to-use API to read the normal and
@@ -87,9 +67,6 @@ class ExathlonReader(TSBenchmarkReader):
         """
         self._mode = mode
         self.__check_parameters()
-
-    def __iter__(self):
-        return ExathlonIterator(self)
 
     def __len__(self):
         match self._mode:

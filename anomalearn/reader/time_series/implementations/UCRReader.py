@@ -8,29 +8,10 @@ import numpy as np
 import pandas as pd
 
 from .. import TSBenchmarkReader, rts_config
+from ... import IDatasetReader
 
 
-class UCRIterator(object):
-    """An iterator for UCRReader.
-
-    The iterator reads the datasets from the first till the last in
-    lexicographic order.
-    """
-    def __init__(self, ucr_reader):
-        super().__init__()
-
-        self.index = 0
-        self.ucr_reader = ucr_reader
-
-    def __next__(self):
-        if self.index < len(self.ucr_reader):
-            self.index += 1
-            return self.ucr_reader[self.index - 1]
-        else:
-            raise StopIteration()
-
-
-class UCRReader(TSBenchmarkReader):
+class UCRReader(IDatasetReader, TSBenchmarkReader):
     """Data reader for UCR benchmark (https://doi.org/10.1109/TKDE.2021.3112126).
 
     The reader loads the txt files from the UCR benchmark and translate them in
@@ -47,9 +28,6 @@ class UCRReader(TSBenchmarkReader):
         self.__logger = logging.getLogger(__name__)
 
         self.__check_parameters()
-
-    def __iter__(self):
-        return UCRIterator(self)
 
     def __len__(self):
         return 250
