@@ -7,7 +7,7 @@ from skopt.space import Categorical, Integer, Real
 from . import SkoptSearchABC
 
 
-class GaussianProcessesSearch(SkoptSearchABC):
+class GBRTSearch(SkoptSearchABC):
     def __init__(self, parameter_space: list[Categorical | Integer | Real],
                  saving_folder: str | os.PathLike,
                  saving_filename: str):
@@ -21,17 +21,17 @@ class GaussianProcessesSearch(SkoptSearchABC):
                     load_checkpoints: bool,
                     x0=None,
                     y0=None) -> None:
-        self.__logger.info("Starting the gaussian processes minimization")
+        self.__logger.info("Starting the gradient boosted regression tree minimization")
         
         if load_checkpoints:
-            _ = skopt.gp_minimize(self._skopt_objective,
-                                  self.parameter_space,
-                                  x0=x0,
-                                  y0=y0,
-                                  callback=callbacks,
-                                  **skopt_kwargs)
+            _ = skopt.gbrt_minimize(self._skopt_objective,
+                                    self.parameter_space,
+                                    x0=x0,
+                                    y0=y0,
+                                    callback=callbacks,
+                                    **skopt_kwargs)
         else:
-            _ = skopt.gp_minimize(self._skopt_objective,
-                                  self.parameter_space,
-                                  callback=callbacks,
-                                  **skopt_kwargs)
+            _ = skopt.gbrt_minimize(self._skopt_objective,
+                                    self.parameter_space,
+                                    callback=callbacks,
+                                    **skopt_kwargs)

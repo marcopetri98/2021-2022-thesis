@@ -1,8 +1,6 @@
 import abc
 from abc import ABC
 
-import numpy as np
-
 
 class IHyperparameterSearchResults(ABC):
     """Interface to represent hyperparameter search result exposed methods.
@@ -42,14 +40,15 @@ class IHyperparameterSearchResults(ABC):
         pass
     
     @abc.abstractmethod
-    def get_history(self) -> np.ndarray:
+    def get_history(self) -> list:
         """Returns the history of the hyperparameter search.
         
         Returns
         -------
-        history : ndarray of shape (n_iterations, 2)
-            The history of the search in which each element is composed of two
-            values: score and tried parameters as a dictionary.
+        history : list
+            The history of the tried configuration with relative duration and
+            score in order. The first element of the list is the list of names
+            of the elements in lists.
         """
         pass
     

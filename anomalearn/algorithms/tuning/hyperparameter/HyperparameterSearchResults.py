@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 
 from . import IHyperparameterSearchResults
@@ -15,18 +17,21 @@ class HyperparameterSearchResults(IHyperparameterSearchResults):
     
     def __init__(self, history: list):
         super().__init__()
-        
-        self.history = history
+
+        self.__logger = logging.getLogger(__name__)
+        self._history = history
     
     def get_best_score(self) -> float:
-        if len(self.history) == 0:
-            print("There is no search")
+        if len(self._history) == 0:
+            self.__logger.info("There is no search")
+            return np.nan
         else:
-            return np.min(self.history[1:, 0])
+            return np.min(self._history[1:], axis=0)[0]
     
     def get_best_config(self) -> dict:
-        if len(self.history) == 0:
-            print("There is no search")
+        if len(self._history) == 0:
+            self.__logger.info("There is no search")
+            return dict()
         else:
             tries = self._get_descending_score_tries()
             
@@ -37,18 +42,18 @@ class HyperparameterSearchResults(IHyperparameterSearchResults):
             return best_config
     
     def get_num_iterations(self) -> int:
-        return len(self.history) - 1
+        return len(self._history) - 1
     
     def get_history(self) -> list:
-        return self.history.copy()
+        return self._history.copy()
     
     def print_search(self, *args, **kwargs) -> None:
-        if len(self.history) == 0:
+        if len(self._history) == 0:
             print("There is no search")
         else:
             tries = self._get_descending_score_tries()
             
-            print("Total number of tries: ", len(tries) - 1)
+            print("Total number of tries: ", self.get_num_iterations())
             first = True
             for config in tries:
                 if first:
@@ -57,7 +62,7 @@ class HyperparameterSearchResults(IHyperparameterSearchResults):
                     text = ""
                     for i in range(len(config)):
                         text += str(tries[0][i])
-                        text += ": " + str(config[i]) + " "
+                        text += ": " + str(config[i]) + ", "
                     print(text)
     
     def _get_descending_score_tries(self) -> list:
@@ -68,10 +73,10 @@ class HyperparameterSearchResults(IHyperparameterSearchResults):
         all_tries
             Tries ordered from worst to best.
         """
-        scores = [x[0] for x in self.history[1::]]
+        scores = [x[0] for x in self._history[1::]]
         tries = np.array(scores)
         indices = (np.argsort(tries) + 1).tolist()
         indices.reverse()
         indices.insert(0, 0)
-        tries = [self.history[i] for i in indices]
+        tries = [self._history[i] for i in indices]
         return tries

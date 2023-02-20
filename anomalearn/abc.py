@@ -26,6 +26,7 @@ def _check_methods(klass, *methods):
         NotImplemented if there is no method or a method is None. True if all
         methods are present.
     """
+    __module_logger.debug(f"class should implement methods {methods}")
     __module_logger.debug(f"received class {klass}")
     __module_logger.debug(f"class.__dict__ = {klass.__dict__}")
     # exclude object an maintain order
@@ -36,6 +37,7 @@ def _check_methods(klass, *methods):
                 if base.__dict__[method] is None:
                     return NotImplemented
                 else:
+                    __module_logger.debug(f"method {method} implemented")
                     break
         else:
             return NotImplemented
@@ -84,5 +86,5 @@ class ObtainableABC(Reversible, Sized):
     @classmethod
     def __subclasshook__(cls, other):
         if cls is ObtainableABC:
-            return _check_methods(other, "__getitem__", "__len__", "__iter__", "__reversed__")
+            return _check_methods(other, "__getitem__", "__len__", "__iter__")
         return NotImplemented

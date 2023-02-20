@@ -104,6 +104,7 @@ def print_warning(*args, **kwargs) -> None:
 		This function is deprecated and will be replaced in favor of built-in
 		python logging method since it is pre-built.
 	"""
+	warnings.warn("This function will be substituted by usage of logging", DeprecationWarning)
 	if len(args) == 0:
 		raise ValueError("The warning must have a text")
 
