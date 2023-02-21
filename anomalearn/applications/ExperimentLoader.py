@@ -10,6 +10,7 @@ import pandas as pd
 from . import IExperimentLoader
 from .. import EqualityABC
 from ..reader import IDatasetReader
+from ..reader.time_series import rts_config
 
 
 class ExperimentLoader(IExperimentLoader):
@@ -121,7 +122,8 @@ class ExperimentLoader(IExperimentLoader):
             for i, indices in enumerate(series_to_use):
                 self._series.append(self.__fix_input_series(self._readers[i], indices))
 
-    def __fix_input_split(self, split: Sequence[float] | None) -> tuple[float, float]:
+    @staticmethod
+    def __fix_input_split(split: Sequence[float] | None) -> tuple[float, float] | None:
         """Fix the given split to the standard split format.
         
         Parameters
@@ -148,7 +150,7 @@ class ExperimentLoader(IExperimentLoader):
             elif split is not None:
                 return split[0], split[1]
             else:
-                return self._default_split
+                return None
         except IndexError:
             raise TypeError("splits must be tuple of length two")
         
@@ -389,7 +391,7 @@ class ExperimentLoader(IExperimentLoader):
                 total += len(self._series[i])
         return total
 
-    def get_series(self, index: int) -> pd.DataFrame:
+    def get_series(self, index: int) -> tuple[pd.DataFrame, pd.DataFrame]:
         if index < 0:
             index = self.num_series + index
             if index < 0:
@@ -405,13 +407,42 @@ class ExperimentLoader(IExperimentLoader):
                 seen += len(self._series[i])
             else:
                 if self._series[i] is None:
-                    return reader[index - seen]
+                    reader_i = i
+                    series = reader[index - seen]
+                    break
                 else:
-                    return reader[self._series[i][index - seen]]
+                    reader_i = i
+                    series = reader[self._series[i][index - seen]]
+                    break
         else:
             raise IndexError("the time series can't be found")
+        
+        if self._splits[reader_i] is not None:
+            train_pr, _ = self._splits[reader_i]
+            last_point = round(series.shape[0] * train_pr)
+            return series.iloc[:last_point], series.iloc[last_point:]
+        else:
+            train_col = rts_config["DEFAULT"]["is_training"]
+            if train_col not in series.columns:
+                train_pr, _ = self._default_split
+                last_point = round(series.shape[0] * train_pr)
+                return series.iloc[:last_point], series.iloc[last_point:]
+            else:
+                return series[series[train_col] == 1], series[series[train_col] == 0]
+        
+    def get_train_test_split(self, index: int) -> tuple[float, float] | None:
+        index = self.__check_index(index)
+        return self._splits[index]
+    
+    def get_series_to_use(self, index: int) -> list[int] | None:
+        index = self.__check_index(index)
+        series = self._series[index]
+        if series is not None:
+            return series.copy()
+        else:
+            return series
 
-    def series_iterator(self, reversed_: bool = False) -> Iterator:
+    def series_iterator(self, reversed_: bool = False) -> Iterator[tuple[pd.DataFrame, pd.DataFrame]]:
         if reversed_:
             indices = reversed(range(self.num_series))
         else:

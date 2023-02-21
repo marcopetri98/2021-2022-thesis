@@ -2,9 +2,11 @@ import unittest
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 from anomalearn.applications import ExperimentLoader
-from anomalearn.reader.time_series import YahooS5Reader, MGABReader, NABReader
+from anomalearn.reader.time_series import YahooS5Reader, MGABReader, NABReader, \
+    SMDReader, rts_config
 
 
 class TestExperimentLoader(unittest.TestCase):
@@ -144,7 +146,7 @@ class TestExperimentLoader(unittest.TestCase):
         del exp1[0]
         reader, split, series = exp1[0]
         self.assertIsInstance(reader, MGABReader)
-        self.assertTupleEqual((0.8, 0.2), split)
+        self.assertIsNone(split)
         self.assertListEqual([1, 2, 3], series)
 
     def test_index(self):
@@ -211,28 +213,98 @@ class TestExperimentLoader(unittest.TestCase):
         self.assertEqual(6, exp3.num_series)
 
     def test_get_series(self):
+        def get_train_test(df: pd.DataFrame, train_pr: float) -> tuple[pd.DataFrame, pd.DataFrame]:
+            length = df.shape[0]
+            last_train = round(length * train_pr)
+            return df.iloc[:last_train], df.iloc[last_train:]
+        
+        def numpy_assert_train_test(real, got, train_pr: float):
+            got_train, got_test = got[0], got[1]
+            real_train, real_test = get_train_test(real, train_pr)
+            np.testing.assert_array_equal(real_train.values, got_train.values)
+            np.testing.assert_array_equal(real_test.values, got_test.values)
+            
+        # check usage of default split for dataset without column is_training
         yahoo = YahooS5Reader(self.benchmark_folder / "yahoo_s5")
         mgab = MGABReader(self.benchmark_folder / "mgab")
+        smd = SMDReader(self.benchmark_folder / "smd")
         exp1 = ExperimentLoader([yahoo, mgab])
-        exp2 = ExperimentLoader([yahoo, mgab], [(0.9, 0.1), None], [None, [1, 2, 3]])
-        exp3 = ExperimentLoader([yahoo, mgab], [(0.9, 0.1), None], [[1, 2, 3], [1, 2, 3]])
+        exp2 = ExperimentLoader([yahoo, mgab], [(0.9, 0.1), (0.9, 0.1)], [None, [1, 2, 3]])
+        exp3 = ExperimentLoader([yahoo, mgab], [(0.5, 0.5), (0.5, 0.5)], [[1, 2, 3], [1, 2, 3]])
 
-        np.testing.assert_array_equal(yahoo[0].values, exp1.get_series(0).values)
-        np.testing.assert_array_equal(yahoo[150].values, exp1.get_series(150).values)
-        np.testing.assert_array_equal(mgab[0].values, exp1.get_series(367).values)
-        np.testing.assert_array_equal(mgab[9].values, exp1.get_series(-1).values)
-        np.testing.assert_array_equal(yahoo[366].values, exp1.get_series(-11).values)
+        numpy_assert_train_test(yahoo[0], exp1.get_series(0), 0.8)
+        numpy_assert_train_test(yahoo[150], exp1.get_series(150), 0.8)
+        numpy_assert_train_test(mgab[0], exp1.get_series(367), 0.8)
+        numpy_assert_train_test(mgab[9], exp1.get_series(-1), 0.8)
+        numpy_assert_train_test(yahoo[366], exp1.get_series(-11), 0.8)
         self.assertRaises(IndexError, exp1.get_series, 500)
+        self.assertRaises(IndexError, exp1.get_series, -501)
 
-        np.testing.assert_array_equal(mgab[1].values, exp2.get_series(367).values)
-        np.testing.assert_array_equal(mgab[3].values, exp2.get_series(-1).values)
+        numpy_assert_train_test(yahoo[0], exp2.get_series(0), 0.9)
+        numpy_assert_train_test(mgab[1], exp2.get_series(367), 0.9)
+        numpy_assert_train_test(mgab[3], exp2.get_series(-1), 0.9)
         self.assertRaises(IndexError, exp2.get_series, 370)
+        self.assertRaises(IndexError, exp2.get_series, -371)
 
-        np.testing.assert_array_equal(yahoo[1].values, exp3.get_series(0).values)
-        np.testing.assert_array_equal(yahoo[3].values, exp3.get_series(2).values)
-        np.testing.assert_array_equal(mgab[1].values, exp3.get_series(3).values)
-        np.testing.assert_array_equal(mgab[3].values, exp3.get_series(-1).values)
+        numpy_assert_train_test(yahoo[1], exp3.get_series(0), 0.5)
+        numpy_assert_train_test(yahoo[3], exp3.get_series(2), 0.5)
+        numpy_assert_train_test(mgab[1], exp3.get_series(3), 0.5)
+        numpy_assert_train_test(mgab[3], exp3.get_series(-1), 0.5)
         self.assertRaises(IndexError, exp3.get_series, 7)
+        self.assertRaises(IndexError, exp3.get_series, -7)
+        
+        # check that dataset with column is_training really use their default split
+        exp1 = ExperimentLoader([smd, mgab], [(0.5, 0.5), (0.5, 0.5)])
+        numpy_assert_train_test(smd[0], exp1.get_series(0), 0.5)
+        numpy_assert_train_test(mgab[9], exp1.get_series(-1), 0.5)
+        
+        exp1 = ExperimentLoader([smd, mgab], [None, (0.5, 0.5)])
+        numpy_assert_train_test(mgab[9], exp1.get_series(-1), 0.5)
+        real_smd = smd[0]
+        train, test = real_smd[real_smd[rts_config["DEFAULT"]["is_training"]] == 1], real_smd[real_smd[rts_config["DEFAULT"]["is_training"]] == 0]
+        got_train, got_test = exp1.get_series(0)
+        np.testing.assert_array_equal(train.values, got_train.values)
+        np.testing.assert_array_equal(test.values, got_test.values)
+
+    def test_get_train_test_split(self):
+        mgab = MGABReader(self.benchmark_folder / "mgab")
+        exp1 = ExperimentLoader([mgab, mgab])
+        self.assertRaises(IndexError, exp1.get_train_test_split, -100)
+        self.assertRaises(IndexError, exp1.get_train_test_split, 100)
+        self.assertTupleEqual((0.8, 0.2), exp1.get_train_test_split(0))
+        self.assertTupleEqual((0.8, 0.2), exp1.get_train_test_split(1))
+        
+        exp1 = ExperimentLoader([mgab, mgab], [(0.5, 0.5), None])
+        self.assertTupleEqual((0.5, 0.5), exp1.get_train_test_split(0))
+        self.assertIsNone(exp1.get_train_test_split(1))
+        
+        exp1 = ExperimentLoader([mgab, mgab], [None, (0.5, 0.5)])
+        self.assertIsNone(exp1.get_train_test_split(0))
+        self.assertTupleEqual((0.5, 0.5), exp1.get_train_test_split(1))
+        
+        exp1 = ExperimentLoader([mgab, mgab], [(0.5, 0.5), (0.5, 0.5)])
+        self.assertTupleEqual((0.5, 0.5), exp1.get_train_test_split(0))
+        self.assertTupleEqual((0.5, 0.5), exp1.get_train_test_split(1))
+        
+    def test_get_series_to_use(self):
+        mgab = MGABReader(self.benchmark_folder / "mgab")
+        exp1 = ExperimentLoader([mgab, mgab])
+        self.assertRaises(IndexError, exp1.get_series_to_use, -100)
+        self.assertRaises(IndexError, exp1.get_series_to_use, 100)
+        self.assertIsNone(exp1.get_series_to_use(0))
+        self.assertIsNone(exp1.get_series_to_use(1))
+        
+        exp1 = ExperimentLoader([mgab, mgab], series_to_use=[None, [0, 1, 2]])
+        self.assertIsNone(exp1.get_series_to_use(0))
+        self.assertListEqual([0, 1, 2], exp1.get_series_to_use(1))
+        
+        exp1 = ExperimentLoader([mgab, mgab], series_to_use=[[0, 1, 2], None])
+        self.assertListEqual([0, 1, 2], exp1.get_series_to_use(0))
+        self.assertIsNone(exp1.get_series_to_use(1))
+        
+        exp1 = ExperimentLoader([mgab, mgab], series_to_use=[[0, 1, 2], [0, 1, 2]])
+        self.assertListEqual([0, 1, 2], exp1.get_series_to_use(0))
+        self.assertListEqual([0, 1, 2], exp1.get_series_to_use(1))
 
     def test_series_iterator(self):
         mgab = MGABReader(self.benchmark_folder / "mgab")
@@ -244,8 +316,10 @@ class TestExperimentLoader(unittest.TestCase):
             else:
                 exp1 = ExperimentLoader([mgab, mgab], [(0.9, 0.1), None], [[1, 2, 3], [1, 2, 3]])
 
-            for i, series in enumerate(exp1.series_iterator()):
-                np.testing.assert_array_equal(series.values, exp1.get_series(i).values)
+            for i, (train, test) in enumerate(exp1.series_iterator()):
+                train_df, test_df = exp1.get_series(i)
+                np.testing.assert_array_equal(train.values, train_df.values)
+                np.testing.assert_array_equal(test.values, test_df.values)
 
     def test_set_train_test_split(self):
         yahoo = YahooS5Reader(self.benchmark_folder / "yahoo_s5")

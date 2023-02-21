@@ -83,7 +83,7 @@ class IExperimentLoader(MutableSequence, EqualityABC):
         raise NotImplementedError
     
     @abc.abstractmethod
-    def get_series(self, index: int) -> pd.DataFrame:
+    def get_series(self, index: int) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Get the series at `index` of the experiment loader.
         
         Parameters
@@ -104,7 +104,45 @@ class IExperimentLoader(MutableSequence, EqualityABC):
         raise NotImplementedError
     
     @abc.abstractmethod
-    def series_iterator(self, reversed_: bool = False) -> Iterator:
+    def get_train_test_split(self, index: int) -> tuple[float, float] | None:
+        """Gets the train-test split for the specified index.
+        
+        Parameters
+        ----------
+        index : int
+            It is the index of the time series to get. It must be less than
+            `num_series` and it can also be negative. If negative it is relative
+            to the last series (e.g., `num_series`).
+
+        Returns
+        -------
+        split : tuple[float, float]
+            The train-test split to use for the reader at `index`. None if not
+            specific split has been set.
+        """
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def get_series_to_use(self, index: int) -> list[int] | None:
+        """Gets the series to use for the specified index.
+        
+        Parameters
+        ----------
+        index : int
+            It is the index of the time series to get. It must be less than
+            `num_series` and it can also be negative. If negative it is relative
+            to the last series (e.g., `num_series`).
+
+        Returns
+        -------
+        series_to_use : list[int] or None
+            The series to use for the reader at `index`. None if all series must
+            be used.
+        """
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def series_iterator(self, reversed_: bool = False) -> Iterator[tuple[pd.DataFrame, pd.DataFrame]]:
         """Returns an iterator which iterates over the series of the experiment.
         
         Parameters
@@ -114,12 +152,13 @@ class IExperimentLoader(MutableSequence, EqualityABC):
         
         Returns
         -------
-        series_iterator : Iterator
+        series_iterator : Iterator[tuple[pd.DataFrame, pd.DataFrame]]
             It is an iterator which iterates over the series of the experiment.
             It iterates on all readers in order and returns the training and
             testing series for each of the series that must be loaded. If the
             iterator is reversed, it iterates from the last reader to the first
-            and for each of them from the last series to the first.
+            and for each of them from the last series to the first. It yields
+            to dataframes.
         """
         raise NotImplementedError
     
