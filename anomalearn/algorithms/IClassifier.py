@@ -31,4 +31,4 @@ class IClassifier(ABC):
             least 2 dimensions in which the first is equal to the first
             dimension of `x` (usually, it has 2 dimensions and the second is 1).
         """
-        pass
+        raise NotImplementedError

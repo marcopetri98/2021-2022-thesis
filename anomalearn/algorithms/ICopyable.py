@@ -15,4 +15,4 @@ class ICopyable(abc.ABC):
         obj_copy : ICopyable
             It is the copy of the object.
         """
-        pass
+        raise NotImplementedError

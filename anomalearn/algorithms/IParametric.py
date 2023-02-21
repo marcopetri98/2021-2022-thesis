@@ -34,4 +34,4 @@ class IParametric(ABC):
         -------
         None
         """
-        pass
+        raise NotImplementedError

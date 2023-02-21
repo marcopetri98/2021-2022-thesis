@@ -41,3 +41,4 @@ class IShapeChanger(abc.ABC):
             It is the array of the transformed targets. It has at least two
             dimensions and the first is identical to that of `x_new`.
         """
+        raise NotImplementedError

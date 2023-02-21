@@ -1,3 +1,4 @@
+from __future__ import annotations
 import abc
 
 from .. import ICopyable
@@ -12,6 +13,40 @@ class IPipelineLayer(ICopyable):
     interface. This interface is required for all layers that can be inserted in
     a pipeline object.
     """
+    def __init__(self):
+        super().__init__()
+        
+        self._pipeline_class = None
+    
+    def get_pipeline_class(self):
+        """Gets the class to be used in the pipeline when the model has multiple allowed interfaces.
+        
+        Returns
+        -------
+        interface_to_use
+            The interface to be used for the object.
+        """
+        return self._pipeline_class
+    
+    def set_pipeline_class(self, interface) -> IPipelineLayer:
+        """Set which interface must be used by the pipeline.
+        
+        Parameters
+        ----------
+        interface
+            One of the interfaces of the object that must be used in the
+            pipeline, or None to reset it.
+
+        Returns
+        -------
+        self
+            Instance to itself
+        """
+        if interface is not None and not isinstance(self, interface):
+            raise ValueError(f"self must be of type {interface}")
+        
+        self._pipeline_class = interface
+        return self
     
     @abc.abstractmethod
     def get_input_shape(self) -> tuple:
@@ -29,7 +64,7 @@ class IPipelineLayer(ICopyable):
             e.g. ("n", "n") can be any array with two dimensions with equal
             value such as (5, 5) or (100, 100).
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def get_output_shape(self) -> tuple:
@@ -47,4 +82,4 @@ class IPipelineLayer(ICopyable):
             ("n", "n") can be any array with two dimensions with equal value
             such as (5, 5) or (100, 100).
         """
-        pass
+        raise NotImplementedError

@@ -105,7 +105,7 @@ class IHyperparameterSearch(ABC):
         search_results : IHyperparameterSearchResults
             The results of the search.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def get_results(self) -> IHyperparameterSearchResults:
@@ -117,4 +117,4 @@ class IHyperparameterSearch(ABC):
             The results of the last search or the specified search at
             initialization.
         """
-        pass
+        raise NotImplementedError

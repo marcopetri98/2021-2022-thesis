@@ -34,7 +34,7 @@ class ISavable(ABC):
         ValueError
             If the given path points to an existing file and not to a directory.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def load(self, path: str,
@@ -63,4 +63,4 @@ class ISavable(ABC):
         ValueError
             If the given path does not point to a saved model.
         """
-        pass
+        raise NotImplementedError

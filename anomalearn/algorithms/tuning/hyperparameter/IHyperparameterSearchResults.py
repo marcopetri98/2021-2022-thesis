@@ -15,7 +15,7 @@ class IHyperparameterSearchResults(ABC):
         best_score : float
             The best score obtained on the search.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def get_best_config(self) -> dict:
@@ -26,7 +26,7 @@ class IHyperparameterSearchResults(ABC):
         best_config : dict
             The best configuration of the search.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def get_num_iterations(self) -> int:
@@ -37,7 +37,7 @@ class IHyperparameterSearchResults(ABC):
         num_iter : int
             The number of iterations performed on search.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def get_history(self) -> list:
@@ -50,7 +50,7 @@ class IHyperparameterSearchResults(ABC):
             score in order. The first element of the list is the list of names
             of the elements in lists.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def print_search(self, *args,
@@ -73,4 +73,4 @@ class IHyperparameterSearchResults(ABC):
         -------
         None
         """
-        pass
+        raise NotImplementedError

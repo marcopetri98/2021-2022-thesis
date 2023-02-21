@@ -5,6 +5,8 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
+from anomalearn.algorithms import ITransformer, IShapeChanger, ICluster, \
+    IParametric, IClassifier, IPredictor, IRegressor
 from anomalearn.algorithms.pipelines import Pipeline
 from anomalearn.algorithms.postprocessing import BuilderVectorsSlidingWindow, \
     BuilderErrorVectorsDifference, ScorerMahalanobis, ThresholdMaxOnNormal
@@ -12,6 +14,8 @@ from anomalearn.algorithms.preprocessing import SlidingWindowReconstruct
 from anomalearn.algorithms.transformers import MinMaxScaler, StandardScaler
 from anomalearn.exceptions import NotTrainedError
 from tests.anomalearn.algorithms.pipelines.stubs.FakeModel import FakeModel
+from tests.anomalearn.algorithms.pipelines.stubs.FakeModelMultipleInterfaces import \
+    FakeModelMultipleInterfaces
 
 
 def create_pipeline() -> Pipeline:
@@ -98,6 +102,11 @@ class TestIntegrationPipeline(unittest.TestCase):
             for i, e in enumerate(pipeline.pipeline_layers):
                 standard_names.append(str(e) + "_" + str(i))
             self.assertListEqual(standard_names, pipeline.pipeline_names)
+        
+    def test_allowed_interfaces(self):
+        pipeline = Pipeline([])
+        self.assertSetEqual({ITransformer, IShapeChanger, IParametric, ICluster, IClassifier, IRegressor, IPredictor},
+                            set(pipeline.allowed_interfaces()))
         
     def test_summary(self):
         self.pipeline.summary()
@@ -377,10 +386,90 @@ class TestIntegrationPipeline(unittest.TestCase):
                     self.assertTrue(elem_obj.is_dir())
     
     def test_process(self):
+        def create_multiple_interface() -> FakeModelMultipleInterfaces:
+            fake_model = FakeModelMultipleInterfaces()
+            self.pipeline = create_pipeline()
+            self.pipeline.remove_layer(2)
+            self.pipeline.insert_layer(2, ("fake_model", fake_model, True))
+            return fake_model
+        
+        def get_pipeline_output_from_layers(series, multiple_int=False):
+            x = series
+            y = None
+            for i in range(len(self.pipeline)):
+                layer = self.pipeline.pipeline_layers[i]
+                
+                if i in [1, 3, 4, 5]:
+                    x, y = layer.shape_change(x, y)
+                elif i in [0, 6]:
+                    x = layer.transform(x)
+                else:
+                    if multiple_int:
+                        if layer.get_pipeline_class() is IPredictor:
+                            x = layer.predict(x)
+                        else:
+                            x = layer.classify(x)
+                    else:
+                        x = layer.predict(x)
+            
+            return x
+
+        def create_pipeline_of_pipelines() -> Pipeline:
+            minmax = MinMaxScaler()
+            sliding_window = SlidingWindowReconstruct(window=10)
+            fake_model = FakeModel()
+            vectors_builder = BuilderVectorsSlidingWindow(sliding_window=sliding_window)
+            errors_builder = BuilderErrorVectorsDifference()
+            scorer = ScorerMahalanobis()
+            threshold = ThresholdMaxOnNormal()
+            pipeline1 = Pipeline([("scaler", minmax, True),
+                                  ("sliding_window", sliding_window)])
+            pipeline2 = Pipeline([("vectors_builder", vectors_builder),
+                                  ("error_builder", errors_builder),
+                                  ("scorer", scorer, True),
+                                  ("classification", threshold, True)])
+            final_pipeline = Pipeline([pipeline1, fake_model, pipeline2])
+            return final_pipeline
+        
         for series in [self.series_uni, self.series_multi]:
             self.pipeline = create_pipeline()
             self.assertRaises(NotTrainedError, self.pipeline.process, series)
             
             self.pipeline.fit(series)
-            output = self.pipeline.process(series)
+            output, _ = self.pipeline.process(series)
             self.assertEqual(series.shape[0], output.shape[0])
+            desired_output = get_pipeline_output_from_layers(series)
+            np.testing.assert_array_equal(desired_output, output)
+            
+            fake_model = create_multiple_interface()
+            self.assertRaises(NotTrainedError, self.pipeline.process, series)
+
+            fake_model.set_pipeline_class(IPredictor)
+            self.pipeline.fit(series)
+            output, _ = self.pipeline.process(series)
+            self.assertEqual("predict", fake_model.called_method)
+            self.assertEqual(series.shape[0], output.shape[0])
+            desired_output = get_pipeline_output_from_layers(series, True)
+            np.testing.assert_array_equal(desired_output, output)
+
+            fake_model.set_pipeline_class(IClassifier)
+            self.pipeline.fit(series)
+            output, _ = self.pipeline.process(series)
+            self.assertEqual("classify", fake_model.called_method)
+            self.assertEqual(series.shape[0], output.shape[0])
+            desired_output = get_pipeline_output_from_layers(series, True)
+            np.testing.assert_array_equal(desired_output, output)
+            
+        create_pipeline_of_pipelines().summary()
+        
+        for series in [self.series_uni, self.series_multi]:
+            self.pipeline = create_pipeline()
+            pipeline_of_pipelines = create_pipeline_of_pipelines()
+            self.assertRaises(NotTrainedError, self.pipeline.process, series)
+            self.assertRaises(NotTrainedError, pipeline_of_pipelines.process, series)
+            
+            self.pipeline.fit(series)
+            pipeline_of_pipelines.fit(series)
+            bare_pipe_out, _ = self.pipeline.process(series)
+            pipe_of_pipe_out, _ = pipeline_of_pipelines.process(series)
+            np.testing.assert_array_equal(bare_pipe_out, pipe_of_pipe_out)

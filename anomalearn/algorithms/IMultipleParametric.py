@@ -37,4 +37,4 @@ class IMultipleParametric(IParametric):
         -------
         None
         """
-        pass
+        raise NotImplementedError

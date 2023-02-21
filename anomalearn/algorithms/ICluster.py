@@ -29,4 +29,4 @@ class ICluster(ABC):
         clusters : ndarray of shape (n_samples, n_clusters)
             An array identifying the cluster at which each point is associated.
         """
-        pass
+        raise NotImplementedError

@@ -30,4 +30,4 @@ class IPredictor(abc.ABC):
             at least two dimensions in which the first is the number of samples,
             and it is identical to the first dimension of `x`.
         """
-        pass
+        raise NotImplementedError

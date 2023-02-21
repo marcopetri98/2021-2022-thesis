@@ -30,4 +30,4 @@ class IRegressor(ABC):
             The regression value given the input from which the model must
             perform regression.
         """
-        pass
+        raise NotImplementedError

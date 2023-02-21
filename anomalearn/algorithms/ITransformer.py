@@ -28,4 +28,4 @@ class ITransformer(abc.ABC):
         transformations : ndarray with shape of `x`
             The transformations for the points in input.
         """
-        pass
+        raise NotImplementedError

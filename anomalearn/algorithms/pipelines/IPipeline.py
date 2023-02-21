@@ -3,12 +3,24 @@ from typing import Tuple
 
 import numpy as np
 
+from . import AbstractPipelineSavableLayer
 from .. import IParametric, BaseModel
 
 
-class IPipeline(IParametric):
+class IPipeline(IParametric, AbstractPipelineSavableLayer):
     """The interface for pipeline objects.
     """
+    @abc.abstractmethod
+    def allowed_interfaces(self) -> list:
+        """Gets the list of allowed interfaces in the pipeline.
+        
+        Returns
+        -------
+        allowed_interfaces : list
+            The list of the interface classes allowed in the pipeline.
+        """
+        raise NotImplementedError
+    
     @abc.abstractmethod
     def identical(self, other, degree: int = 2) -> bool:
         """Checks if the two pipelines are identical.
@@ -37,7 +49,7 @@ class IPipeline(IParametric):
         ValueError
             If degree is not 1, 2 or 3.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def set_trainable(self, layer: int | str, trainable: bool) -> None:
@@ -64,7 +76,7 @@ class IPipeline(IParametric):
             If the integer or string passed to identify the layer is out of
             bounds or there are no layers with that name.
         """
-        pass
+        raise NotImplementedError
         
     @abc.abstractmethod
     def set_name(self, layer: int | str, name: str) -> None:
@@ -94,7 +106,7 @@ class IPipeline(IParametric):
         ValueError
             If the name is already used by another layer.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def add_first_layer(self, layer_spec: Tuple[str, BaseModel, bool] | Tuple[str, BaseModel] | Tuple[BaseModel, bool] | BaseModel) -> None:
@@ -116,7 +128,7 @@ class IPipeline(IParametric):
             If the tuple length is greater than 3 or if the object passed is
             neither tuple nor BaseModel.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def insert_layer(self, index: int,
@@ -150,7 +162,7 @@ class IPipeline(IParametric):
             If the tuple length is greater than 3 or if the object passed is
             neither tuple nor BaseModel.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def append_layer(self, layer_spec: Tuple[str, BaseModel, bool] | Tuple[str, BaseModel] | Tuple[BaseModel, bool] | BaseModel) -> None:
@@ -172,7 +184,7 @@ class IPipeline(IParametric):
             If the tuple length is greater than 3 or if the object passed is
             neither tuple nor BaseModel.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def remove_layer(self, layer: int | str, recursive: bool = True) -> None:
@@ -212,10 +224,10 @@ class IPipeline(IParametric):
         in the pipeline. Then, once all the layers have been identified, they
         will be deleted.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
-    def process(self, x, *args, **kwargs) -> np.ndarray:
+    def process(self, x, *args, **kwargs) -> tuple[np.ndarray, np.ndarray]:
         """Process all the pipeline objects and outputs the result.
         
         Parameters
@@ -236,12 +248,18 @@ class IPipeline(IParametric):
             each layer of the pipeline and the output of the last layer is
             returned.
             
+        processed_targets : ndarray
+            The created values for the target from the input. It might be None
+            if there are no shape change layers or more in general layers
+            producing both `x` and `y` from a single `x`. This may be useful to
+            create a pipeline with many shape changer.
+            
         Raises
         ------
         InvalidInputShape
             If the input to a layer has wrong shape.
         """
-        pass
+        raise NotImplementedError
     
     @abc.abstractmethod
     def summary(self) -> None:
@@ -254,4 +272,4 @@ class IPipeline(IParametric):
         -------
         None
         """
-        pass
+        raise NotImplementedError
