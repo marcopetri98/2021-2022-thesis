@@ -2,8 +2,58 @@ import numpy as np
 from numba import jit, prange
 
 
-@jit(nopython=True, parallel=True, fastmath=True)
 def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
+    """Compute the moving average series of `x`.
+
+    Parameters
+    ----------
+    x : array-like of shape (n_samples, n_features)
+        The original time series.
+
+    window : int
+        The window dimension.
+
+    clip : str, default="right"
+        From which side to have one element less in case the window is even.
+
+    Returns
+    -------
+    mov_avg : ndarray of shape (n_samples, n_features)
+        The moving average time series with same shape as `x`.
+    """
+    if x.ndim == 1:
+        x = x.reshape((-1, 1))
+    x = np.ascontiguousarray(x, dtype=np.double)
+    return _mov_avg(x, window, clip)
+
+
+def mov_std(x, window: int, clip: str = "right") -> np.ndarray:
+    """Compute the moving average series of `x`.
+
+    Parameters
+    ----------
+    x : array-like of shape (n_samples, n_features)
+        The original time series.
+
+    window : int
+        The window dimension.
+
+    clip : str, default="right"
+        From which side to have one element less in case the window is even.
+
+    Returns
+    -------
+    mov_std : ndarray of shape (n_samples, n_features)
+        The moving standard deviation time series with same shape as `x`.
+    """
+    if x.ndim == 1:
+        x = x.reshape((-1, 1))
+    x = np.ascontiguousarray(x, dtype=np.double)
+    return _mov_std(x, window, clip)
+
+
+@jit(nopython=True, parallel=True, fastmath=True)
+def _mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
     """Compute the moving average series of `x`.
     
     Parameters
@@ -22,10 +72,6 @@ def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
     mov_avg : ndarray of shape (n_samples, n_features)
         The moving average time series with same shape as `x`.
     """
-    x = np.asarray(x, dtype=np.double)
-    if x.ndim == 1:
-        x = x.reshape((-1, 1))
-    
     left = window // 2
     right = left - (window % 2 == 0)
     if clip == "left":
@@ -42,7 +88,7 @@ def mov_avg(x, window: int, clip: str = "right") -> np.ndarray:
 
 
 @jit(nopython=True, parallel=True, fastmath=True)
-def mov_std(x, window: int, clip: str = "right") -> np.ndarray:
+def _mov_std(x, window: int, clip: str = "right") -> np.ndarray:
     """Compute the moving average series of `x`.
     
     Parameters
@@ -61,10 +107,6 @@ def mov_std(x, window: int, clip: str = "right") -> np.ndarray:
     mov_std : ndarray of shape (n_samples, n_features)
         The moving standard deviation time series with same shape as `x`.
     """
-    x = np.asarray(x, dtype=np.double)
-    if x.ndim == 1:
-        x = x.reshape((-1, 1))
-
     left = window // 2
     right = left - (window % 2 == 0)
     if clip == "left":

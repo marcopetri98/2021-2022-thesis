@@ -224,8 +224,7 @@ def __line_plot(x,
         if len(x) != len(y):
             raise ValueError("x and y must have the same dimension")
 
-        for i, couple in enumerate(zip(x, y)):
-            var_dep, var_ind = couple
+        for i, (var_ind, var_dep) in enumerate(zip(x, y)):
             var_dep = np.array(var_dep)
             var_ind = np.array(var_ind)
             x[i] = var_ind
@@ -233,10 +232,11 @@ def __line_plot(x,
 
             if var_dep.shape != var_ind.shape:
                 raise ValueError("the dependent and independent arrays must "
-                                 "have the same shape")
+                                 "have the same shape. Found dependent shape "
+                                 f"{var_dep.shape} and independent shape {var_ind.shape}")
             elif var_dep.ndim != 1:
                 raise ValueError("when you pass a list of arrays, arrays must "
-                                 "have 1 dimension")
+                                 f"have 1 dimension. Found dependent shape {var_dep.shape}")
     else:
         x = np.array(x)
         y = np.array(y)
@@ -298,8 +298,7 @@ def __line_plot(x,
 
     # plots all the lines
     if isinstance(x, list):
-        for i, couple in enumerate(zip(x, y)):
-            var_dep, var_ind = couple
+        for i, (var_ind, var_dep) in enumerate(zip(x, y)):
             line_fmt = None
             line_col = None
             if formats is not None and i < len(formats):
@@ -577,9 +576,7 @@ def confidence_line_plot(x,
         if len(x) != len(y):
             raise ValueError("x and y must have the same dimension")
 
-        for i, couple in enumerate(zip(x, y)):
-            var_ind, var_dep = couple
-            
+        for i, (var_ind, var_dep) in enumerate(zip(x, y)):
             if not isinstance(var_dep, list):
                 raise ValueError("if you provide multiple lines, the y parameter"
                                  " must be a list of lists of length 3.")
@@ -658,8 +655,7 @@ def confidence_line_plot(x,
     # plot all lines and confidence bounds
     if isinstance(x, list):
         # add all the confidence shadows
-        for i, couple in enumerate(zip(x, y)):
-            var_ind, var_dep = couple
+        for i, (var_ind, var_dep) in enumerate(zip(x, y)):
             lower_bound = var_dep[0]
             upper_bound = var_dep[1]
             conf_color_ = None
