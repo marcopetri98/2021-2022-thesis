@@ -1,4 +1,6 @@
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import gridspec
 
 from anomalearn.utils import mov_avg, mov_std
 from anomalearn.visualizer import line_plot
@@ -18,6 +20,29 @@ walk = random_walk(length, (-2, 2), 152)
 mov_mean = mov_avg(walk, window).reshape(-1)
 mov_dev = mov_std(walk, window).reshape(-1)
 
+# example figure of wu et al. approach
 line_plot([np.arange(length)] * 4,
           [walk, mov_mean, mov_mean + mov_dev, mov_mean + mov_dev + constant],
-          fig_size=(16, 8))
+          title="Example of statistical one-liner for triviality",
+          fig_size=(10, 4))
+
+# example of improvement of wu et al. approach
+line_plot([np.arange(length)] * 6,
+          [walk, mov_mean, mov_mean + mov_dev, mov_mean + mov_dev + constant, mov_mean - mov_dev, mov_mean - mov_dev - constant],
+          title="Example of improvement with lower bound",
+          fig_size=(10, 4))
+
+walk_anti_diff = np.cumsum(walk)
+walk_diff = np.diff(walk_anti_diff)
+
+# example of case in which the previous is the diff of a series
+fig = plt.figure(figsize=(10, 8))
+gs = gridspec.GridSpec(2, 1)
+
+ax_series = fig.add_subplot(gs[0, 0])
+line_plot(np.arange(length), walk_anti_diff, title="Original series", ax=ax_series)
+ax_diff = fig.add_subplot(gs[1, 0])
+line_plot(np.arange(length), np.append(walk_diff[0], walk_diff), title="First difference of the series", ax=ax_diff)
+
+plt.show()
+
