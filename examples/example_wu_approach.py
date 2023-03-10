@@ -1,9 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import gridspec
+import matplotlib
 
 from anomalearn.utils import mov_avg, mov_std
 from anomalearn.visualizer import line_plot
+
+
+matplotlib.rc("font", family="serif", serif=["Computer Modern Roman"], size=12)
+matplotlib.rc("text", usetex=True)
 
 
 def random_walk(length: int, interval: tuple[int, int] = (-1, 1), seed: int | None = None):
@@ -35,14 +39,8 @@ line_plot([np.arange(length)] * 6,
 walk_anti_diff = np.cumsum(walk)
 walk_diff = np.diff(walk_anti_diff)
 
-# example of case in which the previous is the diff of a series
-fig = plt.figure(figsize=(10, 8))
-gs = gridspec.GridSpec(2, 1)
+# example of series generating the random walk
+line_plot(np.arange(length), walk_anti_diff, title="Original series", fig_size=(10, 4))
 
-ax_series = fig.add_subplot(gs[0, 0])
-line_plot(np.arange(length), walk_anti_diff, title="Original series", ax=ax_series)
-ax_diff = fig.add_subplot(gs[1, 0])
-line_plot(np.arange(length), np.append(walk_diff[0], walk_diff), title="First difference of the series", ax=ax_diff)
-
-plt.show()
-
+# example of first difference not stationary
+line_plot(np.arange(length), np.append(walk_diff[0], walk_diff), title="First difference of the series", fig_size=(10, 4))
