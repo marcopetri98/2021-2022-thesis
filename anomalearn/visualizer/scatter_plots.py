@@ -11,8 +11,8 @@ from ..input_validation import check_argument_types, is_matplotlib_color
 def scatter_plot(x,
                  y,
                  size: float | list = None,
-                 colors : list = None,
-                 markers : str | MarkerStyle | list[str | MarkerStyle] = "o",
+                 colors: list = None,
+                 markers: str | MarkerStyle | list[str | MarkerStyle] = "o",
                  labels: list[str] | str = None,
                  title: str = "",
                  y_axis_label: str = "",
@@ -88,27 +88,26 @@ def scatter_plot(x,
     ValueError
         If any of the arguments has an invalid value.
     """
-    if not isinstance(x, list) and not isinstance(y, list):
-        x = np.array(x)
-        y = np.array(y)
+    if isinstance(x, list) and not np.isscalar(x[0]):
+        check_argument_types([y], [list], ["y"])
         
-        if x.ndim != 1 or y.ndim != 1 or x.shape != y.shape:
-            raise ValueError("x and y must be 1D array with the same shape")
-    elif not isinstance(x, list) or not isinstance(y, list):
-        raise TypeError("x and y must be both arrays or lists")
-    else:
-        # both x and y are lists
         if len(x) != len(y):
             raise ValueError("x and y must have the same number of groups")
-        
+    
         for i, couple in enumerate(zip(x, y)):
             x_val, y_val = np.array(couple[0]), np.array(couple[1])
             x[i] = x_val
             y[i] = y_val
-            
+        
             if x_val.ndim != 1 or y_val.ndim != 1 or x_val.shape != y_val.shape:
                 raise ValueError("arrays of x and y lists must have the same "
                                  "shape, and they must be 1D arrays")
+    else:
+        x = np.array(x)
+        y = np.array(y)
+    
+        if x.ndim != 1 or y.ndim != 1 or x.shape != y.shape:
+            raise ValueError("x and y must be 1D array with the same shape")
     
     check_argument_types([labels, markers, title, y_axis_label, x_axis_label, fig_size, ax],
                          [[list, str, None], [list, str, MarkerStyle], str, str, str, Tuple, [Axes, None]],
@@ -122,7 +121,9 @@ def scatter_plot(x,
             raise ValueError("labels must have the same length as x")
         
         # check markers type
-        if len(markers) != len(x):
+        if isinstance(markers, str):
+            markers = [markers] * len(x)
+        elif len(markers) != len(x):
             raise ValueError("markers has not the same length of x")
             
         for marker in markers:

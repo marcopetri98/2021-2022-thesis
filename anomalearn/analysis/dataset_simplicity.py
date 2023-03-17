@@ -225,10 +225,8 @@ def _get_windows_to_try(window_range: tuple[int, int] | slice | list[int] = (2, 
                 i += 20
             elif 200 <= i < 300:
                 i += 50
-            elif 300 <= i < 1000:
-                i += 100
             else:
-                i += math.floor(math.log10(i))
+                i += 10 ** math.floor(math.log10(i))
         
         if window_range[1] not in windows:
             windows.append(window_range[1])

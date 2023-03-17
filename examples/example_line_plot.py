@@ -3,7 +3,7 @@ import os.path
 import numpy as np
 import pandas as pd
 
-from mleasy.visualizer import line_plot
+from anomalearn.visualizer import line_plot
 
 this_folder = os.path.dirname(__file__)
 fridge1_dataset_path = "./../data/anomaly_detection/private_fridge/fridge1/all_fridge1.csv"
