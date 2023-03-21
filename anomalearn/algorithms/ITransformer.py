@@ -25,7 +25,7 @@ class ITransformer(abc.ABC):
 
         Returns
         -------
-        transformations : ndarray with shape of `x`
+        transformations : ndarray with shape[0]=x.shape[0]
             The transformations for the points in input.
         """
         raise NotImplementedError

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-matplotlib.rc("font", family="serif", serif=["Computer Modern Roman"], size=12)
+matplotlib.rc("font", family="serif", serif=["Computer Modern Roman"], size=13)
 matplotlib.rc("text", usetex=True)
 
 datasets = ["Yahoo", "UCR", "SMD", "NAB", "MGAB", "GHL", "NASA"]
