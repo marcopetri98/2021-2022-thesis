@@ -29,7 +29,7 @@ class Pipeline(IPipeline):
     
     Parameters
     ----------
-    elements : list[Tuple[str, IPipelineLayer, bool] | Tuple[str, IPipelineLayer] | Tuple[IPipelineLayer, bool] | IPipelineLayer]
+    elements : list[Tuple[str, IPipelineLayer, bool] | Tuple[str, IPipelineLayer] | Tuple[IPipelineLayer, bool] | IPipelineLayer], default=None
         It is the list of elements composing the pipeline. The pipeline can be
         composed of `ITransformer`, `IShapeChanger`, `IParametric`, `ICluster`,
         `IClassifier`, `IRegressor` or `IPredictor` objects, provided that they
@@ -52,7 +52,7 @@ class Pipeline(IPipeline):
         name and an increasing number equal to its index in the list. The last
         element of the tuple is a boolean stating if the "layer" must be fit or
         not and can be omitted. If the train boolean is omitted, it is assumed
-        to be True.
+        to be True. If it is None, an empty Pipeline is instantiated.
         
     Attributes
     ----------
@@ -86,8 +86,11 @@ class Pipeline(IPipeline):
     __to_load_str = "to_load"
     __to_create_str = "to_create"
     
-    def __init__(self, elements: list[Tuple[str, IPipelineLayer, bool] | Tuple[str, IPipelineLayer] | Tuple[IPipelineLayer, bool] | IPipelineLayer]):
+    def __init__(self, elements: list[Tuple[str, IPipelineLayer, bool] | Tuple[str, IPipelineLayer] | Tuple[IPipelineLayer, bool] | IPipelineLayer] = None):
         super().__init__()
+        
+        if elements is None:
+            elements = []
         
         # manage optional strings and bools
         self._layer_num = 0
