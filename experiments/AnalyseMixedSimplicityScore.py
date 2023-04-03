@@ -3,11 +3,15 @@ import time
 from pathlib import Path
 
 import numpy as np
+import numba
 import pandas as pd
 
 from anomalearn.analysis import analyse_mixed_simplicity
 from anomalearn.reader.time_series import YahooS5Reader, NASAReader, NABReader, UCRReader, MGABReader, SMDReader, \
     KitsuneReader, GHLReader, ExathlonReader, rts_config
+
+
+numba.set_num_threads(5)
 
 
 def get_series_columns(series):
@@ -76,10 +80,13 @@ if __name__ == "__main__":
                 
                 if all_datasets[idx] == "GHL":
                     time_series = series[series.columns.intersection(series_cols)].values
-                    l1 = np.asarray(series["class_0"].values, dtype=np.int32)
-                    l2 = np.asarray(series["class_1"].values, dtype=np.int32)
-                    l3 = np.asarray(series["class_2"].values, dtype=np.int32)
-                    time_series_labels = l1 | l2 | l3
+                    if "class_0" in series.columns:
+                        l1 = np.asarray(series["class_0"].values, dtype=np.int32)
+                        l2 = np.asarray(series["class_1"].values, dtype=np.int32)
+                        l3 = np.asarray(series["class_2"].values, dtype=np.int32)
+                        time_series_labels = l1 | l2 | l3
+                    else:
+                        time_series_labels = np.zeros(time_series.shape[0])
                 else:
                     time_series = series[series.columns.intersection(series_cols)].values
                     time_series_labels = series[rts_config["Univariate"]["target_column"]].values
