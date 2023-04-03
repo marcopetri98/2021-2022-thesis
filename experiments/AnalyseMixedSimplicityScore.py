@@ -68,7 +68,7 @@ if __name__ == "__main__":
             row_idx = ser_idx + sum([len(all_readers[i]) for i in range(idx)]) if idx > 0 else ser_idx
 
             if isinstance(results_df.loc[row_idx, "Dataset"], float) and math.isnan(results_df.loc[row_idx, "Dataset"]):
-                series = reader.read(ser_idx, verbose=False).get_dataframe()
+                series = reader[ser_idx]
                 is_multivariate, series_cols = get_series_columns(series)
                 
                 print(f"Reading series number {ser_idx + 1}...")
