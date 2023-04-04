@@ -4,7 +4,7 @@ import numpy as np
 from anomalearn.reader.time_series import UCRReader
 from anomalearn.visualizer import line_plot
 
-matplotlib.rc("font", family="serif", serif=["Computer Modern Roman"], size=12)
+matplotlib.rc("font", family="serif", serif=["Computer Modern Roman"], size=20)
 matplotlib.rc("text", usetex=True)
 
 
