@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from . import TSANeuralNetwork
-from ......utils import concat_list_array, print_warning
+from ......utils import concat_list_array
 
 
 class TSANNStandard(TSANeuralNetwork):
@@ -123,7 +123,7 @@ class TSANNStandard(TSANeuralNetwork):
         # eliminate extra sequences in case must keep batches
         if samples.shape[0] % self.batch_size != 0:
             if verbose:
-                print_warning("Some input samples will be discarded to keep the"
+                print("Some input samples will be discarded to keep the"
                               " number of points divisible by batch size")
 
             remainder = samples.shape[0] % self.batch_size

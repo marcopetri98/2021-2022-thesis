@@ -9,8 +9,6 @@ from scipy.spatial.distance import mahalanobis
 from scipy.stats import truncnorm, norm, chi2
 from sklearn.utils import check_X_y
 
-from ......utils.printing import print_warning
-
 
 class TimeSeriesAnomalyWindowDL(ABC):
     """DL models using a window approach and forecast error to find anomalies.
@@ -263,7 +261,7 @@ class TimeSeriesAnomalyWindowDL(ABC):
             
             if self.batch_divide_training:
                 if (data.shape[0] - self.window) % self.batch_size != 0:
-                    print_warning("Data.shape[0] - window must be a multiple"
+                    print("Data.shape[0] - window must be a multiple"
                                   " of batch to build the spatial data. I.e.,"
                                   "(Data.shape[0] - window)%batch_size == 0")
             

@@ -1,15 +1,16 @@
+from typing import Any, Callable, Optional
 import logging
 import math
 import warnings
-from typing import Callable, Any, Optional
 
-import numpy as np
 from numba import jit, prange
 from sklearn.utils import check_array, check_X_y
+import numpy as np
 
 from ..exceptions import ClosedOpenRangeError
-from ..utils import mov_avg, mov_std
-from ..utils.metrics import _true_positive_rate, _true_negative_rate
+from ..utils.metrics import _true_negative_rate, _true_positive_rate
+from ..utils.moving_functions import _mov_avg as mov_avg
+from ..utils.moving_functions import _mov_std as mov_std
 
 
 __module_logger = logging.getLogger(__name__)
@@ -208,7 +209,7 @@ def _get_windows_to_try(window_range: tuple[int, int] | slice | list[int] = (2, 
     if isinstance(window_range, list):
         return window_range
     elif isinstance(window_range, slice):
-        return [w for w in range(window_range.start, window_range.stop, window_range.step)]
+        return list(range(window_range.start, window_range.stop, window_range.step))
     else:
         windows = []
         i = window_range[0]
@@ -784,6 +785,10 @@ def _fast_execute_mixed_score_simplicity(x,
             mixed_score = 1
         else:
             # scores themselves are between 0 and 1, mixed must be computed
+            const_series = x
+            if const_res[-1] != 0:
+                const_series = _diff_numpy(const_series, const_res[-1])
+            
             mov_avg_input = x
             if mov_avg_res[-2] != 0:
                 mov_avg_input = _diff_numpy(x, mov_avg_res[-2])
@@ -796,13 +801,16 @@ def _fast_execute_mixed_score_simplicity(x,
             
             pred = np.full(y.shape, False, dtype=np.bool_)
             for f in prange(x.shape[1]):
+                # TODO: avoid code duplication
                 # process constant labels
                 if not math.isnan(const_res[1][f]):
-                    pos = np.argwhere(x[:, f] >= const_res[1][f])
+                    pos = np.argwhere(const_series[:, f] >= const_res[1][f])
+                    pos = pos + const_res[-1]
                     for e in pos:
                         pred[e[0]] = True
                 if not math.isnan(const_res[2][f]):
-                    pos = np.argwhere(x[:, f] <= const_res[2][f])
+                    pos = np.argwhere(const_series[:, f] <= const_res[2][f])
+                    pos = pos + const_res[-1]
                     for e in pos:
                         pred[e[0]] = True
                 

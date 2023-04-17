@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib import gridspec
 
-from mleasy.visualizer import scatter_plot, box_plot
+from anomalearn.visualizer import scatter_plot, box_plot
 
 this_folder = os.path.dirname(__file__)
 iris_dataset_path = "./../data/classification/iris/iris.csv"

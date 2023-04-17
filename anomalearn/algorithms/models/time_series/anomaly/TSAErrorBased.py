@@ -11,7 +11,7 @@ from sklearn.utils import check_array
 
 from .... import IParametric, SavableModel
 from .....input_validation import check_argument_types
-from .....utils import print_step, print_warning, save_py_json, find_or_create_dir, load_py_json
+from .....utils import save_py_json, find_or_create_dir, load_py_json
 
 
 class TSAErrorBased(IParametric, SavableModel, ABC):
@@ -188,7 +188,7 @@ class TSAErrorBased(IParametric, SavableModel, ABC):
         for key, value in self.get_params(deep=False).items():
             if value == "warning":
                 self.set_params(**{key: None})
-                print_warning(f"{key} was a callable. Set the callable to the "
+                print(f"{key} was a callable. Set the callable to the "
                               "same callable used in the saved model.")
 
         if self.__numpy_file in os.listdir(str(path_obj)):
@@ -235,7 +235,7 @@ class TSAErrorBased(IParametric, SavableModel, ABC):
             raise ValueError("gt and pred must have the same shape")
 
         if verbose:
-            print_step("Start to compute prediction errors")
+            print("Start to compute prediction errors")
 
         errors = np.zeros(gt.shape, dtype=np.double)
         # check values to ignore and use masked arrays to simplify operations
@@ -243,7 +243,7 @@ class TSAErrorBased(IParametric, SavableModel, ABC):
         pred = np.ma.array(pred, mask=np.isnan(pred), dtype=np.double)
 
         if np.ma.count_masked(gt) != 0 or np.ma.count_masked(pred) != 0:
-            print_warning("_compute_errors received gt and/or pred with nan "
+            print("_compute_errors received gt and/or pred with nan "
                           "values. These positions will be ignored to compute "
                           "errors.")
 
@@ -265,14 +265,14 @@ class TSAErrorBased(IParametric, SavableModel, ABC):
                 errors = self.error_function(gt, pred)
             
             case _:
-                print_warning("The error method is wrongly set up and no "
+                print("The error method is wrongly set up and no "
                               "valid type of error has been chosen. The "
                               "errors will be all nan, but keep in mind that "
                               "this is just because errors_method is wrong.")
                 errors = np.ma.masked_all(errors.shape)
 
         if verbose:
-            print_step("Prediction errors have been computed")
+            print("Prediction errors have been computed")
 
         return errors.filled(np.nan)
 
@@ -327,7 +327,7 @@ class TSAErrorBased(IParametric, SavableModel, ABC):
                 scores = self.scoring_function(errors)
             
             case _:
-                print_warning("Impossible to compute score since the field "
+                print("Impossible to compute score since the field "
                               "threshold_computation has an invalid value.")
 
         return scores
@@ -385,7 +385,7 @@ class TSAErrorBased(IParametric, SavableModel, ABC):
         errors = np.ma.array(errors, mask=np.isnan(errors))
 
         if verbose:
-            print_step("Start to compute the threshold")
+            print("Start to compute the threshold")
         
         match self.threshold_computation:
             case "gaussian" | "mahalanobis":
@@ -397,14 +397,14 @@ class TSAErrorBased(IParametric, SavableModel, ABC):
                 self._threshold = self.threshold_function(errors)
 
             case _:
-                print_warning("Impossible to compute the threshold since the "
+                print("Impossible to compute the threshold since the "
                               "threshold_computation field has an invalid "
                               "value. Please, give it a valid value. The "
                               "threshold will be saved as nan.")
                 self._threshold = np.nan
 
         if verbose:
-            print_step("Threshold has been computed")
+            print("Threshold has been computed")
 
     def __check_parameters(self):
         check_argument_types([self.error_method,

@@ -1,9 +1,10 @@
+from abc import ABC
 import abc
 
 import numpy as np
 
 
-class IAnomalyScorer(object):
+class IAnomalyScorer(ABC):
     """Interface identifying a machine learning algorithm giving anomaly scores.
     """
 
@@ -11,14 +12,13 @@ class IAnomalyScorer(object):
     def anomaly_score(self, x, *args, **kwargs) -> np.ndarray:
         """Computes the anomaly score of the given points.
 
-        Scores in the range [0,1], the higher is the score the more abnormal
-        the point is. **Please, note that** if the model is parametric (inherits
-        from IParametric) you must first perform fit on training data.
+        The higher is the score the more abnormal the point is.
 
         Parameters
         ----------
-        x : array-like of shape (n_samples, n_features)
-            The points for which we must compute the anomaly score.
+        x : array-like
+            The data to be scored. Data must have at least two dimensions in
+            which the first dimension represent the number of samples.
 
         args
             Not used, present to allow multiple inheritance and signature change.
@@ -28,7 +28,8 @@ class IAnomalyScorer(object):
 
         Returns
         -------
-        anomaly_scores : ndarray of shape (n_samples,)
-            The scores of the points.
+        anomaly_scores : ndarray of shape (n_samples, 1)
+            The labels resulted from the scoring where "n_samples" is the number
+            of samples of `x`.
         """
-        pass
+        raise NotImplementedError

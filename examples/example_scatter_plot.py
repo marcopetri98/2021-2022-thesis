@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from visualizer import scatter_plot
+from anomalearn.visualizer import scatter_plot
 
 this_folder = os.path.dirname(__file__)
 iris_dataset_path = "./../data/classification/iris/iris.csv"

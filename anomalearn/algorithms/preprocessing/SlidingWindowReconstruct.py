@@ -3,13 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Tuple
 
-import numpy as np
 from sklearn.utils import check_array
 from skopt.space import Integer
+import numpy as np
 
+from ...utils import load_py_json, save_py_json
 from .. import IShapeChanger
 from ..pipelines import AbstractPipelineSavableLayer
-from ...utils import save_py_json, load_py_json
 
 
 class SlidingWindowReconstruct(IShapeChanger, AbstractPipelineSavableLayer):
@@ -44,6 +44,13 @@ class SlidingWindowReconstruct(IShapeChanger, AbstractPipelineSavableLayer):
         
     @property
     def points_seen(self):
+        """Gets the number of points seen in the last call to `shape_change`.
+        
+        Returns
+        -------
+        points_seen
+            The number of points seen in the last call to `shape_change`.
+        """
         return self._points_seen
 
     def get_hyperparameters(self, *args, **kwargs) -> dict:
@@ -57,7 +64,7 @@ class SlidingWindowReconstruct(IShapeChanger, AbstractPipelineSavableLayer):
         return f"SlidingWindowReconstruct(window={self.window}, stride={self.stride})"
     
     def __str__(self):
-        return f"SlidingWindowReconstruct"
+        return "SlidingWindowReconstruct"
     
     def __eq__(self, other):
         if not isinstance(other, SlidingWindowReconstruct):

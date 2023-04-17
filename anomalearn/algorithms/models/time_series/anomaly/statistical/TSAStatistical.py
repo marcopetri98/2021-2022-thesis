@@ -5,7 +5,6 @@ import numpy as np
 from sklearn.utils import check_array
 
 from .. import TSAErrorBased
-from ......utils.printing import print_step, print_header
 
 
 class TSAStatistical(TSAErrorBased):
@@ -122,7 +121,7 @@ class TSAStatistical(TSAErrorBased):
         x = np.array(x)
 
         if verbose:
-            print_header("Start of the model fit")
+            print("Start of the model fit")
 
         if build_params is None:
             self._model_build()
@@ -130,7 +129,7 @@ class TSAStatistical(TSAErrorBased):
             self._model_build(build_params=build_params)
 
         if verbose:
-            print_step("Start to learn the parameters")
+            print("Start to learn the parameters")
 
         if fit_params is None:
             self._model_fit()
@@ -138,8 +137,8 @@ class TSAStatistical(TSAErrorBased):
             self._model_fit(fit_params=fit_params)
 
         if verbose:
-            print_step("Parameters have been learnt")
-            print_step("Predicting the time series")
+            print("Parameters have been learnt")
+            print("Predicting the time series")
 
         predictions, gt = self._get_predictions_and_gt(x)
         num_validation = round(x.shape[0] * self.validation_split)
@@ -178,8 +177,8 @@ class TSAStatistical(TSAErrorBased):
                 raise ValueError("threshold_sets has an invalid value")
 
         if verbose:
-            print_step(f"The learnt threshold is {self._threshold}")
-            print_header("End of the model fit")
+            print(f"The learnt threshold is {self._threshold}")
+            print("End of the model fit")
 
     def predict(self, x,
                 verbose: bool = True,
@@ -196,13 +195,13 @@ class TSAStatistical(TSAErrorBased):
         x = np.array(x)
 
         if verbose:
-            print_header("Start of the predictions")
-            print_step("Predicting points")
+            print("Start of the predictions")
+            print("Predicting points")
 
         predictions = self._model_predict(x)
 
         if verbose:
-            print_header("Predictions ended")
+            print("Predictions ended")
 
         return predictions
 
@@ -221,22 +220,22 @@ class TSAStatistical(TSAErrorBased):
         x = np.array(x)
 
         if verbose:
-            print_header("Started points' classification")
-            print_step("Predicting points and computing scores")
+            print("Started points' classification")
+            print("Predicting points and computing scores")
 
         predictions, gt = self._get_predictions_and_gt(x)
         errors = self._compute_errors(gt, predictions, verbose=verbose)
         scores = self._compute_scores(errors, verbose=verbose)
 
         if verbose:
-            print_step("Classifying points")
+            print("Classifying points")
 
         anomalies = np.argwhere(scores > self._threshold)
         pred_labels = np.zeros(x.shape[0], dtype=np.intc)
         pred_labels[anomalies] = 1
 
         if verbose:
-            print_header("Points' classification ended")
+            print("Points' classification ended")
 
         return pred_labels
 
@@ -255,15 +254,15 @@ class TSAStatistical(TSAErrorBased):
         x = np.array(x)
 
         if verbose:
-            print_header("Anomaly score computation started")
-            print_step("Scoring points")
+            print("Anomaly score computation started")
+            print("Scoring points")
 
         predictions, gt = self._get_predictions_and_gt(x)
         errors = self._compute_errors(gt, predictions)
         scores = self._compute_scores(errors)
 
         if verbose:
-            print_header("Anomaly score computation ended")
+            print("Anomaly score computation ended")
 
         return scores
 

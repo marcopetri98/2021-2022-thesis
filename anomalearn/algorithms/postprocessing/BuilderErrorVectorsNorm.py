@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 from typing import Tuple
 
-import numpy as np
 from sklearn.utils import check_array
+import numpy as np
 
 from .. import IShapeChanger
 from ..pipelines import AbstractPipelineBaseLayer
@@ -14,8 +15,6 @@ class BuilderErrorVectorsNorm(IShapeChanger, AbstractPipelineBaseLayer):
     This class computes the error vector as the difference between the ground
     truth and the prediction, namely, `norm(gt - pred)`.
     """
-    def __init__(self):
-        super().__init__()
     
     def __repr__(self):
         return "BuilderErrorVectorsNorm()"
@@ -68,10 +67,10 @@ class BuilderErrorVectorsNorm(IShapeChanger, AbstractPipelineBaseLayer):
         """
         check_array(x, force_all_finite="allow-nan")
         check_array(y, force_all_finite="allow-nan")
-        gt = np.ma.array(y, mask=np.isnan(y), dtype=np.double)
+        ground_truth = np.ma.array(y, mask=np.isnan(y), dtype=np.double)
         pred = np.ma.array(x, mask=np.isnan(x), dtype=np.double)
 
-        errors = gt - pred
+        errors = ground_truth - pred
         errors = np.square(errors)
         errors = np.sum(errors, axis=1)
         errors = np.sqrt(errors).reshape((-1, 1))

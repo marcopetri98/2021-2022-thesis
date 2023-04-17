@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from visualizer import box_plot
+from anomalearn.visualizer import box_plot
 
 this_folder = os.path.dirname(__file__)
 iris_dataset_path = "./../data/classification/iris/iris.csv"

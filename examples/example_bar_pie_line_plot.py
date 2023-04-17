@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import gridspec
 
-from mleasy.visualizer import line_plot, bar_class_distribution, pie_class_distribution
+from anomalearn.visualizer import line_plot, bar_class_distribution, pie_class_distribution
 
 this_folder = os.path.dirname(__file__)
 

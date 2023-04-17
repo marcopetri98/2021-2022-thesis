@@ -3,7 +3,7 @@ import os.path
 import numpy as np
 import pandas as pd
 
-from mleasy.visualizer import bar_class_distribution
+from anomalearn.visualizer import bar_class_distribution
 
 this_folder = os.path.dirname(__file__)
 iris_dataset_path = "./../data/classification/iris/iris.csv"

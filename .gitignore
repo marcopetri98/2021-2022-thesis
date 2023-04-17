@@ -271,3 +271,16 @@ cython_debug/
 **/StupidTest.py
 **/dataset
 **/searches
+**/nn_models
+**/*.pptx
+**/*.xlsx
+**/*.zip
+**/data
+**/output/*
+**/sota_approaches/*/*
+**/.$*
+
+!**/output/tests
+!**/sota_approaches/*/setup_conda_env.commands
+!**/sota_approaches/*/setup_conda_env.bat
+!**/sota_approaches/*/setup_conda_env.sh

@@ -1,6 +1,7 @@
+from collections.abc import Reversible, Sized
 import abc
 import logging
-from collections.abc import Reversible, Sized
+
 
 __module_logger = logging.getLogger(__name__)
 
@@ -55,9 +56,44 @@ class EqualityABC(abc.ABC):
         return not self.__eq__(other)
 
     @classmethod
-    def __subclasshook__(cls, other):
+    def __subclasshook__(cls, C):
         if cls is EqualityABC:
-            return _check_methods(other, "__eq__", "__ne__")
+            return _check_methods(C, "__eq__", "__ne__")
+        return NotImplemented
+
+
+class RepresentableABC(abc.ABC):
+    """Abstract class for objects implementing __repr__."""
+    @abc.abstractmethod
+    def __repr__(self):
+        raise NotImplementedError
+
+    @classmethod
+    def __subclasshook__(cls, C):
+        if cls is RepresentableABC:
+            return _check_methods(C, "__repr__")
+        return NotImplemented
+    
+    
+class StringableABC(abc.ABC):
+    """Abstract class for objects implementing __str__."""
+    @abc.abstractmethod
+    def __str__(self):
+        raise NotImplementedError
+
+    @classmethod
+    def __subclasshook__(cls, C):
+        if cls is StringableABC:
+            return _check_methods(C, "__str__")
+        return NotImplemented
+    
+    
+class FullyRepresentableABC(RepresentableABC, StringableABC):
+    """Abstract class for objects implementing __str__ and __repr__."""
+    @classmethod
+    def __subclasshook__(cls, C):
+        if cls is FullyRepresentableABC:
+            return _check_methods(C, "__repr__", "__str__")
         return NotImplemented
 
 
@@ -75,8 +111,8 @@ class ObtainableABC(Reversible, Sized):
     def __iter__(self):
         i = 0
         while i < len(self):
-            v = self[i]
-            yield v
+            value = self[i]
+            yield value
             i += 1
     
     def __reversed__(self):
@@ -84,7 +120,7 @@ class ObtainableABC(Reversible, Sized):
             yield self[i]
 
     @classmethod
-    def __subclasshook__(cls, other):
+    def __subclasshook__(cls, C):
         if cls is ObtainableABC:
-            return _check_methods(other, "__getitem__", "__len__", "__iter__")
+            return _check_methods(C, "__getitem__", "__len__", "__iter__")
         return NotImplemented

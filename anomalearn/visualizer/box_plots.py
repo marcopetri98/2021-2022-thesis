@@ -1,9 +1,9 @@
 from numbers import Number
 from typing import Tuple
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 
 from ..input_validation import check_argument_types, is_matplotlib_color
 
@@ -116,7 +116,7 @@ def box_plot(x,
 
     # implementation
     if ax is None:
-        fig = plt.figure(figsize=fig_size)
+        _ = plt.figure(figsize=fig_size)
 
     # exploit identical interface between plt and ax to draw
     dwg = ax if ax is not None else plt

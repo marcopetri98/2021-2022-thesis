@@ -6,7 +6,6 @@ from sklearn.metrics import f1_score
 
 from .... import IAnomalyClassifier
 from ..... import IParametric
-from ......utils import print_header, print_step
 
 
 class TSAConstant(IAnomalyClassifier, IParametric):
@@ -148,9 +147,9 @@ class TSAConstant(IAnomalyClassifier, IParametric):
             raise ValueError("fit the model before classifying samples")
 
         if verbose == 2:
-            print_header("Started samples' classification")
+            print("Started samples' classification")
         if verbose:
-            print_step(f"Classifying using rule: {self._comparison}")
+            print(f"Classifying using rule: {self._comparison}")
 
         x = np.array(x)
         compared = np.zeros(x.shape)
@@ -168,7 +167,7 @@ class TSAConstant(IAnomalyClassifier, IParametric):
                 compared = x > self._constant
 
         if verbose == 2:
-            print_header("Ended samples' classification")
+            print("Ended samples' classification")
 
         if self._multivariate:
             return np.array(list(map(lambda row: np.min(row), compared)))
@@ -187,14 +186,14 @@ class TSAConstant(IAnomalyClassifier, IParametric):
         x = np.array(x)
         
         if verbose == 2:
-            print_header("Started constant's learning")
-            print_step("Check if time series is multivariate")
+            print("Started constant's learning")
+            print("Check if time series is multivariate")
         
         self._multivariate = x.ndim != 1 and x.shape[1] != 1
         
         if self.learning == "semi-supervised":
             if verbose:
-                print_step("Get minimum or maximum values with semi-supervised learning")
+                print("Get minimum or maximum values with semi-supervised learning")
             
             if self._multivariate:
                 self._constant = np.zeros(x.shape[1])
@@ -251,19 +250,19 @@ class TSAConstant(IAnomalyClassifier, IParametric):
 
             if self._multivariate:
                 if verbose:
-                    print_step("Get optimal constant and comparison using supervised learning for each channel")
+                    print("Get optimal constant and comparison using supervised learning for each channel")
                 
                 self._constant = np.zeros(x.shape[1])
                 self._comparison = [None for _ in range(x.shape[1])]
                 for i in range(x.shape[1]):
                     if verbose:
-                        print_step(f"Learning on channel {i}")
+                        print(f"Learning on channel {i}")
                     
                     optimal_lt, optimal_gt = globally_optimize(x[:, i])
                     self._comparison[i], self._constant[i] = get_comp_cons(optimal_lt, optimal_gt)
             else:
                 if verbose:
-                    print_step("Get optimal constant and comparison using supervised learning")
+                    print("Get optimal constant and comparison using supervised learning")
                 
                 optimal_lt, optimal_gt = globally_optimize(x)
                 self._comparison, self._constant = get_comp_cons(optimal_lt, optimal_gt)
@@ -271,7 +270,7 @@ class TSAConstant(IAnomalyClassifier, IParametric):
                     self._constant = self._constant[0]
                 
         if verbose == 2:
-            print_header("Ended constant's learning")
+            print("Ended constant's learning")
 
     def __check_parameters(self):
         if not isinstance(self.comparison, str):

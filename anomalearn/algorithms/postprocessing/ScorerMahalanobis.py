@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Tuple
+import os
 
-import numpy as np
 from scipy.spatial.distance import mahalanobis
 from sklearn.utils import check_array
+import numpy as np
 
-from .. import IShapeChanger, IParametric
-from ..pipelines import AbstractPipelineSavableLayer
 from ...exceptions import NotTrainedError
 from ...utils import estimate_mean_covariance, get_rows_without_nan
+from .. import IParametric, IShapeChanger
+from ..pipelines import AbstractPipelineSavableLayer
 
 
 class ScorerMahalanobis(IShapeChanger, IParametric, AbstractPipelineSavableLayer):
@@ -45,14 +45,37 @@ class ScorerMahalanobis(IShapeChanger, IParametric, AbstractPipelineSavableLayer
         
     @property
     def mean(self):
+        """Gets the computed mean.
+        
+        Returns
+        -------
+        mean
+            The computed mean or None if not yet computed.
+        """
         return self._mean
         
     @property
     def cov(self):
+        """Gets the computed covariance matrix or standard deviation.
+        
+        Returns
+        -------
+        cov_or_std
+            The computed covariance matrix or standard deviation, or None if
+            not yet computed.
+        """
         return self._cov
         
     @property
     def inv_cov(self):
+        """Gets the computed inverse of the covariance matrix or standard deviation.
+        
+        Returns
+        -------
+        inv_cov_or_std
+            The computed inverse of the covariance matrix or standard deviation,
+            or None if not yet computed.
+        """
         return self._inv_cov
         
     def __repr__(self):
@@ -66,13 +89,17 @@ class ScorerMahalanobis(IShapeChanger, IParametric, AbstractPipelineSavableLayer
             return False
         
         # if the mean is None, the fit has not been called and all are None
-        if self._mean is None and other._mean is None and self._cov is None and other._cov is None and self._inv_cov is None and other._inv_cov is None:
+        if self._mean is None and other._mean is None and self._cov is None and \
+                other._cov is None and self._inv_cov is None and other._inv_cov is None:
             return True
-        elif self._mean is None and other._mean is not None or self._mean is not None and other._mean is None:
+        elif self._mean is None and other._mean is not None or \
+                self._mean is not None and other._mean is None:
             return False
-        elif self._cov is None and other._cov is not None or self._cov is not None and other._cov is None:
+        elif self._cov is None and other._cov is not None or \
+                self._cov is not None and other._cov is None:
             return False
-        elif self._inv_cov is None and other._inv_cov is not None or self._inv_cov is not None and other._inv_cov is None:
+        elif self._inv_cov is None and other._inv_cov is not None or \
+                self._inv_cov is not None and other._inv_cov is None:
             return False
         else:
             mean_eq = np.array_equal(self._mean, other._mean, equal_nan=True)

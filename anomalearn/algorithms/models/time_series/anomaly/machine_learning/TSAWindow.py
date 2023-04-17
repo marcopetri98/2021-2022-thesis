@@ -8,7 +8,6 @@ from sklearn.utils import check_array
 from . import ITimeSeriesAnomalyWindow
 from .....BaseModel import BaseModel
 from ......input_validation.array_checks import check_x_y_smaller_1d
-from ......utils import print_warning
 
 
 class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
@@ -92,7 +91,7 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
             raise ValueError("Only univariate time series is currently "
                              "supported.")
         elif (data.shape[0] - self.window) % self.stride != 0:
-            print_warning("Stride does not divide data.shape[0] - window, "
+            print("Stride does not divide data.shape[0] - window, "
                           "points not included at the end will be discarded.")
 
         # Number of times a point is considered in a window
@@ -175,7 +174,7 @@ class TSAWindow(ITimeSeriesAnomalyWindow, BaseModel, ABC):
                 scores[idx + half_window] = window_scores[i]
 
         if (np.isnan(scores).any() or np.isinf(scores).any()) and self.scaling == "none":
-            print_warning("Cannot perform scale since there are nan or infinite"
+            print("Cannot perform scale since there are nan or infinite"
                           " values in scores.")
         else:
             # Scale the scores if requested

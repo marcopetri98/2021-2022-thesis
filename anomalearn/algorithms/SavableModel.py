@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from . import ISavable, BaseModel
-from ..utils import save_py_json, find_or_create_dir, load_py_json
+from .. import EqualityABC, FullyRepresentableABC
+from ..utils import find_or_create_dir, load_py_json, save_py_json
+from . import BaseModel, ISavable
 
 
-class SavableModel(ISavable, BaseModel):
+class SavableModel(ISavable, FullyRepresentableABC, EqualityABC, BaseModel):
     """Object representing a base model that can be saved.
     
     If an object can be saved, there are either parameters, hyperparameters or
@@ -15,9 +16,6 @@ class SavableModel(ISavable, BaseModel):
     """
     __json_file = "savable_model.json"
     __json_signature = "signature.json"
-
-    def __init__(self):
-        super().__init__()
         
     def __repr__(self):
         return "SavableModel()"
@@ -63,6 +61,24 @@ class SavableModel(ISavable, BaseModel):
     def load_model(cls, path: str,
                    *args,
                    **kwargs) -> SavableModel:
+        """Loads the saved object from a folder.
+        
+        Parameters
+        ----------
+        path : str
+            It is the path of the directory in which the object has been saved.
+
+        args
+            Not used, present to allow multiple inheritance and signature change.
+
+        kwargs
+            Not used, present to allow multiple inheritance and signature change.
+
+        Returns
+        -------
+        model
+            The instance of the saved object.
+        """
         obj = SavableModel()
         obj.load(path)
         return obj

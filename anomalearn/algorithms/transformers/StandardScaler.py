@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import pickle
 from copy import deepcopy
 from numbers import Number
 from pathlib import Path
+import pickle
 
-import numpy as np
 from sklearn.preprocessing import StandardScaler as scikitStandardScaler
+import numpy as np
 
-from .. import ITransformer, IParametric
-from ..pipelines import AbstractPipelineSavableLayer
 from ...exceptions import InvalidInputShape, NotTrainedError
-from ...utils import are_numpy_attr_equal, are_normal_attr_equal
+from ...utils import are_normal_attr_equal, are_numpy_attr_equal
+from .. import IParametric, ITransformer
+from ..pipelines import AbstractPipelineSavableLayer
 
 
 class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
@@ -35,6 +35,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
         
     @property
     def copy_attribute(self):
+        """Get the `copy` from `scikit` wrapped object.
+        
+        Returns
+        -------
+        copy
+            The value of `copy`.
+        """
         return self._standard_scaler.copy
     
     @copy_attribute.setter
@@ -43,6 +50,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
         
     @property
     def with_mean(self):
+        """Get the `with_mean` from `scikit` wrapped object.
+        
+        Returns
+        -------
+        with_mean
+            The value of `with_mean`.
+        """
         return self._standard_scaler.with_mean
     
     @with_mean.setter
@@ -51,6 +65,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
         
     @property
     def with_std(self):
+        """Get the `with_std` from `scikit` wrapped object.
+        
+        Returns
+        -------
+        with_std
+            The value of `with_std`.
+        """
         return self._standard_scaler.with_std
     
     @with_std.setter
@@ -59,6 +80,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
         
     @property
     def seen_scale(self):
+        """Get the `scale_` from `scikit` wrapped object if present.
+        
+        Returns
+        -------
+        scale_
+            The value of `scale_` if present, None otherwise.
+        """
         try:
             return self._standard_scaler.scale_
         except AttributeError:
@@ -66,6 +94,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
         
     @property
     def seen_mean(self):
+        """Get the `mean_` from `scikit` wrapped object if present.
+        
+        Returns
+        -------
+        mean_
+            The value of `mean_` if present, None otherwise.
+        """
         try:
             return self._standard_scaler.mean_
         except AttributeError:
@@ -73,6 +108,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
         
     @property
     def seen_var(self):
+        """Get the `var_` from `scikit` wrapped object if present.
+        
+        Returns
+        -------
+        var_
+            The value of `var_` if present, None otherwise.
+        """
         try:
             return self._standard_scaler.var_
         except AttributeError:
@@ -80,6 +122,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
     
     @property
     def seen_features_in(self):
+        """Get the `n_features_in_` from `scikit` wrapped object if present.
+        
+        Returns
+        -------
+        n_features_in_
+            The value of `n_features_in_` if present, None otherwise.
+        """
         try:
             return self._standard_scaler.n_features_in_
         except AttributeError:
@@ -87,6 +136,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
     
     @property
     def seen_samples_in(self):
+        """Get the `n_samples_seen_` from `scikit` wrapped object if present.
+        
+        Returns
+        -------
+        n_samples_seen_
+            The value of `n_samples_seen_` if present, None otherwise.
+        """
         try:
             return self._standard_scaler.n_samples_seen_
         except AttributeError:
@@ -94,6 +150,13 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
     
     @property
     def seen_features_names_in(self):
+        """Get the `feature_names_in_` from `scikit` wrapped object if present.
+        
+        Returns
+        -------
+        feature_names_in_
+            The value of `feature_names_in_` if present, None otherwise.
+        """
         try:
             return self._standard_scaler.feature_names_in_
         except AttributeError:
@@ -111,20 +174,21 @@ class StandardScaler(ITransformer, IParametric, AbstractPipelineSavableLayer):
         
         numpy_properties = ["seen_scale", "seen_mean", "seen_var", "seen_features_names_in"]
         normal_properties = ["copy_attribute", "with_mean", "with_std", "seen_features_in"]
-        if not are_numpy_attr_equal(self, other, numpy_properties):
-            return False
-        if not are_normal_attr_equal(self, other, normal_properties):
+        if not are_numpy_attr_equal(self, other, numpy_properties) or \
+                not are_normal_attr_equal(self, other, normal_properties):
             return False
 
         if (self.seen_samples_in is None) != (self.seen_samples_in is None):
             return False
+        elif self.seen_samples_in is not None and not isinstance(self.seen_samples_in, other.seen_samples_in.__class__):
+            return False
         
-        if isinstance(self.seen_samples_in, np.ndarray):
-            if self.seen_samples_in is not None and not np.array_equal(self.seen_samples_in, other.seen_samples_in):
-                return False
-        elif isinstance(self.seen_samples_in, Number):
-            if self.seen_samples_in is not None and self.seen_samples_in != other.seen_samples_in:
-                return False
+        if isinstance(self.seen_samples_in, np.ndarray) and isinstance(other.seen_samples_in, np.ndarray) and \
+                not np.array_equal(self.seen_samples_in, other.seen_samples_in):
+            return False
+        elif isinstance(self.seen_samples_in, Number) and isinstance(other.seen_samples_in, Number) and \
+                self.seen_samples_in != other.seen_samples_in:
+            return False
         
         return True
     

@@ -4,9 +4,9 @@ import logging
 
 import pandas as pd
 
-from . import TSReader
-from .. import IDataMultipleReader
 from ...input_validation import check_not_default_attributes
+from .. import IDataMultipleReader
+from . import TSReader
 
 
 class TSMultipleReader(TSReader, IDataMultipleReader):
@@ -28,7 +28,7 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
                       pandas_args: dict | None = None,
                       *args,
                       **kwargs) -> TSMultipleReader:
-        self._all_dataframes = list()
+        self._all_dataframes = []
         for idx, path in enumerate(paths):
             self.__logger.info(f"reading from {idx}th path {path}")
             self.read(path=path,
@@ -69,7 +69,7 @@ class TSMultipleReader(TSReader, IDataMultipleReader):
         self._dataset = self._all_dataframes[pos]
         return self
     
-    def get_all_dataframes(self) -> list[pd.DataFrame]:
+    def get_all_dataframes(self, *args, **kwargs) -> list[pd.DataFrame]:
         check_not_default_attributes(self, {"_all_dataframes": None})
         return [e.copy(deep=True) for e in self._all_dataframes]
     

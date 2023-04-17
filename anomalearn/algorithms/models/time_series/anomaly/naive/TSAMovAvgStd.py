@@ -5,7 +5,7 @@ from scipy.optimize import brute
 from sklearn.metrics import f1_score
 
 from . import TSAConstant
-from ......utils import print_header, print_step, mov_avg, mov_std
+from ......utils import mov_avg, mov_std
 
 
 class TSAMovAvgStd(TSAConstant):
@@ -155,8 +155,8 @@ class TSAMovAvgStd(TSAConstant):
         self._mov_std_series = None
         
         if verbose:
-            print_header("Started samples' classification")
-            print_step(f"Computing {self.method} series")
+            print("Started samples' classification")
+            print(f"Computing {self.method} series")
         
         if self.method == "movavg":
             mov_series = mov_avg(x, self._window)
@@ -171,7 +171,7 @@ class TSAMovAvgStd(TSAConstant):
         all_predictions[half:-half] = middle
         
         if verbose:
-            print_header("Ended samples' classification")
+            print("Ended samples' classification")
         
         return all_predictions
 
@@ -180,7 +180,7 @@ class TSAMovAvgStd(TSAConstant):
         y = np.array(y)
         
         if verbose:
-            print_header("Started learning of window and constant")
+            print("Started learning of window and constant")
 
         self._multivariate = x.ndim != 1 and x.shape[1] != 1
 
@@ -206,7 +206,7 @@ class TSAMovAvgStd(TSAConstant):
             _ = compute_1_minus_f1(self._window)
         
         if verbose:
-            print_header("Ended learning of window and constant")
+            print("Ended learning of window and constant")
             
     def __check_parameters(self):
         if self.learning != "supervised":

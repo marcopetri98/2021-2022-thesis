@@ -1,13 +1,16 @@
 import logging
 import os
 
-import skopt
 from skopt.space import Categorical, Integer, Real
+import skopt
 
 from . import SkoptSearchABC
 
 
 class ForestSearch(SkoptSearchABC):
+    """Wrapper for the `forest_minimize` search of `skopt`.
+    """
+    
     def __init__(self, parameter_space: list[Categorical | Integer | Real],
                  saving_folder: str | os.PathLike,
                  saving_filename: str):

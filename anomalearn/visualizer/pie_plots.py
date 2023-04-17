@@ -1,9 +1,9 @@
 from numbers import Number
-from typing import Tuple, Callable
+from typing import Callable, Tuple
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 
 from ..input_validation import check_argument_types, is_matplotlib_color
 
@@ -83,7 +83,7 @@ def pie_plot(wedges,
     
     # implementation
     if ax is None:
-        fig = plt.figure(figsize=fig_size, tight_layout=True)
+        _ = plt.figure(figsize=fig_size, tight_layout=True)
         
         plt.pie(wedges,
                 labels=labels,
@@ -102,6 +102,7 @@ def pie_plot(wedges,
                autopct=percentage_fmt,
                pctdistance=percentage_dst)
         ax.set_title(title)
+
 
 # FIXME: too similar to pie_plot, evaluate its removal
 def pie_class_distribution(classes,

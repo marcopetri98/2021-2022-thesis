@@ -1,16 +1,16 @@
-import logging
-import warnings
-from collections.abc import Sequence, Iterable
+from collections.abc import Sequence
 from copy import copy
 from numbers import Number
 from typing import Iterator
+import logging
+import warnings
 
 import pandas as pd
 
-from . import IExperimentLoader
 from .. import EqualityABC
 from ..reader import IDatasetReader
 from ..reader.time_series import rts_config
+from . import IExperimentLoader
 
 
 class ExperimentLoader(IExperimentLoader):
@@ -151,8 +151,8 @@ class ExperimentLoader(IExperimentLoader):
                 return split[0], split[1]
             else:
                 return None
-        except IndexError:
-            raise TypeError("splits must be tuple of length two")
+        except IndexError as ex:
+            raise TypeError("splits must be tuple of length two") from ex
         
     @staticmethod
     def __fix_input_series(reader: IDatasetReader,
@@ -195,8 +195,8 @@ class ExperimentLoader(IExperimentLoader):
                 return [e if e >= 0 else len(reader) - e for e in indices]
             else:
                 return None
-        except TypeError:
-            raise TypeError("series to be used must be iterables")
+        except TypeError as ex:
+            raise TypeError("series to be used must be iterables") from ex
 
     def __fix_set_insert_input(self, value: IDatasetReader | tuple[IDatasetReader,
                                                                    Sequence[float] | None,
@@ -319,8 +319,8 @@ class ExperimentLoader(IExperimentLoader):
         for reader in self._readers:
             if self.__are_readers_equal(reader, item):
                 return True
-        else:
-            return False
+        
+        return False
 
     def __getitem__(self, item: int):
         item = self.__check_index(item)
@@ -357,11 +357,11 @@ class ExperimentLoader(IExperimentLoader):
         for i in range(start, stop):
             if self.__are_readers_equal(self._readers[i], value):
                 return i
-        else:
-            raise ValueError(f"loader does not contain a reader like {str(value)}")
+        
+        raise ValueError(f"loader does not contain a reader like {str(value)}")
 
     def count(self, value: IDatasetReader | type) -> int:
-        return sum([1 for e in self._readers if self.__are_readers_equal(e, value)])
+        return sum(1 for e in self._readers if self.__are_readers_equal(e, value))
 
     def insert(self,
                index: int,
@@ -409,11 +409,11 @@ class ExperimentLoader(IExperimentLoader):
                 if self._series[i] is None:
                     reader_i = i
                     series = reader[index - seen]
-                    break
                 else:
                     reader_i = i
                     series = reader[self._series[i][index - seen]]
-                    break
+                
+                break
         else:
             raise IndexError("the time series can't be found")
         
@@ -442,8 +442,8 @@ class ExperimentLoader(IExperimentLoader):
         else:
             return series
 
-    def series_iterator(self, reversed_: bool = False) -> Iterator[tuple[pd.DataFrame, pd.DataFrame]]:
-        if reversed_:
+    def series_iterator(self, reverse: bool = False) -> Iterator[tuple[pd.DataFrame, pd.DataFrame]]:
+        if reverse:
             indices = reversed(range(self.num_series))
         else:
             indices = range(self.num_series)

@@ -1,7 +1,7 @@
 from typing import Tuple
 
-import numpy as np
 from sklearn.utils import check_array
+import numpy as np
 
 
 def check_array_general(x,
@@ -45,7 +45,6 @@ def check_array_general(x,
         raise ValueError("minimum_samples must have at least shape elements, or"
                          " it can be None")
 
-    exception_msg = None
     if dimensions == 2:
         if minimum_samples is not None:
             try:
@@ -54,23 +53,17 @@ def check_array_general(x,
                             ensure_min_features=minimum_samples[1],
                             force_all_finite=force_all_finite)
             except Exception as e:
-                exception_msg = str(e)
-            if exception_msg is not None:
-                raise ValueError(exception_msg)
+                raise ValueError("x is not an array-like with desired features") from e
         else:
             try:
                 check_array(x, force_all_finite=force_all_finite)
             except Exception as e:
-                exception_msg = str(e)
-            if exception_msg is not None:
-                raise ValueError(exception_msg)
+                raise ValueError("x is not an array-like with desired features") from e
     else:
         try:
             check_array(x, ensure_2d=False, allow_nd=True, force_all_finite=force_all_finite)
         except Exception as e:
-            exception_msg = str(e)
-        if exception_msg is not None:
-            raise ValueError(exception_msg)
+            raise ValueError("x is not an array-like with desired features") from e
         
         np_arr = np.array(x)
         
@@ -78,8 +71,8 @@ def check_array_general(x,
             raise ValueError(array_name + " doesn't have the specified shape")
         
         if minimum_samples is not None:
-            for i in range(len(np_arr.shape)):
-                if np_arr.shape[i] < minimum_samples[i]:
+            for i, dim in enumerate(np_arr.shape):
+                if dim < minimum_samples[i]:
                     raise ValueError(array_name + " have too few elements "
                                                   " at dimension " + str(i))
 
@@ -110,13 +103,10 @@ def check_array_1d(x, force_all_finite: bool | str = True, array_name: str = "x"
     ValueError
         If the object is not an array-like with one dimension.
     """
-    exception_msg = None
     try:
         check_array(x, ensure_2d=False, force_all_finite=force_all_finite)
     except Exception as e:
-        exception_msg = str(e)
-    if exception_msg is not None:
-        raise ValueError(exception_msg)
+        raise ValueError("x is not an array-like with desired features") from e
     
     x = np.array(x)
     
@@ -156,14 +146,11 @@ def check_x_y_smaller_1d(x, y, force_all_finite: bool | str = True, x_name: str 
     ValueError
         If the object is not an array-like with one dimension.
     """
-    exception_msg = None
     try:
         check_array_1d(x, array_name=x_name, force_all_finite=force_all_finite)
         check_array_1d(y, array_name=y_name, force_all_finite=force_all_finite)
     except Exception as e:
-        exception_msg = str(e)
-    if exception_msg is not None:
-        raise ValueError(exception_msg)
+        raise ValueError("x is not an array-like with desired features") from e
     
     x = np.array(x)
     y = np.array(y)

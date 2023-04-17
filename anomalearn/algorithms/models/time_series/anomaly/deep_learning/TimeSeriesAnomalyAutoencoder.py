@@ -7,7 +7,6 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from .TimeSeriesAnomalyWindowDL import TimeSeriesAnomalyWindowDL
-from ......utils.printing import print_warning
 
 
 class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
@@ -71,7 +70,7 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
         y = np.array(y)
         
         if self.extend_not_multiple:
-            print_warning("Data will be modified to match the window size, note"
+            print("Data will be modified to match the window size, note"
                           " that the input must be a multiple of the window "
                           "size for autoencoders. This is just a comfort "
                           "utility. You can ignore this warning if no other "
@@ -83,7 +82,7 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
                     remainder = (slice_.stop - slice_.start) % self.window
                     training_idx[i] = slice(slice_.start, slice_.stop - remainder)
                     
-                    print_warning("On ", i+1, "th training slice, ", remainder,
+                    print("On ", i+1, "th training slice, ", remainder,
                                   " points have been lost")
             
             for i in range(len(validation_idx)):
@@ -92,7 +91,7 @@ class TimeSeriesAnomalyAutoencoder(TimeSeriesAnomalyWindowDL, ABC):
                     remainder = (slice_.stop - slice_.start) % self.window
                     validation_idx[i] = slice(slice_.start, slice_.stop - remainder)
                     
-                    print_warning("On ", i+1, "th validation slice, ",
+                    print("On ", i+1, "th validation slice, ",
                                   remainder, " points have been lost")
         
         history = super().fit(x, training_idx, validation_idx, y)

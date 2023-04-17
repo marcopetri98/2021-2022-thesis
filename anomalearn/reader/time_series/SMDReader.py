@@ -6,8 +6,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from .. import TSBenchmarkReader, rts_config
-from ... import IDatasetReader
+from .. import IDatasetReader
+from . import TSBenchmarkReader, rts_config
 
 
 class SMDReader(IDatasetReader, TSBenchmarkReader):
@@ -28,7 +28,7 @@ class SMDReader(IDatasetReader, TSBenchmarkReader):
         self._machines = [e.name.split(".")[0]
                           for e in self._train_set.glob("*.txt")
                           if e.is_file()]
-        self._machines.sort(key=lambda elem: int(elem.split("-")[1])*10 + int(elem.split("-")[2]))
+        self._machines.sort(key=lambda elem: int(elem.split("-")[1]) * 10 + int(elem.split("-")[2]))
 
         self.__check_parameters()
 
@@ -81,7 +81,7 @@ class SMDReader(IDatasetReader, TSBenchmarkReader):
         testing_set = pd.read_csv(self._test_set / (path + ".txt"),
                                   header=None)
         test_labels = pd.read_csv(self._test_gt / (path + ".txt"),
-                                  header=None)[0].values
+                                  header=None)[0].to_numpy()
 
         self.__logger.info("renaming columns with standard names")
         # retrieve number of columns and mapping to new columns' names
@@ -106,7 +106,7 @@ class SMDReader(IDatasetReader, TSBenchmarkReader):
 
         self.__logger.info("extracting anomalies interpretation")
         # reading the interpretation file
-        with open(self._interpretation / (path + ".txt"), "r") as f:
+        with open(self._interpretation / (path + ".txt"), "r", encoding="utf-8") as f:
             for line in f:
                 interval, channels = line.split(":")
                 start, end = interval.split("-")

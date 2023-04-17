@@ -1,9 +1,9 @@
 from numbers import Number
 from typing import Tuple
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 
 from ..input_validation import check_argument_types, is_matplotlib_color
 
@@ -89,7 +89,7 @@ def bar_plot(x_pos,
     
     # implementation
     if ax is None:
-        fig = plt.figure(figsize=fig_size, tight_layout=True)
+        _ = plt.figure(figsize=fig_size, tight_layout=True)
         
         plt.bar(x_pos,
                 bars_height,

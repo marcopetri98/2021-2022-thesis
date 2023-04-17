@@ -1,9 +1,9 @@
 from typing import Tuple
 
-import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.markers import MarkerStyle
+import numpy as np
 
 from ..input_validation import check_argument_types, is_matplotlib_color
 
@@ -217,7 +217,7 @@ def scatter_plot(x,
         
     # implementation
     if ax is None:
-        fig = plt.figure(figsize=fig_size)
+        _ = plt.figure(figsize=fig_size)
         
     dwg = ax if ax is not None else plt
     if not isinstance(x, list):

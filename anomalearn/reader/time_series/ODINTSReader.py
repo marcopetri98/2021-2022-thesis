@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import logging
 from datetime import datetime
+import logging
 
 import numpy as np
 import pandas as pd
 
-from .. import TSReader, rts_config
-from ... import MissingStrategy
+from . import TSReader, rts_config
 
 
 class ODINTSReader(TSReader):
@@ -32,8 +31,8 @@ class ODINTSReader(TSReader):
         It is the column of the anomalies file stating the end of an anomaly
         window.
     """
-    _DAY_COL = "day_of_the_week"
-    _ANOMALY_TYPE = "anomaly_type"
+    _day_col = "day_of_the_week"
+    _anomaly_type = "anomaly_type"
     
     def __init__(self, anomalies_path: str,
                  timestamp_col: str,
@@ -58,12 +57,12 @@ class ODINTSReader(TSReader):
              pandas_args: dict | None = None,
              resample: bool = False,
              resampling_granularity: str = "1min",
-             missing_strategy: MissingStrategy = MissingStrategy.DROP,
+             missing_strategy: str = "drop",
              missing_fixed_value: float = 0.0,
              *args,
              **kwargs) -> ODINTSReader:
         # TODO: implement interpolation imputation
-        if missing_strategy not in [MissingStrategy.NOTHING, MissingStrategy.DROP, MissingStrategy.FIXED_VALUE]:
+        if missing_strategy not in ["nothing", "drop", "fixed_value"]:
             raise NotImplementedError("Interpolation still not implemented")
 
         super().read(path, file_format, verbose=False)
@@ -75,7 +74,7 @@ class ODINTSReader(TSReader):
         # add anomaly labels to original dataset and drop useless columns
         self._dataset.insert(len(self._dataset.columns),
                              rts_config["Univariate"]["target_column"],
-                             dataset_cp[rts_config["Univariate"]["target_column"]].values)
+                             dataset_cp[rts_config["Univariate"]["target_column"]].to_numpy())
         self._dataset.rename(columns={
                                 self.timestamp_col: rts_config["Univariate"]["index_column"],
                                 self.univariate_col: rts_config["Univariate"]["value_column"]
@@ -94,10 +93,10 @@ class ODINTSReader(TSReader):
             self._dataset.reset_index(inplace=True)
             self._dataset[rts_config["Univariate"]["index_column"]] = self._dataset[rts_config["Univariate"]["index_column"]].dt.strftime("%Y-%m-%d %H:%M:%S")
         
-        if missing_strategy == MissingStrategy.DROP:
+        if missing_strategy == "drop":
             self.__logger.info("dropping missing values")
             self._dataset.dropna(inplace=True)
-        elif missing_strategy == MissingStrategy.FIXED_VALUE:
+        elif missing_strategy == "fixed_value":
             self.__logger.info("placing fixed value for missing values")
             self._dataset.fillna(missing_fixed_value, inplace=True)
         
@@ -120,21 +119,21 @@ class ODINTSReader(TSReader):
         new_dataset = self._unmodified_dataset.copy()
         new_dataset.insert(len(new_dataset.columns),
                            rts_config["Univariate"]["target_column"],
-                           enhanced_dataset[rts_config["Univariate"]["target_column"]].values)
+                           enhanced_dataset[rts_config["Univariate"]["target_column"]].to_numpy())
         new_dataset.insert(len(new_dataset.columns),
-                           self._ANOMALY_TYPE,
-                           enhanced_dataset[self._ANOMALY_TYPE].values)
+                           self._anomaly_type,
+                           enhanced_dataset[self._anomaly_type].to_numpy())
         new_dataset.insert(len(new_dataset.columns),
-                           self._DAY_COL,
-                           enhanced_dataset[self._DAY_COL].values)
+                           self._day_col,
+                           enhanced_dataset[self._day_col].to_numpy())
         new_dataset = new_dataset.rename(columns={
             self.timestamp_col: rts_config["Univariate"]["index_column"],
             self.univariate_col: rts_config["Univariate"]["value_column"]})
         new_dataset = new_dataset.drop(columns=new_dataset.columns.difference([rts_config["Univariate"]["index_column"],
                                                                                rts_config["Univariate"]["value_column"],
                                                                                rts_config["Univariate"]["target_column"],
-                                                                               self._ANOMALY_TYPE,
-                                                                               self._DAY_COL]))
+                                                                               self._anomaly_type,
+                                                                               self._day_col]))
         
         return new_dataset
     
@@ -169,8 +168,8 @@ class ODINTSReader(TSReader):
         dataset_cp.insert(len(dataset_cp.columns), rts_config["Univariate"]["target_column"], anomalies)
         
         if complete:
-            dataset_cp.insert(len(dataset_cp.columns), self._DAY_COL, day)
-            dataset_cp.insert(len(dataset_cp.columns), self._ANOMALY_TYPE, anomaly_type)
+            dataset_cp.insert(len(dataset_cp.columns), self._day_col, day)
+            dataset_cp.insert(len(dataset_cp.columns), self._anomaly_type, anomaly_type)
 
         self.__logger.info("computing anomaly intervals from file")
         # get the anomaly intervals
@@ -188,9 +187,8 @@ class ODINTSReader(TSReader):
         for start, end in anomaly_intervals:
             dataset_cp.loc[start:end, rts_config["Univariate"]["target_column"]] = 1
             if complete:
-                dataset_cp.loc[start:end, self._ANOMALY_TYPE] = anomaly_type_dict[start]
-                for idx, row in dataset_cp.loc[start:end].iterrows():
-                    dataset_cp.loc[idx, self._DAY_COL] = idx.to_pydatetime().weekday()
+                dataset_cp.loc[start:end, self._anomaly_type] = anomaly_type_dict[start]
+                for idx, _ in dataset_cp.loc[start:end].iterrows():
+                    dataset_cp.loc[idx, self._day_col] = idx.to_pydatetime().weekday()
         
         return dataset_cp
-    

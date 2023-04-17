@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
 import logging
 import os
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from .. import TSBenchmarkReader, rts_config
-from ... import IDatasetReader
+from .. import IDatasetReader
+from . import TSBenchmarkReader, rts_config
 
 
 class UCRReader(IDatasetReader, TSBenchmarkReader):
@@ -67,7 +67,7 @@ class UCRReader(IDatasetReader, TSBenchmarkReader):
 
         self.__logger.info(f"reading dataset from {str(path)}")
         data = []
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             contents = f.read()
             is_multiline = contents.count('\n') != 1
 

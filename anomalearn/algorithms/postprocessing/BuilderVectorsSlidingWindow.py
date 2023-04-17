@@ -47,13 +47,20 @@ class BuilderVectorsSlidingWindow(IShapeChanger, AbstractPipelineSavableLayer):
 
     @property
     def sliding_window(self):
+        """Gets the reference to the sliding window object used in preprocessing.
+        
+        Returns
+        -------
+        sliding_window_object
+            The reference to the sliding window object used in preprocessing.
+        """
         return self._sliding_window
 
     def __repr__(self):
         return f"ErrorVectorsSlidingWindow(sliding_window={repr(self._sliding_window)})"
     
     def __str__(self):
-        return f"ErrorVectorsSlidingWindow"
+        return "ErrorVectorsSlidingWindow"
         
     def __eq__(self, other):
         if not isinstance(other, BuilderVectorsSlidingWindow):

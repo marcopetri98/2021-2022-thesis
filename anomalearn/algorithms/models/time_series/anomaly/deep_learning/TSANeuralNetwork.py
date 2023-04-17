@@ -12,7 +12,7 @@ from sklearn.utils import check_array
 from .. import TSAErrorBased
 from .... import IAnomalyScorer, IAnomalyClassifier
 from ..... import IMultipleParametric
-from ......utils import print_warning, print_header, print_step, save_py_json, \
+from ......utils import save_py_json, \
     load_py_json, concat_list_array
 
 
@@ -275,8 +275,8 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
                 check_array(el)
                 
         if verbose:
-            print_header("Start TSANeuralNetwork fit")
-            print_step("Start to build training sequences")
+            print("Start TSANeuralNetwork fit")
+            print("Start to build training sequences")
             
         # build a list of all the training sequences
         samples = None
@@ -297,7 +297,7 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
                 targets.append(yy)
                 
         if verbose:
-            print_step("Start to build training and validation sets")
+            print("Start to build training and validation sets")
             
         # compute the number of points in validation and training sequences
         # to be used
@@ -325,7 +325,7 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
                 valid_points = valid_batches * self.batch_size
                 
                 if valid_batches != needed_valid / self.batch_size and verbose:
-                    print_warning("In the construction of the validation set, "
+                    print("In the construction of the validation set, "
                                   "some points must be discarded to keep the "
                                   "batch size.")
 
@@ -340,7 +340,7 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
                 targets_train.insert(0, target)
             
         if verbose:
-            print_step("Continue with actual model training")
+            print("Continue with actual model training")
         
         # build the list of batches at which states must be reset
         train_reset = []
@@ -371,7 +371,7 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
                                targets_valid_list=targets_valid)
         
         if verbose:
-            print_header("End of TSANeuralNetwork fit")
+            print("End of TSANeuralNetwork fit")
         
     def fit(self, x,
             y=None,
@@ -385,8 +385,8 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
             States whether detailed printing should be performed.
         """
         if verbose:
-            print_header("Start TSANeuralNetwork fit")
-            print_step("Building training sequence")
+            print("Start TSANeuralNetwork fit")
+            print("Building training sequence")
             
         # divide train points for model and train points for threshold
         samples, targets = self._build_x_y_sequences(x,
@@ -401,13 +401,13 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
                 raise ValueError("the validation set is so small that it "
                                  "cannot even contain a single batch")
             elif valid_batches != valid_pts / self.batch_size and verbose:
-                print_warning("In the construction of the validation "
+                print("In the construction of the validation "
                               "set, some points will be discarded")
     
             valid_pts = valid_batches * self.batch_size
 
         if verbose:
-            print_step(f"The validation contains {valid_pts} points")
+            print(f"The validation contains {valid_pts} points")
 
         samples_train = samples[:-valid_pts]
         targets_train = targets[:-valid_pts]
@@ -423,7 +423,7 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
                                verbose=verbose)
 
         if verbose:
-            print_header("End of TSANeuralNetwork fit")
+            print("End of TSANeuralNetwork fit")
             
     def _fit_and_complete(self, samples_train: np.ndarray,
                           targets_train: np.ndarray,
@@ -750,5 +750,5 @@ class TSANeuralNetwork(IAnomalyScorer, IAnomalyClassifier, TSAErrorBased, IMulti
 
         # values errors
         if self.stride != 1 and self.stateful_model:
-            print_warning("Stride is not 1 and the model is stateful. It may "
+            print("Stride is not 1 and the model is stateful. It may "
                           "cause problems for learning.")

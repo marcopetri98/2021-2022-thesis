@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Tuple
+import os
 
-import numpy as np
 from scipy.stats import multivariate_normal
 from sklearn.utils import check_array
+import numpy as np
 
-from .. import IShapeChanger, IParametric
-from ..pipelines import AbstractPipelineSavableLayer
 from ...exceptions import NotTrainedError
-from ...utils import estimate_mean_covariance
-from ...utils import get_rows_without_nan
+from ...utils import estimate_mean_covariance, get_rows_without_nan
+from .. import IParametric, IShapeChanger
+from ..pipelines import AbstractPipelineSavableLayer
 
 
 class ScorerGaussian(IShapeChanger, IParametric, AbstractPipelineSavableLayer):
@@ -44,10 +43,25 @@ class ScorerGaussian(IShapeChanger, IParametric, AbstractPipelineSavableLayer):
         
     @property
     def mean(self):
+        """Gets the computed mean.
+        
+        Returns
+        -------
+        mean
+            The computed mean or None if not yet computed.
+        """
         return self._mean
         
     @property
     def cov(self):
+        """Gets the computed covariance matrix or standard deviation.
+        
+        Returns
+        -------
+        cov_or_std
+            The computed covariance matrix or standard deviation, or None if
+            not yet computed.
+        """
         return self._cov
         
     def __repr__(self):

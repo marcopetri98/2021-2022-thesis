@@ -1,9 +1,9 @@
 from numbers import Number
 from typing import Tuple
 
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.axes import Axes
 
 from ..input_validation import check_argument_types, is_matplotlib_color
 
@@ -269,7 +269,7 @@ def __line_plot(x,
 
     # implementation
     if ax is None and create_fig:
-        fig = plt.figure(figsize=fig_size)
+        _ = plt.figure(figsize=fig_size)
 
     # TODO: evaluate if this can be made top-level
     def add_line(ind, dep, line_color, line_format, axes, label):
@@ -643,7 +643,7 @@ def confidence_line_plot(x,
         raise ValueError("conf_transparency must be between 0 and 1")
     
     if ax is None:
-        fig = plt.figure(figsize=fig_size)
+        _ = plt.figure(figsize=fig_size)
     
     # TODO: see if it can be made top level
     def add_confidence_shadow(dep, lower, upper, conf_color, axes, alpha):

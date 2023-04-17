@@ -1,8 +1,9 @@
 from numbers import Number
 from typing import Tuple
 
+from matplotlib import gridspec
+from matplotlib import pyplot as plt
 import numpy as np
-from matplotlib import pyplot as plt, gridspec
 
 from .. import line_plot
 
@@ -65,8 +66,7 @@ def plot_time_series_decomposition(original,
         trend = np.array(trend)
         residual = np.array(residual)
     except Exception as e:
-        raise ValueError("All the first four arguments must be array-like "
-                         "objects. The original exception message was {}".format(e))
+        raise ValueError("All the first four arguments must be array-like objects.") from e
 
     fig = plt.figure(figsize=fig_size, tight_layout=True)
     gs = gridspec.GridSpec(4, 1)

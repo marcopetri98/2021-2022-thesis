@@ -1,14 +1,15 @@
+from typing import Callable
 import logging
 import os
-from typing import Callable
 
-import numpy as np
 from skopt.space import Categorical, Integer
+import numpy as np
 
-from . import HyperparameterSearch
 from .. import ICrossValidation
+from . import HyperparameterSearch
 
 
+# TODO: rename to grid search, it is not limited to time series
 class TimeSeriesGridSearch(HyperparameterSearch):
     """Gird search over for time series datasets and models.
     """
@@ -37,7 +38,7 @@ class TimeSeriesGridSearch(HyperparameterSearch):
                           **kwargs) -> None:
         # Input validation
         for parameter in self.parameter_space:
-            if not (isinstance(parameter, Categorical) or isinstance(parameter, Integer)):
+            if not isinstance(parameter, (Categorical, Integer)):
                 raise ValueError("Cannot run grid search out of discrete values")
         
         self.__logger.info("Building the parameters grid")
@@ -45,7 +46,7 @@ class TimeSeriesGridSearch(HyperparameterSearch):
         space = dict()
         for parameter in self.parameter_space:
             if isinstance(parameter, Categorical):
-                values = [category for category in parameter.categories]
+                values = list(parameter.categories)
             else:
                 values = range(parameter.low, parameter.high + 1, 1)
             

@@ -8,7 +8,6 @@ from sklearn import metrics
 from sklearn.preprocessing import StandardScaler
 
 from ..reader.time_series import TSMultipleReader, ODINTSReader
-from ..utils import print_header, print_step
 
 
 class Zangrando2022Loader(object):
@@ -140,7 +139,7 @@ class Zangrando2022Loader(object):
             raise ValueError("dataset must be one of self.window_sizes")
         
         if verbose:
-            print_header("Dataset extraction started")
+            print("Dataset extraction started")
         
         # get the directory with the training data sequences
         dir_path = os.path.join(self.datasets_path, "{}/train/clean_data/{}".format(dataset, training_length))
@@ -159,8 +158,8 @@ class Zangrando2022Loader(object):
         dir_files = [f for f in dir_contents_paths if os.path.isfile(f)]
 
         if verbose:
-            print_step("Reading the training data from clean directories")
-            print_step("Directory {} is being read".format(dir_path))
+            print("Reading the training data from clean directories")
+            print("Directory {} is being read".format(dir_path))
 
         # read all dataframes and eliminate null csv
         multiple_reader = TSMultipleReader()
@@ -179,30 +178,30 @@ class Zangrando2022Loader(object):
                     all_data = np.append(all_data, df["value"].values.reshape(-1))
 
         if verbose:
-            print_step("Reading the validation data")
-            print_step("File {} is being read".format(val_path))
+            print("Reading the validation data")
+            print("File {} is being read".format(val_path))
 
         # read the validation dataframe
         odin_reader = ODINTSReader(anom_path, "ctime", "device_consumption")
         validation_frame = odin_reader.read(val_path, verbose=False).get_dataframe()
         
         if verbose:
-            print_step("Reading the testing data")
-            print_step("File {} is being read".format(test_path))
+            print("Reading the testing data")
+            print("File {} is being read".format(test_path))
 
         # read the testing dataframe
         odin_reader = ODINTSReader(anom_path, "ctime", "device_consumption")
         testing_frame = odin_reader.read(test_path, verbose=False).get_dataframe()
         
         if verbose:
-            print_step("Computing training mean and std")
+            print("Computing training mean and std")
 
         # normalize data in input to the model and validation on the basis of training
         scaler = StandardScaler()
         scaler.fit(all_data.reshape((-1, 1)))
         
         if verbose:
-            print_step("Standardizing the sets")
+            print("Standardizing the sets")
 
         for i in range(len(nonempty_df)):
             values_tr = nonempty_df[i]["value"].values.reshape(-1, 1)
@@ -223,7 +222,7 @@ class Zangrando2022Loader(object):
             training_sequences = [e for e in nonempty_df if e.shape[0] >= window_size]
         
         if verbose:
-            print_header("Dataset extraction ended")
+            print("Dataset extraction ended")
             
         return training_sequences, all_data, validation_frame, testing_frame
     

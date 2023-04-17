@@ -6,7 +6,7 @@ from sklearn.metrics import f1_score
 
 from .... import IAnomalyClassifier
 from ..... import IParametric
-from ......utils import mov_avg, mov_std, print_header, print_step
+from ......utils import mov_avg, mov_std
 
 
 class TSAConstAvgStd(IAnomalyClassifier, IParametric):
@@ -203,20 +203,20 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
             printing is performed. With True detailed printing is done.
         """
         if verbose:
-            print_header("Started samples' classification")
+            print("Started samples' classification")
 
         if x.ndim == 1:
             x = x.reshape(-1, 1)
 
         if verbose:
-            print_step("Computing the moving average and moving std series")
+            print("Computing the moving average and moving std series")
 
         moving_avg = mov_avg(x, self._w)
         moving_std = mov_std(x, self._w)
         half = int((self._w - 1) / 2)
 
         if verbose:
-            print_step("Computing the lower and upper series")
+            print("Computing the lower and upper series")
 
         self._upper_series = self._a * moving_avg + self._b * moving_std + self._c
         self._lower_series = self._a * moving_avg - self._b * moving_std + self._c
@@ -226,7 +226,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
             self._lower_series = self._lower_series.reshape(-1, 1)
 
         if verbose:
-            print_step("Building the predictions")
+            print("Building the predictions")
 
         pred = (x[half:-half] > self._upper_series) | (x[half:-half] < self._lower_series)
         middle = np.array(list(map(lambda row: 1 if np.min(row) == 1 else 0, pred)))
@@ -234,7 +234,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
         all_predictions[half:-half] = middle
 
         if verbose:
-            print_header("Ended samples' classification")
+            print("Ended samples' classification")
 
         return all_predictions
     
@@ -250,8 +250,8 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
         y = np.array(y)
 
         if verbose:
-            print_header("Started learning")
-            print_step("Checking if the time series is multivariate")
+            print("Started learning")
+            print("Checking if the time series is multivariate")
 
         self._multivariate = x.ndim != 1 and x.shape[1] != 1
 
@@ -295,7 +295,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
                 # TODO: implement the same procedure using a simple neural network to optimize the
                 #  parameters using backpropagation since it supports nonlinear discontinuous functions
                 if verbose:
-                    print_step("Getting the optimal parameters")
+                    print("Getting the optimal parameters")
 
                 extra_params = (x, y)
                 optimum = globally_optimize(extra_params)
@@ -303,7 +303,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
                 self._w = round(self._w)
             else:
                 if verbose:
-                    print_step("Getting the optimal parameters")
+                    print("Getting the optimal parameters")
 
                 extra_params = (x, y)
                 optimum = globally_optimize(extra_params)
@@ -311,7 +311,7 @@ class TSAConstAvgStd(IAnomalyClassifier, IParametric):
                 self._w = round(self._w)
 
         if verbose:
-            print_header("Ended learning")
+            print("Ended learning")
 
     def __check_parameters(self):
         if not isinstance(self.learning, str):

@@ -53,8 +53,8 @@ def plot_correlation_functions(func_values: dict,
         name = list(func_values.keys())[0]
         
         lags = values.shape[0] - 1
-        fig = plt.figure(figsize=fig_size)
-        plt.title("{} function".format(name))
+        _ = plt.figure(figsize=fig_size)
+        plt.title(f"{name} function")
         plt.ylim(-1, 1)
         plt.plot([0, lags], [0, 0], linewidth=0.5)
         plt.vlines(range(lags + 1), [0] * (lags + 1), values)
@@ -72,7 +72,7 @@ def plot_correlation_functions(func_values: dict,
         pacf_conf: np.ndarray = func_conf["PACF"]
 
         lags = acf_values.shape[0] - 1
-        fig, axs = plt.subplots(2, 1, figsize=(12, 12))
+        _, axs = plt.subplots(2, 1, figsize=(12, 12))
         axs[0].set_title("ACF function")
         axs[0].set_ylim(-1, 1)
         axs[0].plot([0, lags], [0, 0], linewidth=0.5)

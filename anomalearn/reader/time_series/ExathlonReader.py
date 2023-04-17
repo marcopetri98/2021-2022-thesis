@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
 import logging
 import os
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from .. import TSBenchmarkReader, rts_config
-from ... import IDatasetReader
+from .. import IDatasetReader
+from . import TSBenchmarkReader, rts_config
 
 
 class ExathlonReader(IDatasetReader, TSBenchmarkReader):
@@ -17,7 +17,7 @@ class ExathlonReader(IDatasetReader, TSBenchmarkReader):
     The reader automatically provides an easy-to-use API to read the normal and
     abnormal series (undisturbed and disturbed traces respectively).
     """
-    _ALL_MODES = ["train", "test", "all"]
+    _all_modes = ["train", "test", "all"]
 
     def __init__(self, benchmark_location: str | os.PathLike,
                  mode: str = "all"):
@@ -29,8 +29,8 @@ class ExathlonReader(IDatasetReader, TSBenchmarkReader):
         self.__check_parameters()
 
         def _exathlon_file_order(el):
-            first_num = int(el.split("_")[0])*1e10
-            second_num = int(el.split("_")[1])*1e8
+            first_num = int(el.split("_")[0]) * 1e10
+            second_num = int(el.split("_")[1]) * 1e8
             third_num = int(el.split("_")[2])
             fourth_num = int(el.split("_")[3])
             return first_num + second_num + third_num + fourth_num
@@ -40,7 +40,7 @@ class ExathlonReader(IDatasetReader, TSBenchmarkReader):
         self._disturbed.sort(key=_exathlon_file_order)
 
         self._files_paths = []
-        for root, dirs, files in os.walk(self._benchmark_location):
+        for root, _, files in os.walk(self._benchmark_location):
             for name in files:
                 if name != "ground_truth.csv":
                     self._files_paths.append(os.path.normpath(os.path.join(root, name)))
@@ -121,8 +121,8 @@ class ExathlonReader(IDatasetReader, TSBenchmarkReader):
             raise ValueError(f"there are {len(self)} series with mode {self._mode}")
         elif not isinstance(full_rename, bool):
             raise TypeError("full_rename must be boolean")
-        elif isinstance(path, str) and not any([path in e for e in self._files_paths]):
-            raise ValueError(f"path must be a valid name of a series")
+        elif isinstance(path, str) and not any(path in e for e in self._files_paths):
+            raise ValueError("path must be a valid name of a series")
 
         # load the time series selected by the user
         if isinstance(path, str):
@@ -151,7 +151,7 @@ class ExathlonReader(IDatasetReader, TSBenchmarkReader):
         target = np.zeros(dataset.shape[0])
         if path in self._disturbed_paths:
             gt: pd.DataFrame = self._gt.loc[self._gt["trace_name"] == trace_name]
-            for index, row in gt.iterrows():
+            for _, row in gt.iterrows():
                 if np.isnan(row["extended_effect_end"]):
                     end = int(row["root_cause_end"])
                 else:
@@ -173,7 +173,7 @@ class ExathlonReader(IDatasetReader, TSBenchmarkReader):
                 end_idx = dataset["t"].tolist().index(end)
                 target[start_idx:end_idx + 1] = 1
 
-        self.__logger.info(f"renaming columns with standard names")
+        self.__logger.info("renaming columns with standard names")
         # build columns name mappings
         channels = {e: f"channel_{e if not full_rename else idx}"
                     for idx, e in enumerate(dataset.columns[1:])}
@@ -197,7 +197,7 @@ class ExathlonReader(IDatasetReader, TSBenchmarkReader):
         self.__logger.debug(f"benchmark contents are {contents}")
 
         if not isinstance(self._mode, str):
-            raise TypeError(f"mode must be one of {self._ALL_MODES}")
+            raise TypeError(f"mode must be one of {self._all_modes}")
 
         if len(contents) < 11:
             raise ValueError("benchmark_location must contain the 10 apps' "

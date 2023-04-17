@@ -1,17 +1,17 @@
-from __future__ import  annotations
+from __future__ import annotations
 
 from pathlib import Path
-from typing import Tuple, Any
+from typing import Any, Tuple
 
 import numpy as np
 
-from . import IPipeline, IPipelineLayer
-from .. import IPredictor, SavableModel, IShapeChanger, ITransformer, BaseModel, \
-    ICluster, IClassifier, IRegressor, IParametric, load_estimator, \
-    instantiate_estimator
 from ...exceptions import InvalidInputShape
 from ...input_validation import is_var_of_type
-from ...utils import save_py_json, load_py_json
+from ...utils import load_py_json, save_py_json
+from .. import (BaseModel, IClassifier, ICluster, IParametric, IPredictor,
+                IRegressor, IShapeChanger, ITransformer, SavableModel,
+                instantiate_estimator, load_estimator)
+from . import IPipeline, IPipelineLayer
 
 
 class Pipeline(IPipeline):
@@ -85,6 +85,8 @@ class Pipeline(IPipeline):
     __json_references = "pipeline_layers_references.json"
     __to_load_str = "to_load"
     __to_create_str = "to_create"
+    _allowed_processing = [ITransformer, IShapeChanger]
+    _allowed_models = [ICluster, IClassifier, IRegressor, IPredictor]
     
     def __init__(self, elements: list[Tuple[str, IPipelineLayer, bool] | Tuple[str, IPipelineLayer] | Tuple[IPipelineLayer, bool] | IPipelineLayer] = None):
         super().__init__()
@@ -95,8 +97,8 @@ class Pipeline(IPipeline):
         # manage optional strings and bools
         self._layer_num = 0
         self._elements = []
-        for e in elements:
-            self.append_layer(e)
+        for elem in elements:
+            self.append_layer(elem)
             
         if len(self.pipeline_names) != len(set(self.pipeline_names)):
             raise ValueError("there are layers with the same name. Each layer "
@@ -106,32 +108,59 @@ class Pipeline(IPipeline):
         for name, obj, train in self._elements:
             if not isinstance(name, str):
                 raise TypeError("the first element of the tuples must be a str")
-            elif not is_var_of_type(obj, [ITransformer, IShapeChanger, IParametric, IPredictor]):
-                raise TypeError("the second element of the tuples must be one "
-                                "of ITransformer, IShapeChanger, IParametric or"
-                                " IPredictor")
+            elif not is_var_of_type(obj, self.allowed_interfaces()):
+                raise TypeError("the second element of the tuples must be at least one "
+                                f"of {list(e.__name__ for e in self.allowed_interfaces())}")
             elif not isinstance(train, bool):
                 raise TypeError("the last (third) element of the tuples must be"
                                 " a bool")
         
     @property
     def pipeline_spec(self):
+        """Get a shallow copy of the list of names, elements and train flags.
+        
+        Returns
+        -------
+        list_of_elements
+            The list of tuples composing the sequence of the pipeline.
+        """
         return self._elements.copy()
     
     @property
     def pipeline_names(self):
+        """Get the list of names of pipeline layers.
+        
+        Returns
+        -------
+        list_of_names
+            The list of layers' names.
+        """
         return [e[0] for e in self._elements]
     
     @property
     def pipeline_layers(self):
+        """Get a shallow copy of the list of layer objects.
+        
+        Returns
+        -------
+        list_of_layers
+            The list of layer objects in the pipeline.
+        """
         return [e[1] for e in self._elements]
     
     @property
     def pipeline_train(self):
+        """Get the list of train flags of pipeline layers.
+        
+        Returns
+        -------
+        list_of_train_flag
+            The list of layers' train flag.
+        """
         return [e[2] for e in self._elements]
     
     def allowed_interfaces(self) -> list:
-        return [ITransformer, IShapeChanger, ICluster, IClassifier, IRegressor, IPredictor, IParametric]
+        return self._allowed_processing + self._allowed_models + [IParametric, IPipeline]
     
     def set_name(self, layer: int | str, name: str) -> None:
         if not isinstance(layer, int) and not isinstance(layer, str):
@@ -181,8 +210,8 @@ class Pipeline(IPipeline):
         try:
             self._elements.insert(index, final_model_tuple)
             self._layer_num += 1
-        except IndexError as e:
-            raise IndexError(f"The index is out of range. Pipeline has len={len(self)}")
+        except IndexError as ex:
+            raise IndexError(f"The index is out of range. Pipeline has len={len(self)}") from ex
 
     def append_layer(self, layer_spec: Tuple[str, IPipelineLayer, bool] | Tuple[str, IPipelineLayer] | Tuple[IPipelineLayer, bool] | IPipelineLayer) -> None:
         self.insert_layer(len(self._elements), layer_spec)
@@ -278,7 +307,7 @@ class Pipeline(IPipeline):
                 members = vars(obj)
                 for m_name, m_value in members.items():
                     if m_value is referenced_obj:
-                        if name not in referencing_members.keys():
+                        if name not in referencing_members:
                             referencing_members[name] = [m_name]
                         else:
                             referencing_members[name].append(m_name)
@@ -291,8 +320,8 @@ class Pipeline(IPipeline):
     def __repr__(self):
         representation = "Pipeline(["
         
-        for i, e in enumerate(self._elements):
-            representation += f"({e[0]}, {repr(e[1])}, {e[2]})"
+        for i, elem in enumerate(self._elements):
+            representation += f"({elem[0]}, {repr(elem[1])}, {elem[2]})"
             
             if i != len(self._elements) - 1:
                 representation += ",\n          "
@@ -384,16 +413,17 @@ class Pipeline(IPipeline):
         return not self.__eq__(other)
         
     def identical(self, other, degree: int = 2) -> bool:
-        if degree != 1 and degree != 2 and degree != 3:
+        if degree not in (1, 2, 3):
             raise ValueError("degree must be either 1, 2 or 3")
         
         if degree == 1:
-            return self.__eq__(other)
+            return self == other
         else:
-            if not self.__eq__(other):
+            if self != other:
                 return False
-        
-            return self.pipeline_train == other.pipeline_train and (degree != 3 or self.pipeline_names == other.pipeline_names)
+            
+            return self.pipeline_train == other.pipeline_train and \
+                   (degree != 3 or self.pipeline_names == other.pipeline_names)
         
     def copy(self) -> Pipeline:
         elements_copy = []
@@ -451,7 +481,7 @@ class Pipeline(IPipeline):
         estimator_classes : list, default=None
             It is the list of external classes not present in the library that
             may be loaded or instantiated by the pipeline at some point.
-
+            
         args
             Not used, present to allow multiple inheritance and signature change.
 
@@ -532,8 +562,8 @@ class Pipeline(IPipeline):
             `get_hyperparameters` on the layer.
         """
         hyperparameters = dict()
-        for e in self._elements:
-            hyperparameters[e[0]] = e[1].get_hyperparameters()
+        for elem in self._elements:
+            hyperparameters[elem[0]] = elem[1].get_hyperparameters()
         return hyperparameters
     
     def set_hyperparameters(self, hyperparameters: dict, *args, **kwargs) -> None:
@@ -556,7 +586,7 @@ class Pipeline(IPipeline):
         -------
         None
         """
-        for name, obj, train in self._elements:
+        for name, obj, _ in self._elements:
             if name in hyperparameters.keys():
                 obj.set_hyperparameters(hyperparameters[name])
         
@@ -613,7 +643,7 @@ class Pipeline(IPipeline):
         
         curr_x = x
         curr_y = y
-        for name, obj, train in self._elements:
+        for name, obj, _ in self._elements:
             curr_x, curr_y = self._execute_layer(name, obj, curr_x, curr_y)
             
         return curr_x, curr_y
@@ -658,9 +688,7 @@ class Pipeline(IPipeline):
     def _execute_layer(self, layer_name: str,
                        layer: IPipelineLayer,
                        x: np.ndarray,
-                       y: np.ndarray | None,
-                       *args,
-                       **kwargs) -> Tuple[np.ndarray, np.ndarray | None]:
+                       y: np.ndarray | None) -> Tuple[np.ndarray, np.ndarray | None]:
         """Execute a layer.
         
         Parameters
@@ -676,12 +704,6 @@ class Pipeline(IPipeline):
         
         y : ndarray
             The current `y` to be used.
-        
-        args
-            Not used, present to allow multiple inheritance and signature change.
-
-        kwargs
-            Not used, present to allow multiple inheritance and signature change.
 
         Returns
         -------
@@ -699,57 +721,99 @@ class Pipeline(IPipeline):
             if isinstance(layer, IPipeline):
                 new_x, new_y = layer.process(new_x, y=new_y)
             else:
-                num_of_preprocess = 0
-                for interface in [ITransformer, IShapeChanger]:
-                    if isinstance(layer, interface):
-                        num_of_preprocess += 1
-                
-                klass = None
-                if num_of_preprocess > 1:
-                    klass = layer.get_pipeline_class()
-                
-                    if klass is not None:
-                        if klass is ITransformer:
-                            new_x = layer.transform(new_x)
-                        elif klass is IShapeChanger:
-                            new_x, new_y = layer.shape_change(new_x, new_y)
-                    
-                if klass is None:
-                    if isinstance(layer, ITransformer):
-                        new_x = layer.transform(new_x)
-                    elif isinstance(layer, IShapeChanger):
-                        new_x, new_y = layer.shape_change(new_x, new_y)
-                        
-                num_of_models = 0
-                for interface in [ICluster, IClassifier, IRegressor, IPredictor]:
-                    if isinstance(layer, interface):
-                        num_of_models += 1
-            
-                klass = None
-                if num_of_models > 1:
-                    klass = layer.get_pipeline_class()
-                    
-                    if klass is not None:
-                        if klass is ICluster:
-                            new_x = layer.cluster(new_x)
-                        elif klass is IClassifier:
-                            new_x = layer.classify(new_x)
-                        elif klass is IRegressor:
-                            new_x = layer.regress(new_x)
-                        elif klass is IPredictor:
-                            new_x = layer.predict(new_x)
-            
-                if klass is None:
-                    if isinstance(layer, ICluster):
-                        new_x = layer.cluster(new_x)
-                    elif isinstance(layer, IClassifier):
-                        new_x = layer.classify(new_x)
-                    elif isinstance(layer, IRegressor):
-                        new_x = layer.regress(new_x)
-                    elif isinstance(layer, IPredictor):
-                        new_x = layer.predict(new_x)
-        except InvalidInputShape as e:
-            new_msg = f"The input of layer {layer_name} received wrong input shape." + e.message
-            raise InvalidInputShape(e.expected_shape, e.shape, new_msg)
+                # call any processing operation on the object, if the object
+                # is both a processing and a model, it will be considered a
+                # model which needs some preprocessing operation
+                new_x, new_y = self._call_processing(layer, new_x, new_y)
+
+                # if it is a model, call the model main functionality
+                new_x = self._call_model(layer, new_x)
+        except InvalidInputShape as ex:
+            new_msg = f"The input of layer {layer_name} received wrong input shape." + ex.message
+            raise InvalidInputShape(ex.expected_shape, ex.shape, new_msg) from ex
             
         return new_x, new_y
+    
+    def _call_processing(self, layer: IPipelineLayer,
+                         x: np.ndarray,
+                         y: np.ndarray | None) -> tuple[np.ndarray, np.ndarray]:
+        """Call the processing operation, if any.
+        
+        Parameters
+        ----------
+        layer : IPipelineLayer
+            The layer object to execute.
+        
+        x : ndarray
+            The current `x` to be used.
+        
+        y : ndarray
+            The current `y` to be used.
+
+        Returns
+        -------
+        new_x : ndarray
+            It is the result of the processing operations of the layer to the
+            input `x`.
+        
+        new_y : ndarray or None
+            It is the result of the processing operations of the layer to the
+            input `y` or the input `y` itself if the layer does not change `y`.
+        """
+        # count number of pre- or post- processing interfaces
+        num_of_process = 0
+        for interface in self._allowed_processing:
+            if isinstance(layer, interface):
+                num_of_process += 1
+
+        # execute the specified pre- or post- processing function
+        klass = None
+        if num_of_process > 1:
+            klass = layer.get_pipeline_class()
+        
+        if klass is ITransformer or (klass is None and isinstance(layer, ITransformer)):
+            return layer.transform(x), y
+        elif klass is IShapeChanger or (klass is None and isinstance(layer, IShapeChanger)):
+            return layer.shape_change(x, y)
+        else:
+            return x, y
+    
+    def _call_model(self, layer: IPipelineLayer,
+                    x: np.ndarray) -> np.ndarray:
+        """Call the model operation, if any.
+        
+        Parameters
+        ----------
+        layer : IPipelineLayer
+            The layer object to execute.
+        
+        x : ndarray
+            The current `x` to be used.
+
+        Returns
+        -------
+        new_x : ndarray
+            It is the result of the processing operations of the layer to the
+            input `x`.
+        """
+        # count number of model interfaces
+        num_of_models = 0
+        for interface in self._allowed_models:
+            if isinstance(layer, interface):
+                num_of_models += 1
+
+        # execute the specified model operation
+        klass = None
+        if num_of_models > 1:
+            klass = layer.get_pipeline_class()
+
+        if klass is ICluster or (klass is None and isinstance(layer, ICluster)):
+            return layer.cluster(x)
+        elif klass is IClassifier or (klass is None and isinstance(layer, IClassifier)):
+            return layer.classify(x)
+        elif klass is IRegressor or (klass is None and isinstance(layer, IRegressor)):
+            return layer.regress(x)
+        elif klass is IPredictor or (klass is None and isinstance(layer, IPredictor)):
+            return layer.predict(x)
+        else:
+            return x
