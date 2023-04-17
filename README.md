@@ -1,6 +1,9 @@
 # Anomaly detection in time series for energy efficiency
 This is the repository containing all the codes related to my Master of Science thesis in Computer Science and Engineering at Politecnico di Milano. The description of the thesis and of the repository structure and code structure is postponed to next sections to keep the first sections short. The first components I will describe are the ones needed to reproduce the experiments and to download and set up the datasets using automated scripts. I don't want you to lose time, most of the things just involve just running a script.
 
+# Where to find anomalearn updated code?
+The development of anomalearn has been moved to a dedicated repository to be correctly synced with PyPI for versioning. The link of the anomalearn repository is: https://github.com/marcopetri98/anomalearn. If the repository is still private, it means that you visited this repository too close to the graduation day. It will be public soon.
+
 # How to reproduce the experiments
 In my thesis I use some external libraries, public datasets and state-of-the-art methods. If you want to do one of the following:
 
@@ -90,16 +93,3 @@ In my thesis I used many datasets to evaluate the methods I developed and state-
 | Yahoo! Webscope S5 | None | https://webscope.sandbox.yahoo.com/catalog.php?datatype=s&did=70 |
 
 These datasets are all public datasets. However, not all of them are directly downloadable. For instance, Yahoo! Webscope S5 can be downloaded upon request approval made to Yahoo via their website. Therefore, I will speak about public datasets (available for download from a link) and about accessible datasets (downloadable after request acceptance).
-
-# Required packages
-The required python module to be able to run the codes of this repository are:
-
-1. numpy 1.21.5
-2. pandas 1.4.1
-3. statsmodels 0.13.0
-4. matplotlib 3.5.1
-5. scikit-learn 1.0.2
-6. scikit-optimize 0.9.0
-7. seaborn 0.11.2
-8. colorama 0.4.4
-9. Cython 0.29.28
